@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "project": "parselord5",
+  "profile": "dotnet-dalamud",
+  "paths": {
+    "report_dir": "icm/stages/04-verify/output",
+    "run_dir": ".quality-gate/runs",
+    "log_dir": ".quality-gate/logs"
+  },
+  "levels": {
+    "smoke": {
+      "required": ["changed-files"]
+    },
+    "normal": {
+      "required": ["changed-files", "build"],
+      "conditional": ["markdown-audit-if-docs-changed", "domain-evals-if-domain-changed"]
+    },
+    "release": {
+      "required": ["changed-files", "build", "test-hack-detector"]
+    }
+  },
+  "commands": {
+    "build": {
+      "shell": "powershell",
+      "command": "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release",
+      "timeout_seconds": 240
+    },
+    "domain-evals": {
+      "shell": "powershell",
+      "command": "",
+      "timeout_seconds": 0,
+      "skip_reason": "ParseLord5 domain evals are not onboarded yet."
+    },
+    "markdown-audit": {
+      "shell": "powershell",
+      "command": "python C:\\Users\\kruil\\.codex\\skills\\obsidian-markdown-auditor\\scripts\\obsidian_markdown_audit.py validate --root C:\\Users\\kruil\\Documents\\Projects --stage stage2",
+      "timeout_seconds": 240
+    }
+  },
+  "changed_file_rules": {
+    "docs": {
+      "patterns": ["**/*.md"],
+      "checks": ["markdown-audit-if-docs-changed"]
+    },
+    "plugin": {
+      "patterns": [
+        "WrathCombo/**/*.cs",
+        "WrathCombo/**/*.json",
+        "WrathCombo/**/*.resx",
+        "**/*.csproj",
+        "WrathCombo.slnx",
+        "Directory.Build.props",
+        "Directory.Build.targets"
+      ],
+      "risk": "plugin-critical"
+    },
+    "domain": {
+      "patterns": [
+        "WrathCombo/Combos/**/*.cs",
+        "WrathCombo/AutoRotation/**/*.cs",
+        "WrathCombo/CustomComboPreset.cs"
+      ],
+      "checks": ["domain-evals-if-domain-changed"],
+      "risk": "domain-critical"
+    },
+    "gate": {
+      "patterns": [
+        "quality-gate.json",
+        "AGENTS.md",
+        "*.csproj",
+        "Directory.Build.props",
+        "Directory.Build.targets",
+        "global.json",
+        ".codex/**",
+        ".agents/**"
+      ],
+      "risk": "gate-critical"
+    }
+  },
+  "exceptions": {
+    "allow_with_expiry": true,
+    "max_days": 14
+  }
+}

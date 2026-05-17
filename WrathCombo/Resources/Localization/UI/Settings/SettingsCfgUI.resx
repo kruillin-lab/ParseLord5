@@ -690,6 +690,18 @@ It is recommended to enable this if you are a keyboard+mouse user and enable Ret
   <data name="AprilFools2026_defaultValue" xml:space="preserve">
     <value>On, cause it's that type of day y'know</value>
   </data>
+  <data name="ParseLord5ExperimentalMode_Name" xml:space="preserve">
+    <value>ParseLord5 Experimental Mode</value>
+  </data>
+  <data name="ParseLord5ExperimentalMode_helpMark" xml:space="preserve">
+    <value>Allows future ParseLord5-only experiments to be enabled explicitly. This flag does not change rotations, auto-rotation, commands, hooks, or action execution by itself.</value>
+  </data>
+  <data name="ParseLord5ExperimentalMode_recommendedValue" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="ParseLord5ExperimentalMode_defaultValue" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="TankbusterTTS_Name" xml:space="preserve">
     <value>Play TTS on Tankbuster</value>
   </data>

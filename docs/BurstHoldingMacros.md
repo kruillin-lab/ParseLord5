@@ -1,11 +1,26 @@
-# Wrath Macro Holding Burst
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
+# WrathCombo Burst-Holding Macros
 
-Per [Issue #99](https://github.com/PunishXIV/WrathCombo/issues/99), Burst Holding is still something we plan to implement more properly at a later time.
+Per upstream [Issue #99](https://github.com/PunishXIV/WrathCombo/issues/99), Burst Holding is still something planned for better support later.
 
-As a workaround until such time though, you can create a macro to toggle off the burst parts of Jobs within Wrath, to achieve a similar result.
+As a workaround, you can create a macro to toggle off the burst parts of jobs in WrathCombo to achieve a similar result.
 
 You can toggle off these options with `/wrath toggle <x>` in game.
-You can find the ID or internal name to provide as `<x>` by using `/wrath list set <y>` (replace `<y>` with your current job, like `/wrath list set DRK`), or by looking at the [`Preset` File](https://github.com/PunishXIV/WrathCombo/blob/main/WrathCombo/Combos/CustomComboPreset.cs) (see [this image](https://i.imgur.com/LsJ06DW.png) for how to read this)
+You can find the ID or internal name to provide as `<x>` by using `/wrath list set <y>` (replace `<y>` with your current job, like `/wrath list set DRK`), or by looking at the [`Preset` file](https://github.com/PunishXIV/WrathCombo/blob/main/WrathCombo/Combos/CustomComboPreset.cs) (see [this image](https://i.imgur.com/LsJ06DW.png) for how to read this).
+
+> [!Warning]
+> Verify IDs with `/wrath list set <job>` before relying on macros. Preset IDs can change as WrathCombo and ParseLord5 continue to evolve.
+
+ParseLord5 currently preserves the WrathCombo `/wrath` command for these examples. No `/pl5` command is registered in the current command source.
 
 Below is a community-provided list of basic burst-holding macros for each job.
 

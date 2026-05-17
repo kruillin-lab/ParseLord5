@@ -1,3 +1,13 @@
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
 # Prerequisites
 
 Given that all plugins are C# projects, you will need to have the .NET SDK installed.

@@ -1,4 +1,14 @@
-﻿> [!TIP]
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
+> [!TIP]
 > See [The Example C#](IPCExample.cs) for a barebones example of how to set up
 > the IPC in your plugin, or [The Example Lua](IPCExample.lua) to set it up in a 
 > SND script.

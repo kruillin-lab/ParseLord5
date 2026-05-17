@@ -1,3 +1,13 @@
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
 > [!TIP]
 > See [The Example C#](RetargetingExample.cs) for barebones examples of how to 
 > set up Retargeting for an action.

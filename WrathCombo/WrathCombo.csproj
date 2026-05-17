@@ -7,16 +7,16 @@
         <Company>-</Company>
         <Version>1.0.4.5</Version>
         <!-- This is the version that will be used when pushing to the repo.-->
-        <Description>XIVCombo for very lazy players</Description>
+        <Description>ParseLord5 is a WrathCombo-based fork and iteration.</Description>
         <Copyright>Copyleft attick 2021 thanks attick UwU</Copyright>
         <PackageProjectUrl>https://github.com/PunishXIV/WrathCombo</PackageProjectUrl>
-        <PackageId>WrathCombo</PackageId>
-        <Product>WrathCombo</Product>
+        <PackageId>ParseLord5</PackageId>
+        <Product>ParseLord5</Product>
     </PropertyGroup>
 
     <!-- Build Parameters -->
     <PropertyGroup>
-        <AssemblyName>WrathCombo</AssemblyName>
+        <AssemblyName>ParseLord5</AssemblyName>
         <TargetFramework>net10.0-windows</TargetFramework>
         <Configurations>Debug;Release</Configurations>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
@@ -38,8 +38,8 @@
     <!-- Required Paths -->
     <PropertyGroup>
         <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-        <DalamudDevPlugins>$(appdata)\XIVLauncher\devPlugins\WrathCombo\</DalamudDevPlugins>
-        <DalamudPluginPath>$(appdata)\XIVLauncher\installedPlugins\WrathCombo\$(version)</DalamudPluginPath>
+        <DalamudDevPlugins>$(appdata)\XIVLauncher\devPlugins\ParseLord5\</DalamudDevPlugins>
+        <DalamudPluginPath>$(appdata)\XIVLauncher\installedPlugins\ParseLord5\$(version)</DalamudPluginPath>
     </PropertyGroup>
 
     <!-- Path Overrides for Linux -->
@@ -426,7 +426,7 @@
 
     <!-- Release Manifest -->
     <ItemGroup>
-        <None Update="WrathCombo.json">
+        <None Update="ParseLord5.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

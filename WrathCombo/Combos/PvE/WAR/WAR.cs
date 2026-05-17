@@ -1,15 +1,53 @@
+using ECommons.DalamudServices;
 using Dalamud.Game.ClientState.Objects.Types;
 using System;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.WAR.Config;
+using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 
 namespace WrathCombo.Combos.PvE;
 
 internal partial class WAR
 {
+    private const long ParseLord5WarTraceThrottleMs = 15_000;
+    private static long _nextParseLord5WarTraceAt;
+
+    private static void TraceParseLord5WarSTSimple(
+        uint inputActionID,
+        uint selectedActionID,
+        string source)
+    {
+        var inCombat = InCombat();
+        var hasBattleTarget = HasBattleTarget();
+
+        // Keep WAR's local Minimal guard and make the underlying trace requirements explicit here.
+        if (!Service.Configuration.ParseLord5ExperimentalMode ||
+            !Minimal ||
+            !inCombat ||
+            !hasBattleTarget)
+            return;
+
+        var now = Environment.TickCount64;
+        if (now < _nextParseLord5WarTraceAt)
+            return;
+
+        _nextParseLord5WarTraceAt = now + ParseLord5WarTraceThrottleMs;
+        Svc.Log.Debug(
+            "[ParseLord5][WAR_ST_Simple] " +
+            $"input={inputActionID.ActionName()}({inputActionID}) " +
+            $"selected={selectedActionID.ActionName()}({selectedActionID}) " +
+            $"source={source} " +
+            $"gauge={BeastGauge} " +
+            $"surging={HasSurgingTempest} " +
+            $"irStacks={IR.Stacks} " +
+            $"nascentChaos={HasNascentChaos} " +
+            $"wrathful={HasWrathful}");
+    }
+
     #region Simple Combos
     internal class WAR_ST_Simple : CustomCombo
     {
@@ -21,24 +59,40 @@ internal partial class WAR
                 return actionID;
             
             if (ContentSpecificActions.TryGet(out var contentAction))
+            {
+                TraceParseLord5WarSTSimple(HeavySwing, contentAction, "content");
                 return contentAction;
+            }
             
             const Combo comboFlags = Combo.ST | Combo.Simple;
             
             if (WAR_ST_MitsOptions != 1 || P.UIHelper.PresetControlled(Preset)?.enabled == true)
             {
                 if (TryUseMits(RotationMode.simple, ref actionID))
-                    return actionID == Holmgang && IsEnabled(Preset.WAR_RetargetHolmgang)
+                {
+                    var selectedActionID = actionID == Holmgang && IsEnabled(Preset.WAR_RetargetHolmgang)
                         ? actionID.Retarget(HeavySwing, SimpleTarget.Self)
                         : actionID;
+
+                    TraceParseLord5WarSTSimple(HeavySwing, selectedActionID, "mitigation");
+                    return selectedActionID;
+                }
             }
             if (TryOGCDAttacks(comboFlags, ref actionID))
+            {
+                TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd");
                 return actionID;
+            }
             
             if (TryGCDAttacks(comboFlags, ref actionID))
+            {
+                TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd");
                 return actionID;
+            }
             
-            return STCombo;
+            var fallbackActionID = STCombo;
+            TraceParseLord5WarSTSimple(HeavySwing, fallbackActionID, "fallback");
+            return fallbackActionID;
         }
     }
     

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ParseLord5 WrathCombo Architecture Map</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #1e252e;
+      --muted: #647282;
+      --line: #d9e0e8;
+      --accent: #1f7a6d;
+      --accent-2: #375f9d;
+      --warn: #9a5b00;
+      --danger: #9a2f2f;
+      --soft: #edf5f3;
+      --code: #f2f4f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      background: #10211f;
+      color: #f8fbfb;
+      padding: 28px clamp(20px, 4vw, 56px);
+      border-bottom: 4px solid var(--accent);
+    }
+    header p { max-width: 920px; color: #c6d5d2; margin: 8px 0 0; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px clamp(16px, 4vw, 56px) 48px;
+    }
+    nav {
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    nav a {
+      display: block;
+      color: var(--ink);
+      text-decoration: none;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    nav a:hover { color: var(--accent); }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 22px; letter-spacing: 0; }
+    h3 { margin: 20px 0 8px; font-size: 17px; letter-spacing: 0; }
+    ul { padding-left: 20px; }
+    li { margin: 6px 0; }
+    code {
+      background: var(--code);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th { background: #eef2f6; text-align: left; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfd;
+    }
+    .card strong { display: block; margin-bottom: 6px; }
+    .flow {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .node {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--soft);
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 13px;
+    }
+    .node.warn { border-left-color: var(--warn); background: #fff7e8; }
+    .node.danger { border-left-color: var(--danger); background: #fff0f0; }
+    .split {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 9px;
+      margin: 2px 4px 2px 0;
+      font-size: 12px;
+      background: #fbfcfd;
+    }
+    .callout {
+      border-left: 5px solid var(--accent-2);
+      background: #eef4ff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    .danger-box {
+      border-left: 5px solid var(--danger);
+      background: #fff0f0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+      nav { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ParseLord5 WrathCombo Architecture Map</h1>
+    <p>Docs-only map for future ParseLord5 work. Base stays WrathCombo. RSR is not base. Existing behavior remains unchanged.</p>
+  </header>
+  <main>
+    <nav aria-label="Contents">
+      <strong>Contents</strong>
+      <a href="#executive">Executive Map</a>
+      <a href="#startup">Startup</a>
+      <a href="#combos">Combo System</a>
+      <a href="#pve">PvE Jobs</a>
+      <a href="#auto">Auto-Rotation</a>
+      <a href="#ui">Commands + UI</a>
+      <a href="#flag">Experimental Flag</a>
+      <a href="#risks">Risks</a>
+    </nav>
+    <div>
+      <section id="executive">
+        <h2>Executive Map</h2>
+        <div class="grid">
+          <div class="card"><strong>Base</strong>WrathCombo fork. No RSR import. No standalone engine.</div>
+          <div class="card"><strong>Entrypoint</strong><code>WrathCombo/WrathCombo.cs</code></div>
+          <div class="card"><strong>Manual combo path</strong>Action hook -> <code>ActionReplacer</code> -> <code>CustomCombo</code></div>
+          <div class="card"><strong>Auto path</strong>Framework tick -> <code>AutoRotationController</code> -> combo invocation -> <code>UseAction</code></div>
+          <div class="card"><strong>Config</strong><code>Configuration</code> plus reflected Settings UI</div>
+          <div class="card"><strong>Safest extension</strong>Default-false config flag, then one job at a time</div>
+        </div>
+      </section>
+
+      <section id="startup">
+        <h2>Startup And Services</h2>
+        <div class="flow">
+          <div class="node">Dalamud loads plugin</div>
+          <div class="node">WrathCombo(IDalamudPluginInterface)</div>
+          <div class="node">Service.Configuration = pluginInterface.GetPluginConfig() ?? new Configuration()</div>
+          <div class="node">Service.ComboCache = new CustomComboCache()</div>
+          <div class="node warn">Service.ActionReplacer = new ActionReplacer()</div>
+          <div class="node danger">Service.AutoRotationController = new AutoRotationController()</div>
+          <div class="node">Provider.Init() builds IPC helpers and search caches</div>
+          <div class="node">RegisterCommands() registers /wrath and /scombo</div>
+          <div class="node">Svc.Framework.Update += OnFrameworkUpdate</div>
+        </div>
+        <p><code>OnFrameworkUpdate</code> processes config saves, updates job cache, handles conflicts, runs auto-rotation, updates DTR, and triggers alert checks.</p>
+      </section>
+
+      <section id="combos">
+        <h2>Combo Feature System</h2>
+        <table>
+          <thead><tr><th>Subsystem</th><th>Primary files</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Preset registry</td><td><code>Combos/CustomComboPreset.cs</code></td><td>Preset IDs and attributes.</td></tr>
+            <tr><td>Metadata cache</td><td><code>Core/Presets.cs</code></td><td>Builds <code>PresetStorage.AllPresets</code>, conflicts, parent hierarchy.</td></tr>
+            <tr><td>UI grouping</td><td><code>Window/ConfigWindow.cs</code></td><td>Groups top-level presets by job, builds child map.</td></tr>
+            <tr><td>Feature UI</td><td><code>Window/Functions/Presets.cs</code></td><td>Draws toggles, auto-mode, replace-skill and retarget markers.</td></tr>
+            <tr><td>Runtime combo</td><td><code>CustomCombo/CustomCombo.cs</code></td><td>Checks enabled state, job, player state, IPC requested action, then calls <code>Invoke</code>.</td></tr>
+            <tr><td>Action hook</td><td><code>Core/ActionReplacer.cs</code></td><td>Hooks adjusted action ID and returns replacement action IDs.</td></tr>
+          </tbody>
+        </table>
+        <div class="flow">
+          <div class="node">CustomComboPreset enum + attributes</div>
+          <div class="node">PresetStorage.AllPresets</div>
+          <div class="node">ConfigWindow groupedPresets + presetChildren</div>
+          <div class="node">PvE/PvP UI toggles</div>
+          <div class="node">Configuration.EnabledActions / AutoActions</div>
+          <div class="node warn">CustomCombo.TryInvoke</div>
+          <div class="node warn">ActionReplacer returns replacement action ID</div>
+        </div>
+      </section>
+
+      <section id="pve">
+        <h2>PvE Job Flow</h2>
+        <p>PvE job implementations live under <code>WrathCombo/Combos/PvE/&lt;JOB&gt;/</code>. Job classes define nested <code>CustomCombo</code> implementations. Config files draw per-preset controls.</p>
+        <div class="split">
+          <div class="card">
+            <strong>Warrior example</strong>
+            <span class="pill">WAR_ST_Simple</span>
+            <span class="pill">WAR_AoE_Simple</span>
+            <span class="pill">WAR_ST_Advanced</span>
+            <span class="pill">WAR_AoE_Advanced</span>
+            <p>Each checks pressed base action, then uses helper logic for mits, OGCDs, GCDs, and fallback combo action.</p>
+          </div>
+          <div class="card">
+            <strong>ParseLord5 rule</strong>
+            Tune one job at a time. Add experiments inside selected job <code>Invoke</code> paths only after default-false flag exists.
+          </div>
+        </div>
+      </section>
+
+      <section id="auto">
+        <h2>Auto-Rotation Flow</h2>
+        <div class="flow">
+          <div class="node">OnFrameworkUpdate</div>
+          <div class="node danger">AutoRotationController.Run()</div>
+          <div class="node">AutoRotationConfigIPCWrapper overlays IPC state</div>
+          <div class="node">ShouldSkipAutorotation gate</div>
+          <div class="node">Presets.GetJobAutorots filters current job auto presets</div>
+          <div class="node">ProcessAutoActions filters AutoAction + ReplaceSkill</div>
+          <div class="node">AutomateDPS / AutomateTanking / AutomateHealing</div>
+          <div class="node danger">ExecuteST / ExecuteAoE</div>
+          <div class="node danger">ActionManager.Instance()->UseAction(...)</div>
+        </div>
+        <div class="danger-box">
+          Do not start ParseLord5 by editing <code>UseAction</code>, <code>ExecuteST</code>, <code>ExecuteAoE</code>, <code>ProcessAutoActions</code>, or hook logic. Map and trace first.
+        </div>
+      </section>
+
+      <section id="ui">
+        <h2>Commands, Config, And UI</h2>
+        <table>
+          <thead><tr><th>Path</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td><code>/wrath</code></td><td>Main command. Dispatches in <code>Commands.OnCommand</code>.</td></tr>
+            <tr><td><code>/scombo</code></td><td>Legacy alias.</td></tr>
+            <tr><td><code>/wrath auto</code></td><td>Toggles <code>Configuration.RotationConfig.Enabled</code>.</td></tr>
+            <tr><td><code>ConfigWindow</code></td><td>Routes sidebar to PvE, PvP, AutoRotation, Settings, About, Debug tabs.</td></tr>
+            <tr><td><code>Settings</code></td><td>Reflects attributed fields on <code>Configuration</code> and draws controls.</td></tr>
+            <tr><td><code>ConfigurationHelper</code></td><td>Queues saves and writes through Dalamud plugin interface.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="flag">
+        <h2>Safest ParseLord5 Experimental Flag</h2>
+        <div class="callout">
+          Recommended first flag: add <code>ParseLord5ExperimentalMode</code> to <code>Configuration</code>, default <code>false</code>, with existing <code>Setting</code> attributes so Settings UI picks it up by reflection.
+        </div>
+        <pre><code>[SettingCategory(Main_UI_Options)]
+[Setting(Setting.Type.Toggle)]
+public bool ParseLord5ExperimentalMode = false;</code></pre>
+        <p>First use should be inside one selected job's future experiment path, not in global hook or auto-rotation execution code.</p>
+        <h3>Good first guard</h3>
+        <pre><code>if (Service.Configuration.ParseLord5ExperimentalMode)
+{
+    // ParseLord5-only experiment for one selected preset.
+}</code></pre>
+        <h3>Avoid first-pass guards in</h3>
+        <ul>
+          <li><code>ActionReplacer.GetAdjustedActionDetour</code></li>
+          <li><code>ActionReplacer.GetAdjustedAction</code></li>
+          <li><code>AutoRotationController.Run</code></li>
+          <li><code>AutoRotationHelper.ExecuteST</code> / <code>ExecuteAoE</code></li>
+          <li><code>ActionManager.UseAction</code> call sites</li>
+          <li>Command dispatch</li>
+        </ul>
+      </section>
+
+      <section id="risks">
+        <h2>Risk Register</h2>
+        <ul>
+          <li><code>/wrath</code> can conflict if regular WrathCombo and ParseLord5 load together.</li>
+          <li>Namespaces still say <code>WrathCombo</code>; safe for now, noisy in logs and traces.</li>
+          <li>Auto-rotation uses live <code>UseAction</code>; tracing must not change queue, target, or range behavior.</li>
+          <li><code>ActionChanging</code> controls hook enablement; broad changes can break all replacement behavior.</li>
+          <li>IPC prefix is still <code>WrathCombo</code>; changing it needs separate compatibility plan.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
