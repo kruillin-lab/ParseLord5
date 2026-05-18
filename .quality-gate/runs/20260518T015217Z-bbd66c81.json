@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "run_id": "20260518T015217Z-bbd66c81",
+  "task": "Phase 7E warning registry resolution validation [global delegated ParseLord5]",
+  "level": "normal",
+  "repo": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5",
+  "project": "parselord5",
+  "profile": "dotnet-dalamud",
+  "started": "2026-05-18T01:52:17Z",
+  "finished": "2026-05-18T01:52:19Z",
+  "branch": "parselord5-wc-base",
+  "commit": "b636dcfe9eed0fbfdbce6d0f411afc0085953ddb",
+  "git_status_before": " M README.md\n M WrathCombo/Commands.cs\n M WrathCombo/Data/RepoCheck.cs\n M WrathCombo/Resources/Localization/UI/MainWindow/MainWindowUI.resx\n M WrathCombo/Services/IPC/Search.cs\n M WrathCombo/Window/ConfigWindow.cs\n M WrathCombo/Window/MajorChangesWindow.cs\n M WrathCombo/Window/TargetHelper.cs\n M WrathCombo/WrathCombo.cs\n M docs/BurstHoldingMacros.md\n?? .quality-gate/logs/20260517T223705Z-9f08a441/build.log\n?? .quality-gate/logs/20260517T223705Z-9f08a441/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260517T225108Z-4f3c4f44/build.log\n?? .quality-gate/logs/20260517T225108Z-4f3c4f44/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260517T230007Z-43c43b49/build.log\n?? .quality-gate/logs/20260517T230007Z-43c43b49/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260517T232416Z-ff2902b1/build.log\n?? .quality-gate/logs/20260517T232416Z-ff2902b1/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260517T232445Z-1bacd666/build.log\n?? .quality-gate/logs/20260517T232445Z-1bacd666/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260517T233645Z-168e05ba/build.log\n?? .quality-gate/logs/20260517T233645Z-168e05ba/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260518T015145Z-7036b76f/build.log\n?? .quality-gate/logs/20260518T015145Z-7036b76f/markdown-audit-if-docs-changed.log\n?? .quality-gate/runs/20260517T223705Z-9f08a441.json\n?? .quality-gate/runs/20260517T225108Z-4f3c4f44.json\n?? .quality-gate/runs/20260517T230007Z-43c43b49.json\n?? .quality-gate/runs/20260517T232416Z-ff2902b1.json\n?? .quality-gate/runs/20260517T232445Z-1bacd666.json\n?? .quality-gate/runs/20260517T233645Z-168e05ba.json\n?? .quality-gate/runs/20260518T015145Z-7036b76f.json\n?? BUILD_RECHECK.txt\n?? COMMAND_ALIAS_REVIEW_SUMMARY.txt\n?? ParseLord5_Command_Alias_SourceReview.zip\n?? SOURCE_DIFFS.txt\n?? docs/ParseLord5_Command_Alias_20260517.md\n?? docs/ParseLord5_Config_Migration_Plan.md\n?? docs/ParseLord5_Runtime_Identity_Audit_20260517.md\n?? docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md\n?? icm/stages/04-verify/output/gate-20260517T223705Z-9f08a441.md\n?? icm/stages/04-verify/output/gate-20260517T225108Z-4f3c4f44.md\n?? icm/stages/04-verify/output/gate-20260517T230007Z-43c43b49.md\n?? icm/stages/04-verify/output/gate-20260517T232416Z-ff2902b1.md\n?? icm/stages/04-verify/output/gate-20260517T232445Z-1bacd666.md\n?? icm/stages/04-verify/output/gate-20260517T233645Z-168e05ba.md\n?? icm/stages/04-verify/output/gate-20260518T015145Z-7036b76f.md",
+  "changed_files": [
+    {
+      "path": "README.md",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "WrathCombo/Commands.cs",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "WrathCombo/Data/RepoCheck.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/MainWindow/MainWindowUI.resx",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Services/IPC/Search.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Window/ConfigWindow.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Window/MajorChangesWindow.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Window/TargetHelper.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/WrathCombo.cs",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/BurstHoldingMacros.md",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "BUILD_RECHECK.txt",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "COMMAND_ALIAS_REVIEW_SUMMARY.txt",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "ParseLord5_Command_Alias_SourceReview.zip",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "SOURCE_DIFFS.txt",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Command_Alias_20260517.md",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Config_Migration_Plan.md",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Runtime_Identity_Audit_20260517.md",
+      "status": "??",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md",
+      "status": "??",
+      "risk": "normal"
+    }
+  ],
+  "changed_file_triggers": {
+    "markdown-audit-if-docs-changed": [
+      "README.md",
+      "docs/BurstHoldingMacros.md",
+      "docs/ParseLord5_Command_Alias_20260517.md",
+      "docs/ParseLord5_Config_Migration_Plan.md",
+      "docs/ParseLord5_Runtime_Identity_Audit_20260517.md",
+      "docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md"
+    ]
+  },
+  "checks": [
+    {
+      "name": "changed-files",
+      "command": "internal",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 0,
+      "stdout_summary": "18 changed file(s) captured after filtering 28 generated/ignored path(s).",
+      "stderr_summary": "",
+      "log_path": "",
+      "notes": "18 changed file(s) captured after filtering 28 generated/ignored path(s)."
+    },
+    {
+      "name": "build",
+      "command": "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 1.97,
+      "stdout_summary": "Determining projects to restore...\n  All projects are up-to-date for restore.\n  ECommons -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\ECommons\\ECommons\\bin\\Release\\ECommons.dll\n  WrathCombo.API -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\WrathCombo.API\\bin\\Release\\WrathCombo.API.dll\n  PunishLib -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\PunishLib\\PunishLib\\bin\\Release\\PunishLib.dll\n  WrathCombo -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\WrathCombo\\bin\\Release\\ParseLord5.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:01.58",
+      "stderr_summary": "",
+      "log_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T015217Z-bbd66c81\\build.log"
+    },
+    {
+      "name": "markdown-audit-if-docs-changed",
+      "command": "internal-repo-markdown-audit",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 0.0,
+      "stdout_summary": "Validated 6 changed Markdown file(s) in repo scope.\nSkipped deleted: 0.\nSkipped strict-schema: 0.",
+      "stderr_summary": "",
+      "log_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T015217Z-bbd66c81\\markdown-audit-if-docs-changed.log",
+      "notes": "Validated 6 changed Markdown file(s) in repo scope. Skipped deleted: 0. Skipped strict-schema: 0."
+    },
+    {
+      "name": "domain-evals-if-domain-changed",
+      "command": "domain-evals",
+      "exit_code": 0,
+      "status": "SKIPPED",
+      "duration_seconds": 0,
+      "stdout_summary": "",
+      "stderr_summary": "",
+      "log_path": "",
+      "notes": "No matching changed files."
+    }
+  ],
+  "findings": [],
+  "exceptions": [],
+  "result": "PASS",
+  "run_dir": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\runs",
+  "log_dir": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T015217Z-bbd66c81",
+  "report_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\icm\\stages\\04-verify\\output\\gate-20260518T015217Z-bbd66c81.md"
+}

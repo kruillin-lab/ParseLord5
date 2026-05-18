@@ -1,0 +1,254 @@
+$ git status --short
+ M WrathCombo/Commands.cs
+ M docs/BurstHoldingMacros.md
+?? .quality-gate/
+?? docs/ParseLord5_Command_Alias_20260517.md
+?? icm/
+
+$ git diff --stat
+warning: in the working copy of 'WrathCombo/Commands.cs', LF will be replaced by CRLF the next time Git touches it
+ WrathCombo/Commands.cs     | 5 ++++-
+ docs/BurstHoldingMacros.md | 2 +-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+warning: in the working copy of 'docs/BurstHoldingMacros.md', LF will be replaced by CRLF the next time Git touches it
+
+$ git diff -- WrathCombo/Commands.cs
+warning: in the working copy of 'WrathCombo/Commands.cs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/WrathCombo/Commands.cs b/WrathCombo/Commands.cs
+index 288695af6..d6f91f2d4 100644
+--- a/WrathCombo/Commands.cs
++++ b/WrathCombo/Commands.cs
+@@ -31,6 +31,7 @@ public partial class WrathCombo
+ {
+     private const string Command = "/wrath";
+     private const string OldCommand = "/scombo";
++    private const string ParseLord5Command = "/pl5";
+ 
+     private static readonly Dictionary<Job, Preset[]> BurstPresetMap = new()
+     {
+@@ -67,8 +68,10 @@ public partial class WrathCombo
+             "Open a window to edit custom combo settings.\n" +
+             $"{Command} auto → Toggle Auto-rotation on/off.\n" +
+             $"{Command} debug → Dumps a debug log onto your desktop for developers.\n" +
+-            $"{OldCommand} → Old alias from XIVSlothCombo, still works!");
++            $"{OldCommand} → Old alias from XIVSlothCombo, still works!\n" +
++            $"{ParseLord5Command} → ParseLord5 alias, same command handler.");
+         EzCmd.Add(OldCommand, OnCommand);
++        EzCmd.Add(ParseLord5Command, OnCommand);
+     }
+ 
+     /// <summary>
+
+$ git diff -- docs/BurstHoldingMacros.md
+warning: in the working copy of 'docs/BurstHoldingMacros.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/docs/BurstHoldingMacros.md b/docs/BurstHoldingMacros.md
+index 28d56b343..63eef48e5 100644
+--- a/docs/BurstHoldingMacros.md
++++ b/docs/BurstHoldingMacros.md
+@@ -20,7 +20,7 @@ You can find the ID or internal name to provide as `<x>` by using `/wrath list s
+ > [!Warning]
+ > Verify IDs with `/wrath list set <job>` before relying on macros. Preset IDs can change as WrathCombo and ParseLord5 continue to evolve.
+ 
+-ParseLord5 currently preserves the WrathCombo `/wrath` command for these examples. No `/pl5` command is registered in the current command source.
++ParseLord5 preserves the WrathCombo `/wrath` command for these examples. `/pl5` is also available as an alias, but the macro examples below intentionally stay on `/wrath`.
+ 
+ Below is a community-provided list of basic burst-holding macros for each job.
+ 
+$ git diff -- docs/ParseLord5_Command_Alias_20260517.md
+(no output since it is an untracked file, git diff shows nothing)
+
+$ git grep -n -E '"/wrath"|/wrath|"/scombo"|/scombo|"/pl5"|/pl5' -- WrathCombo docs
+WrathCombo/Commands.cs:32:    private const string Command = "/wrath";
+WrathCombo/Commands.cs:33:    private const string OldCommand = "/scombo";
+WrathCombo/Commands.cs:34:    private const string ParseLord5Command = "/pl5";
+WrathCombo/Commands.cs:516:                    DuoLog.Error("Usage: /wrath auto target <damage|healer> <mode>");
+WrathCombo/DebugFile.cs:164:                "If you're unsure of where the file was created, use: /wrath debug path");
+WrathCombo/Resources/Localization/UI/AutoRotation/AutoRotationUI.Designer.cs:518:        ///To add an NPC to this list, target the NPC and use the command: /wrath ignore.
+WrathCombo/Resources/Localization/UI/AutoRotation/AutoRotationUI.ja.resx:165:追加するには NPC をターゲットした状態で /wrath ignore を実行します。</value></data>
+WrathCombo/Resources/Localization/UI/AutoRotation/AutoRotationUI.ko.resx:234:목록에 NPC를 추가하려면, NPC를 타겟한 후 다음 명령어를 사용하세요: /wrath ignore
+WrathCombo/Resources/Localization/UI/AutoRotation/AutoRotationUI.resx:234:To add an NPC to this list, target the NPC and use the command: /wrath ignore</value>
+WrathCombo/Resources/Localization/UI/AutoRotation/AutoRotationUI.zh-Hans.resx:234:要添加 NPC，请先选中目标并使用命令：/wrath ignore</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:808:        ///   Looks up a localized string similar to When you open Wrath with `/wrath`, it will open to the PvE Features tab, instead of the last tab you were on.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:809:        ///Same as always using the `/wrath pve` command to open Wrath..
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:845:        ///   Looks up a localized string similar to Same as above, when you open Wrath with `/wrath`, it will open to the PvP Features tab, instead of the last tab you were on, when in a PvP area.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:846:        ///Similar to using the `/wrath pvp` command to open Wrath..
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:1303:        ///   Looks up a localized string similar to Will hide chat feedback for /wrath auto commands.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:1339:        ///   Looks up a localized string similar to Will hide chat feedback for /wrath set and /wrath unset commands.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.Designer.cs:1553:        ///These are the IDs used for commands like `/wrath toggle &lt;ID&gt;`.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:341:    <value>/wrath で開いたとき、最後に開いていたタブではなく PvE 機能タブを表示します。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:342:常に/wrath pve を使うのと同じ動作です。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:354:    <value>PvP エリアで /wrath で開いたとき、最後に開いていたタブではなく PvP 機能タブを表示します。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:355:/wrath pvp を使う動作に近い設定です。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:514:    <value>`/wrath auto` 系コマンドのチャットフィードバックを非表示にします。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:526:    <value>/wrath set と /wrath unset のチャットフィードバックを非表示にします。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ja.resx:571:/wrath toggle &lt;ID&gt; などのコマンドで使うIDです。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:346:    <value>`/wrath` 명령어로 Wrath를 열 때, 마지막으로 있던 탭이 아니라 PvE 기능 탭으로 열립니다.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:347:이는 항상 `/wrath pve` 명령어를 사용하여 Wrath를 열 때와 동일합니다.</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:359:    <value>위와 동일하게, PvP 지역에 있을 때 `/wrath` 명령어로 Wrath를 열면 마지막으로 있던 탭이 아니라 PvP 기능 탭으로 열립니다.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:360:이는 항상 `/wrath pvp` 명령어를 사용하여 Wrath를 열 때와 동일합니다.</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:519:    <value>/wrath auto 명령어의 채팅 피드백을 숨깁니다</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:531:    <value>/wrath set 및 /wrath unset 명령어의 채팅 피드백을 숨깁니다.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.ko.resx:577:이 번호는 `/wrath toggle &lt;ID&gt;`와 같은 명령어에서 사용됩니다.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:346:    <value>When you open Wrath with `/wrath`, it will open to the PvE Features tab, instead of the last tab you were on.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:347:Same as always using the `/wrath pve` command to open Wrath.</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:359:    <value>Same as above, when you open Wrath with `/wrath`, it will open to the PvP Features tab, instead of the last tab you were on, when in a PvP area.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:360:Similar to using the `/wrath pvp` command to open Wrath.</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:520:    <value>Will hide chat feedback for /wrath auto commands</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:532:    <value>Will hide chat feedback for /wrath set and /wrath unset commands.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.resx:578:These are the IDs used for commands like `/wrath toggle &lt;ID&gt;`.
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:346:    <value>使用 `/wrath` 打开 Wrath 时，将进入 PvE 功能页，而不是你上次停留页签。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:347:等同于始终使用 `/wrath pve` 命令打开 Wrath。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:359:    <value>与上方类似：在 PvP 区域中使用 `/wrath` 打开 Wrath 时，将进入 PvP 功能页，而非上次停留页签。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:360:类似于使用 `/wrath pvp` 命令打开 Wrath。</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:520:    <value>隐藏 /wrath auto 命令的聊天反馈</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:532:    <value>隐藏 /wrath set 与 /wrath unset 命令的聊天反馈。
+WrathCombo/Resources/Localization/UI/Settings/SettingsCfgUI.zh-Hans.resx:578:这些 ID 可用于 `/wrath toggle &lt;ID&gt;` 等命令。
+WrathCombo/Resources/Localization/UI/Settings/SettingsUI.Designer.cs:84:        ///The same as using the following command: /wrath debug.
+WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ja.resx:131:次のコマンドと同じです: /wrath debug</value></data>
+WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ko.resx:141:다음 명령을 사용하는 것과 동일합니다: /wrath debug</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsUI.resx:143:The same as using the following command: /wrath debug</value>
+WrathCombo/Resources/Localization/UI/Settings/SettingsUI.zh-Hans.resx:143:等同于使用以下命令：/wrath debug</value>
+WrathCombo/WrathCombo.cs:313:        "(being overwritten by another plugin, check the setting in /wrath)";
+docs/BurstHoldingMacros.md:17:You can toggle off these options with `/wrath toggle <x>` in game.
+docs/BurstHoldingMacros.md:18:You can find the ID or internal name to provide as `<x>` by using `/wrath list set <y>` (replace `<y>` with your current job, like `/wrath list set DRK`), or by looking at the [`Preset` file](https://github.com/PunishXIV/WrathCombo/blob/main/WrathCombo/Combos/CustomComboPreset.cs) (see [this image](https://i.imgur.com/LsJ06DW.png) for how to read this).
+docs/BurstHoldingMacros.md:21:> Verify IDs with `/wrath list set <job>` before relying on macros. Preset IDs can change as WrathCombo and ParseLord5 continue to evolve.
+docs/BurstHoldingMacros.md:23:ParseLord5 preserves the WrathCombo `/wrath` command for these examples. `/pl5` is also available as an alias, but the macro examples below intentionally stay on `/wrath`.
+docs/BurstHoldingMacros.md:32:/wrath toggle 11003
+docs/BurstHoldingMacros.md:33:/wrath toggle 11016
+docs/BurstHoldingMacros.md:34:/wrath toggle 11010
+docs/BurstHoldingMacros.md:35:/wrath toggle 11019
+docs/BurstHoldingMacros.md:43:/wrath toggle 18003
+docs/BurstHoldingMacros.md:44:/wrath toggle 18019
+docs/BurstHoldingMacros.md:45:/wrath toggle 18007
+docs/BurstHoldingMacros.md:46:/wrath toggle 18018
+docs/BurstHoldingMacros.md:54:/wrath toggle 5015
+docs/BurstHoldingMacros.md:55:/wrath toggle 5054
+docs/BurstHoldingMacros.md:56:/wrath toggle 5016
+docs/BurstHoldingMacros.md:57:/wrath toggle 5055
+docs/BurstHoldingMacros.md:58:/wrath toggle 5018
+docs/BurstHoldingMacros.md:59:/wrath toggle 5057
+docs/BurstHoldingMacros.md:67:/wrath toggle 7008
+docs/BurstHoldingMacros.md:68:/wrath toggle 7201
+docs/BurstHoldingMacros.md:69:/wrath toggle 7011
+docs/BurstHoldingMacros.md:70:/wrath toggle 7204
+docs/BurstHoldingMacros.md:81:/wrath toggle 19008
+docs/BurstHoldingMacros.md:82:/wrath toggle 19195
+docs/BurstHoldingMacros.md:90:/wrath toggle 16003
+docs/BurstHoldingMacros.md:91:/wrath toggle 16054
+docs/BurstHoldingMacros.md:99:/wrath toggle 1043
+docs/BurstHoldingMacros.md:100:/wrath toggle 1016
+docs/BurstHoldingMacros.md:108:/wrath toggle 14051
+docs/BurstHoldingMacros.md:109:/wrath toggle 14010
+docs/BurstHoldingMacros.md:110:/wrath toggle 14008
+docs/BurstHoldingMacros.md:111:/wrath toggle 14005
+docs/BurstHoldingMacros.md:121:/wrath toggle 6103
+docs/BurstHoldingMacros.md:122:/wrath toggle 6104
+docs/BurstHoldingMacros.md:123:/wrath toggle 6203
+docs/BurstHoldingMacros.md:124:/wrath toggle 6204
+docs/BurstHoldingMacros.md:125:/wrath toggle 6107
+docs/BurstHoldingMacros.md:126:/wrath toggle 6207
+docs/BurstHoldingMacros.md:127:/wrath toggle 6106
+docs/BurstHoldingMacros.md:128:/wrath toggle 6206
+docs/BurstHoldingMacros.md:136:/wrath toggle 9009
+docs/BurstHoldingMacros.md:137:/wrath toggle 9030
+docs/BurstHoldingMacros.md:138:/wrath toggle 9032
+docs/BurstHoldingMacros.md:139:/wrath toggle 9011
+docs/BurstHoldingMacros.md:147:/wrath toggle 10006
+docs/BurstHoldingMacros.md:148:/wrath toggle 10007
+docs/BurstHoldingMacros.md:149:/wrath toggle 10022
+docs/BurstHoldingMacros.md:150:/wrath toggle 10023
+docs/BurstHoldingMacros.md:158:/wrath toggle 15012
+docs/BurstHoldingMacros.md:159:/wrath toggle 15108
+docs/BurstHoldingMacros.md:160:/wrath toggle 15018
+docs/BurstHoldingMacros.md:161:/wrath toggle 15114
+docs/BurstHoldingMacros.md:169:/wrath toggle 12009
+docs/BurstHoldingMacros.md:170:/wrath toggle 12108
+docs/BurstHoldingMacros.md:171:/wrath toggle 12006
+docs/BurstHoldingMacros.md:172:/wrath toggle 12105
+docs/BurstHoldingMacros.md:180:/wrath toggle 30005
+docs/BurstHoldingMacros.md:181:/wrath toggle 30011
+docs/BurstHoldingMacros.md:182:/wrath toggle 30104
+docs/BurstHoldingMacros.md:183:/wrath toggle 30110
+docs/BurstHoldingMacros.md:184:/wrath toggle 30112
+docs/BurstHoldingMacros.md:194:/wrath toggle 3017
+docs/BurstHoldingMacros.md:195:/wrath toggle 3032
+docs/BurstHoldingMacros.md:203:/wrath toggle 8110
+docs/BurstHoldingMacros.md:204:/wrath toggle 8108
+docs/BurstHoldingMacros.md:205:/wrath toggle 8107
+docs/BurstHoldingMacros.md:206:/wrath toggle 8103
+docs/BurstHoldingMacros.md:207:/wrath toggle 8119
+docs/BurstHoldingMacros.md:209:/wrath toggle 8301
+docs/BurstHoldingMacros.md:210:/wrath toggle 8304
+docs/BurstHoldingMacros.md:211:/wrath toggle 8307
+docs/BurstHoldingMacros.md:212:/wrath toggle 8315
+docs/BurstHoldingMacros.md:220:/wrath toggle 4015
+docs/BurstHoldingMacros.md:221:/wrath toggle 4018
+docs/BurstHoldingMacros.md:222:/wrath toggle 4028
+docs/BurstHoldingMacros.md:223:/wrath toggle 4021
+docs/BurstHoldingMacros.md:224:/wrath toggle 4022
+docs/BurstHoldingMacros.md:225:/wrath toggle 4046
+docs/BurstHoldingMacros.md:226:/wrath toggle 4047
+docs/BurstHoldingMacros.md:227:/wrath toggle 4055
+docs/BurstHoldingMacros.md:228:/wrath toggle 4048
+docs/BurstHoldingMacros.md:229:/wrath toggle 4049
+docs/BurstHoldingMacros.md:230:/wrath toggle 4052
+docs/BurstHoldingMacros.md:240:/wrath toggle 2103
+docs/BurstHoldingMacros.md:241:/wrath toggle 2202
+docs/BurstHoldingMacros.md:242:/wrath toggle 2102
+docs/BurstHoldingMacros.md:243:/wrath toggle 2201
+docs/BurstHoldingMacros.md:251:/wrath toggle 17053
+docs/BurstHoldingMacros.md:252:/wrath toggle 17017
+docs/BurstHoldingMacros.md:253:/wrath toggle 17020
+docs/BurstHoldingMacros.md:254:/wrath toggle 17061
+docs/BurstHoldingMacros.md:262:/wrath toggle 13010
+docs/BurstHoldingMacros.md:263:/wrath toggle 13207
+docs/BurstHoldingMacros.md:264:/wrath toggle 13011
+docs/BurstHoldingMacros.md:265:/wrath toggle 13208
+docs/BurstHoldingMacros.md:273:/wrath toggle 20021
+docs/BurstHoldingMacros.md:274:/wrath toggle 20054
+docs/BurstHoldingMacros.md:275:/wrath toggle 20027
+docs/BurstHoldingMacros.md:276:/wrath toggle 20060
+docs/IPC.md:28:> exactly is being set via the IPC: `/wrath dbg`
+docs/ParseLord5_Checkpoint_Status_20260517.md:78:git grep -n -E '"/wrath"|/wrath|"/scombo"|/scombo|"/pl5"|/pl5' -- WrathCombo
+docs/ParseLord5_Checkpoint_Status_20260517.md:83:- `/wrath` exists
+docs/ParseLord5_Checkpoint_Status_20260517.md:84:- `/scombo` exists
+docs/ParseLord5_Checkpoint_Status_20260517.md:85:- `/pl5` not found
+docs/ParseLord5_Checkpoint_Status_20260517.md:186:Review or separate `docs/IPC.md`, `docs/Retargeting.md`, and `docs/Setup.md`, then create a checkpoint commit before starting `/pl5` alias work.
+docs/ParseLord5_Checkpoint_Status_20260517.md:195:- `/wrath` exists: yes
+docs/ParseLord5_Checkpoint_Status_20260517.md:196:- `/scombo` exists: yes
+docs/ParseLord5_Checkpoint_Status_20260517.md:197:- `/pl5` exists: no
+docs/ParseLord5_Checkpoint_Status_20260517.md:199:- Safe to move to `/pl5` alias work: yes, after checkpoint commit
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:29:- `/wrath` exists in `WrathCombo/Commands.cs`.
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:30:- `/scombo` exists as an old alias.
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:31:- `/pl5` was not found in current command source.
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:36:- `/wrath` macro examples were preserved.
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:37:- No `/pl5` examples were added because `/pl5` is not registered in source.
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:46:git grep -n -F "/pl5" -- WrathCombo docs
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:47:Select-String -Path "C:\Users\kruil\Documents\Projects\ParseLord5\WrathCombo\Commands.cs" -Pattern "/wrath|/pl5|scombo|CommandInfo|RegisterCommand" -Context 1,2
+docs/ParseLord5_Docs_Consistency_Audit_20260517.md:62:- `/pl5` may be added later, but it does not exist in current command source.
+docs/ParseLord5_Identity_Changes.md:48:- `/wrath` was preserved.
+docs/ParseLord5_Identity_Changes.md:49:- `/scombo` legacy alias was preserved.
+docs/ParseLord5_Identity_Changes.md:50:- `/pl5` was not added.
+docs/ParseLord5_Identity_Changes.md:85:- Some UI/localization strings still say Wrath or mention `/wrath`.
+docs/ParseLord5_Identity_Changes.md:87:- `/wrath` command collision remains possible if regular WrathCombo is loaded at the same time.
+docs/ParseLord5_Unreviewed_Docs_Audit_20260517.md:48:- `/pl5` not added.
+docs/ParseLord5_Unreviewed_Docs_Audit_20260517.md:49:- `/wrath` not removed.
+docs/ParseLord5_WrathCombo_Architecture_Map.html:200:          <div class="node">RegisterCommands() registers /wrath and /scombo</div>
+docs/ParseLord5_WrathCombo_Architecture_Map.html:272:            <tr><td><code>/wrath</code></td><td>Main command. Dispatches in <code>Commands.OnCommand</code>.</td></tr>
+docs/ParseLord5_WrathCombo_Architecture_Map.html:273:            <tr><td><code>/scombo</code></td><td>Legacy alias.</td></tr>
+docs/ParseLord5_WrathCombo_Architecture_Map.html:274:            <tr><td><code>/wrath auto</code></td><td>Toggles <code>Configuration.RotationConfig.Enabled</code>.</td></tr>
+docs/ParseLord5_WrathCombo_Architecture_Map.html:310:          <li><code>/wrath</code> can conflict if regular WrathCombo and ParseLord5 load together.</li>
+docs/ParseLord5_WrathCombo_Architecture_Map.md:26:- UI entrypoint: `/wrath` -> `Commands.cs` -> `ConfigWindow` tabs.
+docs/ParseLord5_WrathCombo_Architecture_Map.md:164:  A["/wrath command"] --> B["Commands.OnCommand"]
+docs/ParseLord5_WrathCombo_Architecture_Map.md:180:- `/wrath` and `/scombo` are registered in `Commands.RegisterCommands`.
+docs/ParseLord5_WrathCombo_Architecture_Map.md:182:- `/wrath auto` toggles `Configuration.RotationConfig.Enabled`.
+docs/ParseLord5_WrathCombo_Architecture_Map.md:183:- `/wrath auto target <damage|healer> <mode>` changes target mode settings.
+docs/ParseLord5_WrathCombo_Architecture_Map.md:253:5. Keep `/wrath` and existing WrathCombo behavior unchanged until a separate command migration plan exists.
+docs/ParseLord5_WrathCombo_Architecture_Map.md:257:- `/wrath` command conflict remains if regular WrathCombo and ParseLord5 load together.
+docs/ParseLord5_WrathCombo_Fork_Audit.md:68:- Main command: `/wrath` in `WrathCombo/Commands.cs`
+docs/ParseLord5_WrathCombo_Fork_Audit.md:69:- Legacy alias: `/scombo`
+docs/ParseLord5_WrathCombo_Fork_Audit.md:70:- Auto-rotation command entry: `/wrath auto`
+docs/ParseLord5_WrathCombo_Fork_Audit.md:71:- Auto target mode command: `/wrath auto target <damage|healer> <mode>`
+docs/ParseLord5_WrathCombo_Fork_Audit.md:72:- No `/pl5` command existed in the baseline.
+docs/ParseLord5_WrathCombo_Fork_Audit.md:94:- Keeping `/wrath` avoids behavior churn, but conflicts with regular WrathCombo if both plugins register the same command.
+docs/Retargeting.md:17:> implementing any Retargeting yourself: `/wrath dbg`

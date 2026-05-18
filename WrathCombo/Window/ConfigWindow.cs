@@ -115,7 +115,7 @@ internal class ConfigWindow : Dalamud.Interface.Windowing.Window
     } = OpenWindow.PvE;
 
     /// <summary> Initializes a new instance of the <see cref="ConfigWindow"/> class. </summary>
-    public ConfigWindow() : base($"{P.Name} {P.GetType().Assembly.GetName().Version}###WrathCombo")
+    public ConfigWindow() : base($"{P.Name} {P.GetType().Assembly.GetName().Version}###ParseLord5")
     {
         RespectCloseHotkey = true;
 

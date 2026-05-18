@@ -176,7 +176,7 @@ to prevent unexpected behavior and bugs.</value>
     <value>Unknown conflict type:</value>
   </data>
   <data name="Wrath_Combo" xml:space="preserve">
-    <value>Wrath Combo</value>
+    <value>ParseLord5</value>
     <comment>Plugin Name</comment>
   </data>
   <data name="Button_CollapseSidebar" xml:space="preserve">

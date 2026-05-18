@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  WrathCombo.API -> C:\Users\kruil\Documents\Projects\ParseLord5\WrathCombo.API\bin\Release\WrathCombo.API.dll
+  ECommons -> C:\Users\kruil\Documents\Projects\ParseLord5\ECommons\ECommons\bin\Release\ECommons.dll
+  PunishLib -> C:\Users\kruil\Documents\Projects\ParseLord5\PunishLib\PunishLib\bin\Release\PunishLib.dll
+  WrathCombo -> C:\Users\kruil\Documents\Projects\ParseLord5\WrathCombo\bin\Release\ParseLord5.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.58

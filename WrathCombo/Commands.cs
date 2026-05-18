@@ -31,6 +31,7 @@ public partial class WrathCombo
 {
     private const string Command = "/wrath";
     private const string OldCommand = "/scombo";
+    private const string ParseLord5Command = "/pl5";
 
     private static readonly Dictionary<Job, Preset[]> BurstPresetMap = new()
     {
@@ -67,8 +68,10 @@ public partial class WrathCombo
             "Open a window to edit custom combo settings.\n" +
             $"{Command} auto → Toggle Auto-rotation on/off.\n" +
             $"{Command} debug → Dumps a debug log onto your desktop for developers.\n" +
-            $"{OldCommand} → Old alias from XIVSlothCombo, still works!");
+            $"{OldCommand} → Old alias from XIVSlothCombo, still works!\n" +
+            $"{ParseLord5Command} → ParseLord5 alias, same command handler.");
         EzCmd.Add(OldCommand, OnCommand);
+        EzCmd.Add(ParseLord5Command, OnCommand);
     }
 
     /// <summary>

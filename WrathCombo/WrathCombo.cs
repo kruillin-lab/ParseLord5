@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Gui.Dtr;
+using Dalamud.Game.Gui.Dtr;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -174,7 +174,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         P = this;
         pluginInterface.Create<Service>();
         ECommonsMain.Init(pluginInterface, this, Module.All);
-        PunishLibMain.Init(pluginInterface, "Wrath Combo");
+        PunishLibMain.Init(pluginInterface, "ParseLord5");
 
         ActionRequestIPCProvider.Initialize();
 
@@ -223,16 +223,16 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
         RegisterCommands();
 
-        DtrBarEntry ??= Svc.DtrBar.Get("Wrath Combo");
+        DtrBarEntry ??= Svc.DtrBar.Get("ParseLord5");
         DtrBarEntry.OnClick = (_) =>
         {
             ToggleAutoRotation(!Service.Configuration.RotationConfig.Enabled);
         };
         DtrBarEntry.Tooltip = new SeString(
-        new TextPayload("Click to toggle Wrath Combo's Auto-Rotation.\n"),
+        new TextPayload("Click to toggle ParseLord5's Auto-Rotation.\n"),
         new TextPayload("Disable this icon in /xlsettings -> Server Info Bar"));
 
-        OpenerDtr ??= Svc.DtrBar.Get("Wrath Combo Opener");
+        OpenerDtr ??= Svc.DtrBar.Get("ParseLord5 Opener");
 
         Svc.ClientState.Login += PrintLoginMessage;
         if (Svc.ClientState.IsLoggedIn) ResetFeatures();
@@ -470,8 +470,8 @@ public sealed partial class WrathCombo : IDalamudPlugin
             }
 
         ws.RemoveAllWindows();
-        Svc.DtrBar.Remove("Wrath Combo");
-        Svc.DtrBar.Remove("Wrath Combo Opener");
+        Svc.DtrBar.Remove("ParseLord5");
+        Svc.DtrBar.Remove("ParseLord5 Opener");
         Configuration.ConfigChanged -= DebugFile.LoggingConfigChanges;
         Svc.Framework.Update -= OnFrameworkUpdate;
         Svc.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;

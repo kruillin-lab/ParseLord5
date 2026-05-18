@@ -20,7 +20,7 @@ You can find the ID or internal name to provide as `<x>` by using `/wrath list s
 > [!Warning]
 > Verify IDs with `/wrath list set <job>` before relying on macros. Preset IDs can change as WrathCombo and ParseLord5 continue to evolve.
 
-ParseLord5 currently preserves the WrathCombo `/wrath` command for these examples. No `/pl5` command is registered in the current command source.
+ParseLord5 preserves the WrathCombo `/wrath` command for these examples. `/pl5` is also available as an alias, but the macro examples below intentionally stay on `/wrath`.
 
 Below is a community-provided list of basic burst-holding macros for each job.
 

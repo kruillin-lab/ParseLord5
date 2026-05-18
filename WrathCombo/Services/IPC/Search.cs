@@ -195,22 +195,9 @@ public class Search(Leasing leasing)
     #region Cached Preset Info
 
     /// <summary>
-    ///     The path to the configuration file for Wrath Combo.
+    ///     The path to the configuration file for ParseLord5.
     /// </summary>
-    internal string ConfigFilePath
-    {
-        get
-        {
-            var pluginConfig = Svc.PluginInterface.GetPluginConfigDirectory();
-            if (Path.EndsInDirectorySeparator(pluginConfig))
-                pluginConfig = Path.TrimEndingDirectorySeparator(pluginConfig);
-            pluginConfig =
-                pluginConfig
-                    [..pluginConfig.LastIndexOf(Path.DirectorySeparatorChar)];
-            pluginConfig = Path.Combine(pluginConfig, "WrathCombo.json");
-            return pluginConfig;
-        }
-    }
+    internal string ConfigFilePath => Svc.PluginInterface.ConfigFile.FullName;
 
     /// <summary>
     ///     When <see cref="PresetStates" /> was last built.

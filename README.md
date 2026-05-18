@@ -1,3 +1,13 @@
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
 <section id="top">
     <p style="text-align:center;" align="center">
         <img align="center" src="/res/plugin/wrathcombo.png" width="250" />
