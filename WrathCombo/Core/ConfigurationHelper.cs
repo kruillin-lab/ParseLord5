@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using WrathCombo.Services;
 using Debug = WrathCombo.Window.Tabs.Debug;
@@ -359,6 +360,105 @@ public partial class Configuration
     }
 
     #endregion
+
+    #endregion
+
+    #region Config Import
+
+    /// <summary>
+    ///     Whether a WrathCombo config import has already been performed.
+    /// </summary>
+    public static bool HasImportedFromWrathCombo { get; set; }
+
+    /// <summary>
+    ///     Timestamp of the last WrathCombo config import, or null if never imported.
+    /// </summary>
+    public static DateTime? LastWrathComboImportTime { get; set; }
+
+    /// <summary>
+    ///     Imports compatible settings from a WrathCombo config file into the
+    ///     current ParseLord5 configuration. Read-only on the WrathCombo source.
+    /// </summary>
+    /// <returns>True if import succeeded, false otherwise.</returns>
+    public static bool ImportFromWrathCombo()
+    {
+        try
+        {
+            // Locate WrathCombo config file
+            var configDir = Path.GetDirectoryName(
+                Svc.PluginInterface.ConfigFile.FullName);
+            var wrathPath = Path.Combine(configDir!, "WrathCombo.json");
+
+            if (!File.Exists(wrathPath))
+            {
+                PluginLog.Information(
+                    "[ParseLord5] WrathCombo config not found at " +
+                    $"{wrathPath}. Nothing to import.");
+                return false;
+            }
+
+            // Read and deserialize WrathCombo config
+            var json = File.ReadAllText(wrathPath);
+            var wrathConfig = JsonConvert.DeserializeObject<Configuration>(json);
+            if (wrathConfig is null)
+            {
+                PluginLog.Warning(
+                    "[ParseLord5] Failed to deserialize WrathCombo config.");
+                return false;
+            }
+
+            var target = Service.Configuration;
+
+            // Combo selections (replace, don't merge)
+            target.EnabledActions.Clear();
+            foreach (var preset in wrathConfig.EnabledActions)
+                target.EnabledActions.Add(preset);
+
+            // Auto-rotation config
+            target.RotationConfig = wrathConfig.RotationConfig;
+
+            // Ignored NPCs
+            target.IgnoredNPCs.Clear();
+            foreach (var (npcId, reason) in wrathConfig.IgnoredNPCs)
+                target.IgnoredNPCs[npcId] = reason;
+
+            // Blue Mage spells
+            target.ActiveBLUSpells = wrathConfig.ActiveBLUSpells;
+
+            // Dancer dance steps
+            target.DancerDanceCompatActionIDs =
+                wrathConfig.DancerDanceCompatActionIDs;
+
+            // Status blacklist
+            target.StatusBlacklist.Clear();
+            foreach (var entry in wrathConfig.StatusBlacklist)
+                target.StatusBlacklist.Add(entry);
+
+            // --- Fields intentionally NOT imported ---
+            // CustomFloatValues/CustomIntValues etc.: static fields,
+            //   not deserializable from external config without raw JSON parsing.
+            // ParseLord5ExperimentalMode: stays false (user must opt in).
+            // Version: uses ParseLord5's own version.
+            // AprilFools2026, UI-only settings: plugin-specific, not gameplay.
+
+            // Record import
+            HasImportedFromWrathCombo = true;
+            LastWrathComboImportTime = DateTime.UtcNow;
+
+            // Persist
+            target.Save();
+
+            PluginLog.Information(
+                "[ParseLord5] Successfully imported settings from WrathCombo.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            PluginLog.Error(
+                $"[ParseLord5] Config import failed: {ex.Message}");
+            return false;
+        }
+    }
 
     #endregion
 }

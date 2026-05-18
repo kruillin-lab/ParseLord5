@@ -32,6 +32,9 @@ internal class Settings : ConfigWindow
     private static readonly Dictionary<string, bool> UnCollapsedGroup = [];
     private static readonly Dictionary<string, float> UnCollapsedGroupHeight = [];
     private static string[] _drawnCollapseGroups = [];
+    private static bool _showImportConfirm;
+    private static string? _importMessage;
+    private static DateTime _importMessageTime;
 
     /// <summary>
     ///     A set of dictionaries to store the latest value for grouped settings,
@@ -157,6 +160,79 @@ internal class Settings : ConfigWindow
 
                 ImGuiComponents.HelpMarker(
                     SettingsUI.HelpText_CreateDebug);
+            }
+
+            #endregion
+
+            #region WrathCombo Config Import
+
+            if (!IsSearching && !Configuration.HasImportedFromWrathCombo)
+            {
+                ImGui.Separator();
+                ImGui.Text("Config Migration from WrathCombo");
+                ImGui.Spacing();
+
+                if (ImGui.Button("Import settings from WrathCombo"))
+                    _showImportConfirm = true;
+
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker(
+                    "Reads compatible settings from your existing " +
+                    "WrathCombo config.\n" +
+                    "Your WrathCombo config will NOT be modified.\n" +
+                    "ParseLord5ExperimentalMode stays OFF.");
+
+                if (_showImportConfirm)
+                {
+                    ImGui.OpenPopup("Confirm Import");
+                    _showImportConfirm = false;
+                }
+
+                if (ImGui.BeginPopupModal("Confirm Import",
+                        ImGuiWindowFlags.AlwaysAutoResize))
+                {
+                    ImGui.Text(
+                        "Import combo selections, auto-rotation settings, " +
+                        "and job-specific\nconfig from WrathCombo into ParseLord5?\n" +
+                        "Your WrathCombo config will NOT be modified.");
+                    ImGui.Spacing();
+
+                    if (ImGui.Button("Import"))
+                    {
+                        var success = Configuration.ImportFromWrathCombo();
+                        _importMessage = success
+                            ? "Import successful! Settings saved."
+                            : "Import failed. Check /xllog for details.";
+                        _importMessageTime = DateTime.Now;
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    ImGui.SameLine();
+
+                    if (ImGui.Button("Cancel"))
+                        ImGui.CloseCurrentPopup();
+
+                    ImGui.EndPopup();
+                }
+
+                if (_importMessage is not null &&
+                    (DateTime.Now - _importMessageTime).TotalSeconds < 10)
+                {
+                    var color = _importMessage.StartsWith("Import successful")
+                        ? ImGuiColors.HealerGreen
+                        : ImGuiColors.DalamudRed;
+
+                    ImGui.PushStyleColor(ImGuiCol.Text, color);
+                    ImGui.Text(_importMessage);
+                    ImGui.PopStyleColor();
+                }
+            }
+            else if (!IsSearching && Configuration.HasImportedFromWrathCombo)
+            {
+                ImGui.Separator();
+                ImGui.Text(
+                    $"WrathCombo config imported at " +
+                    $"{Configuration.LastWrathComboImportTime:g}");
             }
 
             #endregion
