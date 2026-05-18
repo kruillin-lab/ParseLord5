@@ -81,7 +81,7 @@ public partial class Provider : IDisposable
         Provider output = new();
 
         // Initiate the IPC and helper services
-        EzIPC.Init(output, prefix: "WrathCombo");
+        EzIPC.Init(output, prefix: "ParseLord5");
         P.IPCSearch = new Search(output.Leasing);
         P.UIHelper = new UIHelper(output.Leasing);
 
