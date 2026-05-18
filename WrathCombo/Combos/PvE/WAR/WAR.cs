@@ -135,11 +135,21 @@ internal partial class WAR
                         : actionID;
             }
 
-            if (TryOGCDAttacks(comboFlags, ref actionID))
-                return actionID;
-            
-            if (TryGCDAttacks(comboFlags, ref actionID))
-                return actionID;
+            // ParseLord5 experiment (AoE): under experimental mode, try GCD before oGCD.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
+            else
+            {
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
             
             return AoECombo;
         }

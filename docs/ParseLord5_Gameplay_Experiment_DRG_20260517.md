@@ -97,6 +97,12 @@ When `ParseLord5ExperimentalMode` is `false` (default), the exact original code 
 
 ## Recommended next experiment
 
-- Apply same buff-priority concept to DRG Advanced mode
-- Experiment on a third job (DRK or MNK per architecture map)
+- ~~Apply same buff-priority concept to DRG Advanced mode~~
+- Experiment on a fourth job (DRK or WHM per architecture map)
 - Add a threshold-based condition (e.g., only use an oGCD above certain HP%)
+
+## Cross-Preset Expansion — DRG AoE (2026-05-18)
+
+**Preset**: `DRG_AoE_SimpleMode`
+
+Same LanceCharge/BattleLitany priority swap applied to the AoE Simple preset. Identical `if/else` gate pattern, independent at line 140. No additional `using` needed (already present for ST experiment). No cross-preset interference — both presets call their own `CanDRGWeave()` but with different conditions and entry points.

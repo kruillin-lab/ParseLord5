@@ -89,6 +89,14 @@ When `ParseLord5ExperimentalMode` is `false` (default), the exact original code 
 ## Recommended next experiment
 
 Any of:
-- Apply the same GCD/oGCD swap to `WAR_AoE_Simple` for consistency
+- ~~Apply the same GCD/oGCD swap to `WAR_AoE_Simple` for consistency~~ **DONE.**
 - A condition-based experiment (e.g., only use oGCDs above a Beast Gauge threshold)
 - Experiment on a second job (DRG or DRK, following the architecture map suggestions)
+
+## Cross-Preset Expansion — WAR AoE (2026-05-18)
+
+**Preset**: `WAR_AoE_Simple`
+
+Same GCD/oGCD priority swap applied to the AoE Simple preset. The AoE rotation uses `TryOGCDAttacks`/`TryGCDAttacks` with `Combo.AoE | Combo.Simple` flags — functionality identical to ST, just with AoE actions.
+
+Gate is independent (line 139), uses same `if/else` pattern. No cross-preset interference through shared helpers — both presets call the same `TryOGCDAttacks`/`TryGCDAttacks` but with different combo flags and different Invoke entry points.

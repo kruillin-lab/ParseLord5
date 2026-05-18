@@ -136,12 +136,25 @@ internal partial class DRG : Melee
             {
                 if (CanDRGWeave())
                 {
-                    if (ActionReady(BattleLitany))
-                        return BattleLitany;
+                    // ParseLord5 experiment (AoE): swap LanceCharge / BattleLitany priority.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        //Lance Charge Feature
+                        if (ActionReady(LanceCharge))
+                            return LanceCharge;
 
-                    //Lance Charge Feature
-                    if (ActionReady(LanceCharge))
-                        return LanceCharge;
+                        if (ActionReady(BattleLitany))
+                            return BattleLitany;
+                    }
+                    else
+                    {
+                        if (ActionReady(BattleLitany))
+                            return BattleLitany;
+
+                        //Lance Charge Feature
+                        if (ActionReady(LanceCharge))
+                            return LanceCharge;
+                    }
 
                     //Life Surge Feature
                     if (ActionReady(LifeSurge) &&
