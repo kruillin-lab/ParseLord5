@@ -65,7 +65,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
     internal static bool IsAprilFools => DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 4;
 
-    private readonly TextPayload starterMotd = new("[Wrath Message of the Day] ");
+    private readonly TextPayload starterMotd = new("[ParseLord5 Message of the Day] ");
     private static Job? jobID;
     private static bool EnteringInstancedContent
     {
@@ -423,7 +423,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
     {
         try
         {
-            var basicMessage = $"Welcome to WrathCombo v{GetType().Assembly
+            var basicMessage = $"Welcome to ParseLord5 v{GetType().Assembly
                 .GetName().Version}!";
             using var motd =
                 httpClient.GetAsync("https://raw.githubusercontent.com/PunishXIV/WrathCombo/main/res/motd.txt").Result;

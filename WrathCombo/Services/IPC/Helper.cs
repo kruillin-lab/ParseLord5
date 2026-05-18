@@ -344,7 +344,7 @@ public partial class Helper(ref Leasing leasing)
     public static string? PrefixForIPC;
 
     /// <summary>
-    ///     Method to set up an IPC, call the Wrath Combo callback, and dispose
+    ///     Method to set up an IPC, call the ParseLord5 callback, and dispose
     ///     of the IPC.
     /// </summary>
     /// <param name="prefix">The leasee's </param>
@@ -452,7 +452,7 @@ public partial class Helper(ref Leasing leasing)
 /// </summary>
 internal static class Logging
 {
-    private const string Prefix = "[Wrath IPC] ";
+    private const string Prefix = "[ParseLord5 IPC] ";
 
     private static StackTrace StackTrace => new();
 

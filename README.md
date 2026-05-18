@@ -12,7 +12,7 @@ aliases: []
     <p style="text-align:center;" align="center">
         <img align="center" src="/res/plugin/wrathcombo.png" width="250" />
     </p>
-    <h1 style="text-align:center;" align="center">Wrath Combo</h1>
+    <h1 style="text-align:center;" align="center">ParseLord5</h1>
     <p style="text-align:center;" align="center">
         Condenses combos and mutually exclusive abilities onto a single button - and then some.
     </p>
@@ -46,15 +46,15 @@ aliases: []
 
 <section id="about">
 
-# About Wrath Combo
+# About ParseLord5
 
-<p> Wrath Combo is a plugin for <a href="https://goatcorp.github.io/" alt="XIVLauncher">XIVLauncher</a>.<br><br>
+<p> ParseLord5 is a plugin for <a href="https://goatcorp.github.io/" alt="XIVLauncher">XIVLauncher</a>.<br><br>
     It's a heavily enhanced version of the XIVCombo plugin, offering highly 
     customisable features and options to allow users to have their 
     rotations be as complex or simple as possible, even to the point of a single
     button; for PvE, PvP, and more.
     <br><br>
-    Wrath Combo is regularly updated to include new features and to keep
+    ParseLord5 is regularly updated to include new features and to keep
     up-to-date with the latest job changes in Final Fantasy XIV.
     <br><br>
     <img src="/res/readme_images/demo.gif" width="450" />
@@ -85,7 +85,7 @@ Open the Dalamud Plugin Installer menu in game and follow the steps below.
 This can be done through `/xlplugins` in the chat.
 
 1. Click the "All Plugins" tab on the left.
-2. Search for "Wrath Combo".
+2. Search for "ParseLord5".
 3. Click the "Install" button.
 
 <p align="right"><a href="#top" alt="Back to top"><img src=/res/readme_images/arrowhead-up.png width ="25"/></a></p>
@@ -97,7 +97,7 @@ This can be done through `/xlplugins` in the chat.
 # Features
 
 Below you can find a small example of some of the features and options we offer in
-Wrath Combo. <br>
+ParseLord5. <br>
 Please note, this is just an excerpt and is not representative of the full
 feature-set.
 
@@ -157,16 +157,16 @@ the [Discord](https://discord.gg/Zzrcc8kmvy) server for more info.
 
 ### [Orbwalker](https://puni.sh/plugin/Orbwalker)
 
-Wrath Combo can use Orbwalker to stop player movement in Auto-Rotation mode 
+ParseLord5 can use Orbwalker to stop player movement in Auto-Rotation mode 
 instead of requiring the player to stop before choosing to cast.
 
-1. Open Wrath Combo's Auto-Rotation Settings: `/wrath autosettings`.
+1. Open ParseLord5's Auto-Rotation Settings: `/wrath autosettings`.
 2. Check "Enable Orbwalker Integration".
 3. Open Orbwalker and confirm your settings: `/orbwalker`.
 
 ### [AutoDuty](https://github.com/erdelf/AutoDuty)
 
-Wrath Combo can be used as the Rotation Engine for AutoDuty, such that Wrath Combo's
+ParseLord5 can be used as the Rotation Engine for AutoDuty, such that ParseLord5's
 Auto-Rotation will be used during duties.
 To enable this:
 1. Open AutoDuty's Config window: `/autoduty cfg`.
@@ -177,12 +177,11 @@ To enable this:
 
 ### [Questionable](https://puni.sh/plugin/questionable)
 
-Wrath Combo can be used as the Combat Module for Questionable, such that Wrath 
-Combo's Auto-Rotation will be employed during questing.
+ParseLord5 can be used as the Combat Module for Questionable, such that ParseLord5's Auto-Rotation will be employed during questing.
 To enable this:
 1. Open Questionable's Settings window: `/qst config`.
 2. Go to the "General" tab.
-3. Select "Wrath Combo" as the "Preferred Combat Module".
+3. Select "ParseLord5" as the "Preferred Combat Module".
 
 > By default, the two plugins above will ensure that combos in Wrath are set up, and
 will lock all settings under those combos to `On` if combos were not set up, to

@@ -202,7 +202,7 @@ internal class ConfigWindow : Dalamud.Interface.Windowing.Window
                 Svc.PluginInterface.AssemblyLocation.Directory?.FullName!,
                 "images\\wrathcombo.png");
             if (EzThrottler.Throttle("logTypeOfWrathIconUsed", 45000))
-                PluginLog.Verbose("Using Local WrathCombo Icon");
+                PluginLog.Verbose("Using Local ParseLord5 Icon");
         }
         catch (Exception)
         {
@@ -210,7 +210,7 @@ internal class ConfigWindow : Dalamud.Interface.Windowing.Window
             imagePath = Svc.PluginInterface.Manifest.IconUrl ?? "";
             if (EzThrottler.Throttle("logTypeOfWrathIconUsed", 45000))
                 PluginLog.Verbose(
-                    "Using Remote WrathCombo Icon\n             " +
+                    "Using Remote ParseLord5 Icon\n             " +
                     Svc.PluginInterface.AssemblyLocation.Directory?.FullName! +
                     "images\\wrathcombo.png");
         }
