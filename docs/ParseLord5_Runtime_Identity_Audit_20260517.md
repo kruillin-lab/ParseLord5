@@ -189,7 +189,7 @@ The IPC is registered under the prefix `"WrathCombo"`. This means:
 
 1. ~~**Search.cs:210** hardcodes `"WrathCombo.json"` for IPC file watch.~~ **FIXED.** Search.cs now uses `Svc.PluginInterface.ConfigFile.FullName` — the authoritative Dalamud config path. No manual path construction, no hardcoded filename.
 2. **Helper.cs:390** fetches IPC status from `PunishXIV/WrathCombo`. ParseLord5's IPC would be remotely disabled by WrathCombo's IPC status file.
-3. **PunishLibMain.Init** on line 177 of WrathCombo.cs passes `"Wrath Combo"` as display name.
+3. ~~**PunishLibMain.Init** on line 177 of WrathCombo.cs passes `"Wrath Combo"` as display name.~~ **FIXED.** Now passes `"ParseLord5"`. (MOTD local text and IPC log prefix also rebranded; see `docs/ParseLord5_Remaining_Identity_Policy_20260517.md`.)
 
 ---
 
@@ -220,11 +220,12 @@ During the initial hardening pass, `Search.cs` `ConfigFilePath` was changed to h
 
 `RepoCheck.cs:25` reads `ParseLord5.json` from the assembly directory (not the config directory). This is correct — it reads the shipped manifest to determine install source. The only downstream consumer is `DebugFile.cs:170` (debug output). No change needed.
 
-### Remaining out-of-scope items
+### Remaining out-of-scope items (updated 2026-05-17)
 
-- IPC prefix `"WrathCombo"` (`Provider.cs:84`)
-- IPC status endpoint `PunishXIV/WrathCombo` (`Helper.cs:390`)
-- MOTD URL/branding (`WrathCombo.cs:426-429`)
-- PunishLib display name `"Wrath Combo"` (`WrathCombo.cs:177`)
+- IPC prefix `"WrathCombo"` (`Provider.cs:84`) — compat-sensitive; documented in `ParseLord5_Remaining_Identity_Policy_20260517.md`
+- IPC status endpoint `PunishXIV/WrathCombo` (`Helper.cs:390`) — upstream dependency
+- ~~MOTD local branding~~ **REBRANDED.** Welcome text, MOTD prefix now say ParseLord5. MOTD URL remains upstream dependency.
+- ~~PunishLib display name~~ **REBRANDED.** Now `"ParseLord5"`.
+- MOTD fetch URL (`WrathCombo.cs:429`) — upstream dependency; documented in identity policy
 
-These are deliberately deferred. Changing any would break IPC consumers, lose upstream status integration, or constitute UI branding work outside this milestone's scope.
+These are deliberately deferred for compatibility or upstream-dependency reasons. See `docs/ParseLord5_Remaining_Identity_Policy_20260517.md` for full rationale.

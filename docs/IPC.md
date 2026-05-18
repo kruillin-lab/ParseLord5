@@ -8,6 +8,20 @@ project: parselord5
 status: active
 aliases: []
 ---
+> [!NOTE]
+> **ParseLord5 compatibility (2026-05-17):**
+> ParseLord5 is a WrathCombo-based fork that exposes IPC under the **`"ParseLord5"`** prefix (not `"WrathCombo"`). Plugin InternalName is also `"ParseLord5"`.
+>
+> To connect to ParseLord5 IPC, use:
+> ```csharp
+> EzIPC.Init(typeof(ParseLord5IPC), "ParseLord5");
+> DalamudReflector.TryGetDalamudPlugin("ParseLord5", out _, false, true);
+> ```
+>
+> To connect to upstream WrathCombo IPC, continue using `"WrathCombo"` prefix + InternalName as documented below.
+>
+> See `docs/ParseLord5_IPC_API_Compatibility_Evaluation_20260517.md` for full details.
+
 > [!TIP]
 > See [The Example C#](IPCExample.cs) for a barebones example of how to set up
 > the IPC in your plugin, or [The Example Lua](IPCExample.lua) to set it up in a 

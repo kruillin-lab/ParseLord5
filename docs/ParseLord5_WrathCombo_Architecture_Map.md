@@ -225,6 +225,8 @@ if (Service.Configuration.ParseLord5ExperimentalMode)
 }
 ```
 
+**Status (2026-05-17):** The first WAR experiment has been executed. `WAR_ST_Simple` now swaps GCD/oGCD priority when the flag is enabled. See `docs/ParseLord5_Gameplay_Experiment_WAR_20260517.md`.
+
 Why this location is safest:
 
 - `Configuration` already persists plugin settings.
