@@ -6,6 +6,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.WHM.Config;
 using EZ = ECommons.Throttlers.EzThrottler;
 using TS = System.TimeSpan;
@@ -45,14 +46,30 @@ internal partial class WHM : Healer
 
             if (CanWeave())
             {
-                if (ActionReady(PresenceOfMind) &&
-                    ActionWatching.NumberOfGcdsUsed >= 3 &&
-                    !HasStatusEffect(Buffs.SacredSight))
-                    return PresenceOfMind;
+                // ParseLord5 experiment: swap Assize / PresenceOfMind priority.
+                // Baseline (flag off): PresenceOfMind first, then Assize.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
 
-                if (ActionReady(Assize) &&
-                    HasBattleTarget() && GetTargetDistance() <= 20)
-                    return Assize;
+                    if (ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 3 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+                }
+                else
+                {
+                    if (ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 3 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+
+                    if (ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+                }
 
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
@@ -106,14 +123,30 @@ internal partial class WHM : Healer
 
             if (CanWeave() || IsMoving())
             {
-                if (ActionReady(Assize) &&
-                    HasBattleTarget() && GetTargetDistance() <= 20)
-                    return Assize;
+                // ParseLord5 experiment (AoE): swap Assize / PresenceOfMind priority.
+                // Baseline (flag off): Assize first, then PresenceOfMind.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 4 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
 
-                if (ActionReady(PresenceOfMind) &&
-                    ActionWatching.NumberOfGcdsUsed >= 4 &&
-                    !HasStatusEffect(Buffs.SacredSight))
-                    return PresenceOfMind;
+                    if (ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+                }
+                else
+                {
+                    if (ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+
+                    if (ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 4 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+                }
 
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
