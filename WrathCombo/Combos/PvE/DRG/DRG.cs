@@ -1,4 +1,5 @@
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.DRG.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -20,12 +21,26 @@ internal partial class DRG : Melee
             {
                 if (CanDRGWeave())
                 {
-                    if (ActionReady(BattleLitany))
-                        return BattleLitany;
+                    // ParseLord5 experiment: swap LanceCharge / BattleLitany priority.
+                    // Baseline (flag off): BattleLitany first, then LanceCharge.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        //Lance Charge Feature
+                        if (CanLanceCharge)
+                            return LanceCharge;
 
-                    //Lance Charge Feature
-                    if (CanLanceCharge)
-                        return LanceCharge;
+                        if (ActionReady(BattleLitany))
+                            return BattleLitany;
+                    }
+                    else
+                    {
+                        if (ActionReady(BattleLitany))
+                            return BattleLitany;
+
+                        //Lance Charge Feature
+                        if (CanLanceCharge)
+                            return LanceCharge;
+                    }
 
                     //Life Surge Feature
                     if (CanLifeSurge())

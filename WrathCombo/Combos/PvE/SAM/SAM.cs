@@ -1,4 +1,5 @@
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.SAM.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -25,13 +26,28 @@ internal partial class SAM : Melee
             //oGCDs
             if (CanWeave())
             {
-                //Meikyo Feature
-                if (CanMeikyo())
-                    return MeikyoShisui;
+                // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
+                // Baseline (flag off): Meikyo first, then Ikishoten.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Ikishoten Feature
+                    if (CanIkishoten())
+                        return Ikishoten;
 
-                //Ikishoten Feature
-                if (CanIkishoten())
-                    return Ikishoten;
+                    //Meikyo Feature
+                    if (CanMeikyo())
+                        return MeikyoShisui;
+                }
+                else
+                {
+                    //Meikyo Feature
+                    if (CanMeikyo())
+                        return MeikyoShisui;
+
+                    //Ikishoten Feature
+                    if (CanIkishoten())
+                        return Ikishoten;
+                }
 
                 if (GetTargetHPPercent() < ShintenTreshhold)
                     return ExecuteKenkiSpender(actionID, true);
@@ -122,21 +138,45 @@ internal partial class SAM : Melee
                 if (OriginalHook(Iaijutsu) is MidareSetsugekka && LevelChecked(Hagakure))
                     return Hagakure;
 
-                if (ActionReady(MeikyoShisui) &&
-                    !HasStatusEffect(Buffs.MeikyoShisui) &&
-                    !JustUsed(MeikyoShisui) &&
-                    ComboTimer is 0)
-                    return MeikyoShisui;
-
-                if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
+                // Baseline (flag off): Meikyo first, then Ikishoten.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
                 {
-                    return Kenki switch
+                    if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
                     {
-                        //Dumps Kenki in preparation for Ikishoten
-                        >= 50 => Kyuten,
+                        return Kenki switch
+                        {
+                            //Dumps Kenki in preparation for Ikishoten
+                            >= 50 => Kyuten,
 
-                        < 50 => Ikishoten
-                    };
+                            < 50 => Ikishoten
+                        };
+                    }
+
+                    if (ActionReady(MeikyoShisui) &&
+                        !HasStatusEffect(Buffs.MeikyoShisui) &&
+                        !JustUsed(MeikyoShisui) &&
+                        ComboTimer is 0)
+                        return MeikyoShisui;
+                }
+                else
+                {
+                    if (ActionReady(MeikyoShisui) &&
+                        !HasStatusEffect(Buffs.MeikyoShisui) &&
+                        !JustUsed(MeikyoShisui) &&
+                        ComboTimer is 0)
+                        return MeikyoShisui;
+
+                    if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                    {
+                        return Kenki switch
+                        {
+                            //Dumps Kenki in preparation for Ikishoten
+                            >= 50 => Kyuten,
+
+                            < 50 => Ikishoten
+                        };
+                    }
                 }
 
                 if (ActionReady(Zanshin) && HasStatusEffect(Buffs.ZanshinReady))

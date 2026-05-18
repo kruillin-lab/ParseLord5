@@ -78,16 +78,33 @@ internal partial class WAR
                     return selectedActionID;
                 }
             }
-            if (TryOGCDAttacks(comboFlags, ref actionID))
+            // ParseLord5 experiment: under experimental mode, try GCD before oGCD.
+            // Baseline behavior (flag off): oGCD first, then GCD.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd");
-                return actionID;
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                {
+                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd-exp");
+                    return actionID;
+                }
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                {
+                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd-exp");
+                    return actionID;
+                }
             }
-            
-            if (TryGCDAttacks(comboFlags, ref actionID))
+            else
             {
-                TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd");
-                return actionID;
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                {
+                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd");
+                    return actionID;
+                }
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                {
+                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd");
+                    return actionID;
+                }
             }
             
             var fallbackActionID = STCombo;
