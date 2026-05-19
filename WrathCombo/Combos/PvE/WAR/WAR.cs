@@ -198,11 +198,27 @@ internal partial class WAR
             if (IsEnabled(Preset.WAR_ST_BalanceOpener) && Opener().FullOpener(ref actionID))
                 return actionID;
             
-            if (TryOGCDAttacks(comboFlags, ref actionID))
-                return actionID;
-            
-            if (TryGCDAttacks(comboFlags, ref actionID))
-                return actionID;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (CanWeave())
+                {
+                    if (TryGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+
+                    if (TryOGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+                }
+                else if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
+            else
+            {
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+                
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
             
             return STCombo;
         }
@@ -231,11 +247,27 @@ internal partial class WAR
                         : actionID;
             }
             
-            if (TryOGCDAttacks(comboFlags, ref actionID))
-                return actionID;
-            
-            if (TryGCDAttacks(comboFlags, ref actionID))
-                return actionID;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (CanWeave())
+                {
+                    if (TryGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+
+                    if (TryOGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+                }
+                else if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
+            else
+            {
+                if (TryOGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+                
+                if (TryGCDAttacks(comboFlags, ref actionID))
+                    return actionID;
+            }
             
             return AoECombo;
         }

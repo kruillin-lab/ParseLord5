@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using WrathCombo.Combos.PvE.Enums;
 using WrathCombo.Core;
@@ -182,34 +182,68 @@ internal partial class DNC : PhysicalRanged
 
             #region Weaves
 
-            // ST Devilment
-            if (IsEnabled(Preset.DNC_ST_Adv_Devilment) &&
-                CanWeave() &&
-                LevelChecked(Devilment) &&
-                GetCooldownRemainingTime(Devilment) < GCD / 2 &&
-                (HasStatusEffect(Buffs.TechnicalFinish) ||
-                 WasLastAction(TechnicalFinish4) ||
-                 !LevelChecked(TechnicalStep)))
-                return Devilment;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                // ST Flourish
+                if (IsEnabled(Preset.DNC_ST_Adv_Flourish) &&
+                    CanWeave() &&
+                    ActionReady(Flourish) &&
+                    !WasLastWeaponskill(TechnicalFinish4) &&
+                    IsOnCooldown(Devilment) &&
+                    (GetCooldownRemainingTime(Devilment) > 50 ||
+                     (HasStatusEffect(Buffs.Devilment) &&
+                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FourFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FlourishingSymmetry) &&
+                    !HasStatusEffect(Buffs.FlourishingFlow) &&
+                    !HasStatusEffect(Buffs.FinishingMoveReady) &&
+                    ((CombatEngageDuration().TotalSeconds < 20 &&
+                      HasStatusEffect(Buffs.TechnicalFinish)) ||
+                     CombatEngageDuration().TotalSeconds > 20))
+                    return Flourish;
 
-            // ST Flourish
-            if (IsEnabled(Preset.DNC_ST_Adv_Flourish) &&
-                CanWeave() &&
-                ActionReady(Flourish) &&
-                !WasLastWeaponskill(TechnicalFinish4) &&
-                IsOnCooldown(Devilment) &&
-                (GetCooldownRemainingTime(Devilment) > 50 ||
-                 (HasStatusEffect(Buffs.Devilment) &&
-                  GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
-                !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
-                !HasStatusEffect(Buffs.FourFoldFanDance) &&
-                !HasStatusEffect(Buffs.FlourishingSymmetry) &&
-                !HasStatusEffect(Buffs.FlourishingFlow) &&
-                !HasStatusEffect(Buffs.FinishingMoveReady) &&
-                ((CombatEngageDuration().TotalSeconds < 20 &&
-                  HasStatusEffect(Buffs.TechnicalFinish)) ||
-                 CombatEngageDuration().TotalSeconds > 20))
-                return Flourish;
+                // ST Devilment
+                if (IsEnabled(Preset.DNC_ST_Adv_Devilment) &&
+                    CanWeave() &&
+                    LevelChecked(Devilment) &&
+                    GetCooldownRemainingTime(Devilment) < GCD / 2 &&
+                    (HasStatusEffect(Buffs.TechnicalFinish) ||
+                     WasLastAction(TechnicalFinish4) ||
+                     !LevelChecked(TechnicalStep)))
+                    return Devilment;
+            }
+            else
+            {
+                // ST Devilment
+                if (IsEnabled(Preset.DNC_ST_Adv_Devilment) &&
+                    CanWeave() &&
+                    LevelChecked(Devilment) &&
+                    GetCooldownRemainingTime(Devilment) < GCD / 2 &&
+                    (HasStatusEffect(Buffs.TechnicalFinish) ||
+                     WasLastAction(TechnicalFinish4) ||
+                     !LevelChecked(TechnicalStep)))
+                    return Devilment;
+
+                // ST Flourish
+                if (IsEnabled(Preset.DNC_ST_Adv_Flourish) &&
+                    CanWeave() &&
+                    ActionReady(Flourish) &&
+                    !WasLastWeaponskill(TechnicalFinish4) &&
+                    IsOnCooldown(Devilment) &&
+                    (GetCooldownRemainingTime(Devilment) > 50 ||
+                     (HasStatusEffect(Buffs.Devilment) &&
+                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FourFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FlourishingSymmetry) &&
+                    !HasStatusEffect(Buffs.FlourishingFlow) &&
+                    !HasStatusEffect(Buffs.FinishingMoveReady) &&
+                    ((CombatEngageDuration().TotalSeconds < 20 &&
+                      HasStatusEffect(Buffs.TechnicalFinish)) ||
+                     CombatEngageDuration().TotalSeconds > 20))
+                    return Flourish;
+            }
 
             if ((DNC_ST_ADV_AntiDrift == (int)AntiDrift.TripleWeave ||
                  DNC_ST_ADV_AntiDrift == (int)AntiDrift.Both) &&
@@ -844,31 +878,62 @@ internal partial class DNC : PhysicalRanged
 
             #region Weaves
 
-            // AoE Devilment
-            if (IsEnabled(Preset.DNC_AoE_Adv_Devilment) &&
-                CanWeave() &&
-                LevelChecked(Devilment) &&
-                GetCooldownRemainingTime(Devilment) < 0.05 &&
-                (HasStatusEffect(Buffs.TechnicalFinish) ||
-                 WasLastAction(TechnicalFinish4) ||
-                 !LevelChecked(TechnicalStep)))
-                return Devilment;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                // AoE Flourish
+                if (IsEnabled(Preset.DNC_AoE_Adv_Flourish) &&
+                    CanWeave() &&
+                    ActionReady(Flourish) &&
+                    !WasLastWeaponskill(TechnicalFinish4) &&
+                    IsOnCooldown(Devilment) &&
+                    (GetCooldownRemainingTime(Devilment) > 50 ||
+                     (HasStatusEffect(Buffs.Devilment) &&
+                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FourFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FlourishingSymmetry) &&
+                    !HasStatusEffect(Buffs.FlourishingFlow) &&
+                    !HasStatusEffect(Buffs.FinishingMoveReady))
+                    return Flourish;
 
-            // AoE Flourish
-            if (IsEnabled(Preset.DNC_AoE_Adv_Flourish) &&
-                CanWeave() &&
-                ActionReady(Flourish) &&
-                !WasLastWeaponskill(TechnicalFinish4) &&
-                IsOnCooldown(Devilment) &&
-                (GetCooldownRemainingTime(Devilment) > 50 ||
-                 (HasStatusEffect(Buffs.Devilment) &&
-                  GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
-                !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
-                !HasStatusEffect(Buffs.FourFoldFanDance) &&
-                !HasStatusEffect(Buffs.FlourishingSymmetry) &&
-                !HasStatusEffect(Buffs.FlourishingFlow) &&
-                !HasStatusEffect(Buffs.FinishingMoveReady))
-                return Flourish;
+                // AoE Devilment
+                if (IsEnabled(Preset.DNC_AoE_Adv_Devilment) &&
+                    CanWeave() &&
+                    LevelChecked(Devilment) &&
+                    GetCooldownRemainingTime(Devilment) < 0.05 &&
+                    (HasStatusEffect(Buffs.TechnicalFinish) ||
+                     WasLastAction(TechnicalFinish4) ||
+                     !LevelChecked(TechnicalStep)))
+                    return Devilment;
+            }
+            else
+            {
+                // AoE Devilment
+                if (IsEnabled(Preset.DNC_AoE_Adv_Devilment) &&
+                    CanWeave() &&
+                    LevelChecked(Devilment) &&
+                    GetCooldownRemainingTime(Devilment) < 0.05 &&
+                    (HasStatusEffect(Buffs.TechnicalFinish) ||
+                     WasLastAction(TechnicalFinish4) ||
+                     !LevelChecked(TechnicalStep)))
+                    return Devilment;
+
+                // AoE Flourish
+                if (IsEnabled(Preset.DNC_AoE_Adv_Flourish) &&
+                    CanWeave() &&
+                    ActionReady(Flourish) &&
+                    !WasLastWeaponskill(TechnicalFinish4) &&
+                    IsOnCooldown(Devilment) &&
+                    (GetCooldownRemainingTime(Devilment) > 50 ||
+                     (HasStatusEffect(Buffs.Devilment) &&
+                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FourFoldFanDance) &&
+                    !HasStatusEffect(Buffs.FlourishingSymmetry) &&
+                    !HasStatusEffect(Buffs.FlourishingFlow) &&
+                    !HasStatusEffect(Buffs.FinishingMoveReady))
+                    return Flourish;
+            }
 
             // AoE Interrupt
             if (Role.CanHeadGraze(Preset.DNC_AoE_Adv_Interrupt, WeaveTypes.Weave) &&

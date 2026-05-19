@@ -358,18 +358,36 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                if (IsEnabled(Preset.BLM_ST_Amplifier) &&
-                    ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                    return Amplifier;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.BLM_ST_LeyLines) &&
+                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !JustUsed(LeyLines) &&
+                        GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
+                        (BLM_ST_LeyLinesMovement == 1 ||
+                         BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
+                        GetTargetHPPercent() > HPThresholdLeylines)
+                        return LeyLines;
 
-                if (IsEnabled(Preset.BLM_ST_LeyLines) &&
-                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                    !JustUsed(LeyLines) &&
-                    GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
-                    (BLM_ST_LeyLinesMovement == 1 ||
-                     BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
-                    GetTargetHPPercent() > HPThresholdLeylines)
-                    return LeyLines;
+                    if (IsEnabled(Preset.BLM_ST_Amplifier) &&
+                        ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                        return Amplifier;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.BLM_ST_Amplifier) &&
+                        ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                        return Amplifier;
+
+                    if (IsEnabled(Preset.BLM_ST_LeyLines) &&
+                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !JustUsed(LeyLines) &&
+                        GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
+                        (BLM_ST_LeyLinesMovement == 1 ||
+                         BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
+                        GetTargetHPPercent() > HPThresholdLeylines)
+                        return LeyLines;
+                }
 
                 if (EndOfFirePhase)
                 {
@@ -588,18 +606,36 @@ internal partial class BLM : Caster
                     (EndOfFirePhase || EndOfIcePhaseAoE))
                     return Transpose;
 
-                if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
-                    ActionReady(Amplifier) && PolyglotTimer >= 20)
-                    return Amplifier;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
+                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !JustUsed(LeyLines) &&
+                        GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
+                        (BLM_AoE_LeyLinesMovement == 1 ||
+                         BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
+                        GetTargetHPPercent() > BLM_AoE_LeyLinesOption)
+                        return LeyLines;
 
-                if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
-                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                    !JustUsed(LeyLines) &&
-                    GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
-                    (BLM_AoE_LeyLinesMovement == 1 ||
-                     BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
-                    GetTargetHPPercent() > BLM_AoE_LeyLinesOption)
-                    return LeyLines;
+                    if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
+                        ActionReady(Amplifier) && PolyglotTimer >= 20)
+                        return Amplifier;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
+                        ActionReady(Amplifier) && PolyglotTimer >= 20)
+                        return Amplifier;
+
+                    if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
+                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !JustUsed(LeyLines) &&
+                        GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
+                        (BLM_AoE_LeyLinesMovement == 1 ||
+                         BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
+                        GetTargetHPPercent() > BLM_AoE_LeyLinesOption)
+                        return LeyLines;
+                }
             }
 
             if (IsEnabled(Preset.BLM_AoE_UsePolyglot) &&

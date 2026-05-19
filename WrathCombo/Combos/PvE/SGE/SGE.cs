@@ -264,20 +264,40 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(dosisActions);
 
-                // Psyche
-                if (IsEnabled(Preset.SGE_ST_DPS_Psyche) &&
-                    ActionReady(Psyche) && InCombat())
-                    return Psyche;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Soteria
+                    if (IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
+                        ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
 
-                // Rhizomata
-                if (IsEnabled(Preset.SGE_ST_DPS_Rhizo) &&
-                    ActionReady(Rhizomata) && Addersgall < SGE_ST_DPS_Rhizo)
-                    return Rhizomata;
+                    // Rhizomata
+                    if (IsEnabled(Preset.SGE_ST_DPS_Rhizo) &&
+                        ActionReady(Rhizomata) && Addersgall < SGE_ST_DPS_Rhizo)
+                        return Rhizomata;
 
-                //Soteria
-                if (IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
-                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
+                    // Psyche
+                    if (IsEnabled(Preset.SGE_ST_DPS_Psyche) &&
+                        ActionReady(Psyche) && InCombat())
+                        return Psyche;
+                }
+                else
+                {
+                    // Psyche
+                    if (IsEnabled(Preset.SGE_ST_DPS_Psyche) &&
+                        ActionReady(Psyche) && InCombat())
+                        return Psyche;
+
+                    // Rhizomata
+                    if (IsEnabled(Preset.SGE_ST_DPS_Rhizo) &&
+                        ActionReady(Rhizomata) && Addersgall < SGE_ST_DPS_Rhizo)
+                        return Rhizomata;
+
+                    //Soteria
+                    if (IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
+                        ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+                }
             }
 
             if (IsEnabled(Preset.SGE_ST_DPS_EDosis) && PartyInCombat())
@@ -379,21 +399,42 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(OriginalHook(Dyskrasia));
 
-                // Psyche
-                if (IsEnabled(Preset.SGE_AoE_DPS_Psyche))
-                    if (ActionReady(Psyche) && HasBattleTarget() &&
-                        InActionRange(Psyche))
-                        return Psyche;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Soteria
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
+                        ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
 
-                // Rhizomata
-                if (IsEnabled(Preset.SGE_AoE_DPS_Rhizo) &&
-                    ActionReady(Rhizomata) && Addersgall <= SGE_AoE_DPS_Rhizo)
-                    return Rhizomata;
+                    // Rhizomata
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Rhizo) &&
+                        ActionReady(Rhizomata) && Addersgall <= SGE_AoE_DPS_Rhizo)
+                        return Rhizomata;
 
-                //Soteria
-                if (IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
-                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
+                    // Psyche
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Psyche))
+                        if (ActionReady(Psyche) && HasBattleTarget() &&
+                            InActionRange(Psyche))
+                            return Psyche;
+                }
+                else
+                {
+                    // Psyche
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Psyche))
+                        if (ActionReady(Psyche) && HasBattleTarget() &&
+                            InActionRange(Psyche))
+                            return Psyche;
+
+                    // Rhizomata
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Rhizo) &&
+                        ActionReady(Rhizomata) && Addersgall <= SGE_AoE_DPS_Rhizo)
+                        return Rhizomata;
+
+                    //Soteria
+                    if (IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
+                        ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+                }
             }
 
             //Eukrasia for DoT

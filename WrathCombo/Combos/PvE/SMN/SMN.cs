@@ -190,16 +190,41 @@ internal partial class SMN : Caster
                 return actionID;
 
             #region Egi Priority
-            foreach (var prio in SMN_ST_Egi_Priority.OrderBy(x => x))
+            if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                var index = SMN_ST_Egi_Priority.IndexOf(prio);
-                var config = GetMatchingConfigST(index, out var spell,
-                    out var enabled);
+                int[] tempPriority = ((int[])SMN_ST_Egi_Priority).ToArray();
+                if (tempPriority.Length > 2)
+                {
+                    int temp = tempPriority[1];
+                    tempPriority[1] = tempPriority[2];
+                    tempPriority[2] = temp;
+                }
 
-                if (!enabled) continue;
+                foreach (var prio in tempPriority.OrderBy(x => x))
+                {
+                    var index = System.Array.IndexOf(tempPriority, prio);
+                    var config = GetMatchingConfigST(index, out var spell,
+                        out var enabled);
 
-                if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
-                    return spell;
+                    if (!enabled) continue;
+
+                    if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
+                        return spell;
+                }
+            }
+            else
+            {
+                foreach (var prio in SMN_ST_Egi_Priority.OrderBy(x => x))
+                {
+                    var index = SMN_ST_Egi_Priority.IndexOf(prio);
+                    var config = GetMatchingConfigST(index, out var spell,
+                        out var enabled);
+
+                    if (!enabled) continue;
+
+                    if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
+                        return spell;
+                }
             }
             #endregion
             
@@ -243,16 +268,41 @@ internal partial class SMN : Caster
                 return actionID;
 
             #region Egi Priority
-            foreach (var prio in SMN_AoE_Egi_Priority.OrderBy(x => x))
+            if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                var index = SMN_AoE_Egi_Priority.IndexOf(prio);
-                var config = GetMatchingConfigAoE(index, out var spell,
-                    out var enabled);
+                int[] tempPriority = ((int[])SMN_AoE_Egi_Priority).ToArray();
+                if (tempPriority.Length > 2)
+                {
+                    int temp = tempPriority[1];
+                    tempPriority[1] = tempPriority[2];
+                    tempPriority[2] = temp;
+                }
 
-                if (!enabled) continue;
+                foreach (var prio in tempPriority.OrderBy(x => x))
+                {
+                    var index = System.Array.IndexOf(tempPriority, prio);
+                    var config = GetMatchingConfigAoE(index, out var spell,
+                        out var enabled);
 
-                if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
-                    return spell;
+                    if (!enabled) continue;
+
+                    if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
+                        return spell;
+                }
+            }
+            else
+            {
+                foreach (var prio in SMN_AoE_Egi_Priority.OrderBy(x => x))
+                {
+                    var index = SMN_AoE_Egi_Priority.IndexOf(prio);
+                    var config = GetMatchingConfigAoE(index, out var spell,
+                        out var enabled);
+
+                    if (!enabled) continue;
+
+                    if (!ActionReady(OriginalHook(Aethercharge)) && Gauge.SummonTimerRemaining == 0 && Gauge.AttunementTimerRemaining == 0)
+                        return spell;
+                }
             }
             #endregion
 

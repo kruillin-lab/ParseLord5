@@ -318,21 +318,42 @@ internal partial class AST : Healer
                     !HasStatusEffect(Buffs.Lightspeed) && DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                //Divination
-                if (IsEnabled(Preset.AST_DPS_Divination) && ActionReady(Divination) &&
-                    !HasDivination && HasBattleTarget() &&
-                    !HasStatusEffect(Buffs.Divining) &&
-                    GetTargetHPPercent() > divHPThreshold &&
-                    (WaitGCDs || StandStill))
-                    return Divination;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Earthly Star
+                    if (IsEnabled(Preset.AST_ST_DPS_EarthlyStar) && IsOffCooldown(EarthlyStar) && 
+                        LevelChecked(EarthlyStar) && !HasStatusEffect(Buffs.EarthlyDominance) &&
+                        (WaitGCDs || StandStill))
+                        return AST_ST_DPS_EarthlyStarSubOption == 1 
+                            ? EarthlyStar.Retarget(replacedActions, SimpleTarget.Self) 
+                            : EarthlyStar.Retarget(replacedActions, SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
 
-                //Earthly Star
-                if (IsEnabled(Preset.AST_ST_DPS_EarthlyStar) && IsOffCooldown(EarthlyStar) && 
-                    LevelChecked(EarthlyStar) && !HasStatusEffect(Buffs.EarthlyDominance) &&
-                    (WaitGCDs || StandStill))
-                    return AST_ST_DPS_EarthlyStarSubOption == 1 
-                        ? EarthlyStar.Retarget(replacedActions, SimpleTarget.Self) 
-                        : EarthlyStar.Retarget(replacedActions, SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
+                    //Divination
+                    if (IsEnabled(Preset.AST_DPS_Divination) && ActionReady(Divination) &&
+                        !HasDivination && HasBattleTarget() &&
+                        !HasStatusEffect(Buffs.Divining) &&
+                        GetTargetHPPercent() > divHPThreshold &&
+                        (WaitGCDs || StandStill))
+                        return Divination;
+                }
+                else
+                {
+                    //Divination
+                    if (IsEnabled(Preset.AST_DPS_Divination) && ActionReady(Divination) &&
+                        !HasDivination && HasBattleTarget() &&
+                        !HasStatusEffect(Buffs.Divining) &&
+                        GetTargetHPPercent() > divHPThreshold &&
+                        (WaitGCDs || StandStill))
+                        return Divination;
+
+                    //Earthly Star
+                    if (IsEnabled(Preset.AST_ST_DPS_EarthlyStar) && IsOffCooldown(EarthlyStar) && 
+                        LevelChecked(EarthlyStar) && !HasStatusEffect(Buffs.EarthlyDominance) &&
+                        (WaitGCDs || StandStill))
+                        return AST_ST_DPS_EarthlyStarSubOption == 1 
+                            ? EarthlyStar.Retarget(replacedActions, SimpleTarget.Self) 
+                            : EarthlyStar.Retarget(replacedActions, SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
+                }
 
                 //Stellar Detonation
                 if (IsEnabled(Preset.AST_ST_DPS_StellarDetonation) &&
@@ -457,22 +478,44 @@ internal partial class AST : Healer
                     DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                //Divination
-                if (IsEnabled(Preset.AST_AOE_Divination) && ActionReady(Divination) && 
-                    !HasDivination && HasBattleTarget() &&
-                    !HasStatusEffect(Buffs.Divining) &&
-                    GetTargetHPPercent() > divHPThreshold &&
-                    (WaitGCDs || StandStill))
-                    return Divination;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Earthly Star
+                    if (IsEnabled(Preset.AST_AOE_DPS_EarthlyStar) && 
+                        LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
+                        !HasStatusEffect(Buffs.EarthlyDominance) && 
+                        (WaitGCDs || StandStill))
+                        return AST_AOE_DPS_EarthlyStarSubOption == 1 
+                            ? EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self) 
+                            : EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
 
-                //Earthly Star
-                if (IsEnabled(Preset.AST_AOE_DPS_EarthlyStar) && 
-                    LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
-                    !HasStatusEffect(Buffs.EarthlyDominance) && 
-                    (WaitGCDs || StandStill))
-                    return AST_AOE_DPS_EarthlyStarSubOption == 1 
-                        ? EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self) 
-                        : EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
+                    //Divination
+                    if (IsEnabled(Preset.AST_AOE_Divination) && ActionReady(Divination) && 
+                        !HasDivination && HasBattleTarget() &&
+                        !HasStatusEffect(Buffs.Divining) &&
+                        GetTargetHPPercent() > divHPThreshold &&
+                        (WaitGCDs || StandStill))
+                        return Divination;
+                }
+                else
+                {
+                    //Divination
+                    if (IsEnabled(Preset.AST_AOE_Divination) && ActionReady(Divination) && 
+                        !HasDivination && HasBattleTarget() &&
+                        !HasStatusEffect(Buffs.Divining) &&
+                        GetTargetHPPercent() > divHPThreshold &&
+                        (WaitGCDs || StandStill))
+                        return Divination;
+
+                    //Earthly Star
+                    if (IsEnabled(Preset.AST_AOE_DPS_EarthlyStar) && 
+                        LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
+                        !HasStatusEffect(Buffs.EarthlyDominance) && 
+                        (WaitGCDs || StandStill))
+                        return AST_AOE_DPS_EarthlyStarSubOption == 1 
+                            ? EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self) 
+                            : EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
+                }
 
                 //Stellar Detonation
                 if (IsEnabled(Preset.AST_AOE_DPS_StellarDetonation) &&

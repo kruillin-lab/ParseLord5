@@ -174,13 +174,22 @@ internal partial class GNB : Tank
             if (ShouldContinue(Preset.GNB_ST_Continuation, CanContinue || CanHV, RemainingGCD < 0.6f))
                 return OriginalHook(Continuation);
 
-            //No Mercy
-            if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
-                return NoMercy;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
+                    return Bloodfest;
 
-            //Bloodfest
-            if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
-                return Bloodfest;
+                if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
+                    return NoMercy;
+            }
+            else
+            {
+                if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
+                    return NoMercy;
+
+                if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
+                    return Bloodfest;
+            }
 
             //Continuation (HIGH PRIORITY): within late weave window, send now
             if (ShouldContinue(Preset.GNB_ST_Continuation, CanContinue || CanHV, CanDelayedWeave()))
@@ -369,11 +378,22 @@ internal partial class GNB : Tank
                 if (ShouldContinue(Preset.GNB_AoE_FatedBrand, CanFB, RemainingGCD < 0.6f))
                     return OriginalHook(Continuation);
 
-                if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
-                    return NoMercy;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
+                        return Bloodfest;
 
-                if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
-                    return Bloodfest;
+                    if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
+                        return NoMercy;
+                }
+                else
+                {
+                    if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
+                        return NoMercy;
+
+                    if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
+                        return Bloodfest;
+                }
 
                 if (ShouldContinue(Preset.GNB_AoE_FatedBrand, CanFB, CanDelayedWeave()))
                     return OriginalHook(Continuation);

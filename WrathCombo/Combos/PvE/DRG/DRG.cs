@@ -260,17 +260,34 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_ST_Buffs))
                     {
-                        //Battle Litany Feature
-                        if (IsEnabled(Preset.DRG_ST_BattleLitany) &&
-                            ActionReady(BattleLitany) &&
-                            GetTargetHPPercent() > HPThresholdSTBattleLitany)
-                            return BattleLitany;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            //Lance Charge Feature
+                            if (IsEnabled(Preset.DRG_ST_LanceCharge) &&
+                                CanLanceCharge &&
+                                GetTargetHPPercent() > HPThresholdSTLanceCharge)
+                                return LanceCharge;
 
-                        //Lance Charge Feature
-                        if (IsEnabled(Preset.DRG_ST_LanceCharge) &&
-                            CanLanceCharge &&
-                            GetTargetHPPercent() > HPThresholdSTLanceCharge)
-                            return LanceCharge;
+                            //Battle Litany Feature
+                            if (IsEnabled(Preset.DRG_ST_BattleLitany) &&
+                                ActionReady(BattleLitany) &&
+                                GetTargetHPPercent() > HPThresholdSTBattleLitany)
+                                return BattleLitany;
+                        }
+                        else
+                        {
+                            //Battle Litany Feature
+                            if (IsEnabled(Preset.DRG_ST_BattleLitany) &&
+                                ActionReady(BattleLitany) &&
+                                GetTargetHPPercent() > HPThresholdSTBattleLitany)
+                                return BattleLitany;
+
+                            //Lance Charge Feature
+                            if (IsEnabled(Preset.DRG_ST_LanceCharge) &&
+                                CanLanceCharge &&
+                                GetTargetHPPercent() > HPThresholdSTLanceCharge)
+                                return LanceCharge;
+                        }
 
                         //Life Surge Feature
                         if (IsEnabled(Preset.DRG_ST_LifeSurge) &&
@@ -398,16 +415,32 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_AoE_Buffs))
                     {
-                        if (IsEnabled(Preset.DRG_AoE_BattleLitany) &&
-                            ActionReady(BattleLitany) &&
-                            GetTargetHPPercent() > DRG_AoE_BattleLitanyHPTreshold)
-                            return BattleLitany;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            //Lance Charge Feature
+                            if (IsEnabled(Preset.DRG_AoE_LanceCharge) &&
+                                ActionReady(LanceCharge) &&
+                                GetTargetHPPercent() > DRG_AoE_LanceChargeHPTreshold)
+                                return LanceCharge;
 
-                        //Lance Charge Feature
-                        if (IsEnabled(Preset.DRG_AoE_LanceCharge) &&
-                            ActionReady(LanceCharge) &&
-                            GetTargetHPPercent() > DRG_AoE_LanceChargeHPTreshold)
-                            return LanceCharge;
+                            if (IsEnabled(Preset.DRG_AoE_BattleLitany) &&
+                                ActionReady(BattleLitany) &&
+                                GetTargetHPPercent() > DRG_AoE_BattleLitanyHPTreshold)
+                                return BattleLitany;
+                        }
+                        else
+                        {
+                            if (IsEnabled(Preset.DRG_AoE_BattleLitany) &&
+                                ActionReady(BattleLitany) &&
+                                GetTargetHPPercent() > DRG_AoE_BattleLitanyHPTreshold)
+                                return BattleLitany;
+
+                            //Lance Charge Feature
+                            if (IsEnabled(Preset.DRG_AoE_LanceCharge) &&
+                                ActionReady(LanceCharge) &&
+                                GetTargetHPPercent() > DRG_AoE_LanceChargeHPTreshold)
+                                return LanceCharge;
+                        }
 
                         //Life Surge Feature
                         if (IsEnabled(Preset.DRG_AoE_LifeSurge) &&

@@ -215,15 +215,30 @@ internal partial class MNK : Melee
             {
                 if (IsEnabled(Preset.MNK_STUseBuffs))
                 {
-                    if (IsEnabled(Preset.MNK_STUseBrotherhood) &&
-                        GetTargetHPPercent() > HPThresholdBH &&
-                        CanBrotherhood())
-                        return Brotherhood;
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (IsEnabled(Preset.MNK_STUseROF) &&
+                            GetTargetHPPercent() > HPThresholdRoF &&
+                            CanRoF())
+                            return RiddleOfFire;
 
-                    if (IsEnabled(Preset.MNK_STUseROF) &&
-                        GetTargetHPPercent() > HPThresholdRoF &&
-                        CanRoF())
-                        return RiddleOfFire;
+                        if (IsEnabled(Preset.MNK_STUseBrotherhood) &&
+                            GetTargetHPPercent() > HPThresholdBH &&
+                            CanBrotherhood())
+                            return Brotherhood;
+                    }
+                    else
+                    {
+                        if (IsEnabled(Preset.MNK_STUseBrotherhood) &&
+                            GetTargetHPPercent() > HPThresholdBH &&
+                            CanBrotherhood())
+                            return Brotherhood;
+
+                        if (IsEnabled(Preset.MNK_STUseROF) &&
+                            GetTargetHPPercent() > HPThresholdRoF &&
+                            CanRoF())
+                            return RiddleOfFire;
+                    }
                 }
 
                 if (IsEnabled(Preset.MNK_STUsePerfectBalance) &&
@@ -319,13 +334,26 @@ internal partial class MNK : Melee
                 if (IsEnabled(Preset.MNK_AoEUseBuffs) &&
                     GetTargetHPPercent() >= MNK_AoE_BuffsHPThreshold)
                 {
-                    if (IsEnabled(Preset.MNK_AoEUseBrotherhood) &&
-                        CanBrotherhood())
-                        return Brotherhood;
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (IsEnabled(Preset.MNK_AoEUseROF) &&
+                            CanRoF())
+                            return RiddleOfFire;
 
-                    if (IsEnabled(Preset.MNK_AoEUseROF) &&
-                        CanRoF())
-                        return RiddleOfFire;
+                        if (IsEnabled(Preset.MNK_AoEUseBrotherhood) &&
+                            CanBrotherhood())
+                            return Brotherhood;
+                    }
+                    else
+                    {
+                        if (IsEnabled(Preset.MNK_AoEUseBrotherhood) &&
+                            CanBrotherhood())
+                            return Brotherhood;
+
+                        if (IsEnabled(Preset.MNK_AoEUseROF) &&
+                            CanRoF())
+                            return RiddleOfFire;
+                    }
                 }
 
                 if (IsEnabled(Preset.MNK_AoEUsePerfectBalance) &&

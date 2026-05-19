@@ -234,16 +234,32 @@ internal partial class WHM : Healer
 
             if (CanWeave())
             {
-                if (IsEnabled(Preset.WHM_ST_MainCombo_PresenceOfMind) &&
-                    ActionReady(PresenceOfMind) &&
-                    ActionWatching.NumberOfGcdsUsed >= 3 &&
-                    !HasStatusEffect(Buffs.SacredSight))
-                    return PresenceOfMind;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.WHM_ST_MainCombo_Assize) &&
+                        ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
 
-                if (IsEnabled(Preset.WHM_ST_MainCombo_Assize) &&
-                    ActionReady(Assize) &&
-                    HasBattleTarget() && GetTargetDistance() <= 20)
-                    return Assize;
+                    if (IsEnabled(Preset.WHM_ST_MainCombo_PresenceOfMind) &&
+                        ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 3 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.WHM_ST_MainCombo_PresenceOfMind) &&
+                        ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 3 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+
+                    if (IsEnabled(Preset.WHM_ST_MainCombo_Assize) &&
+                        ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+                }
 
                 if (IsEnabled(Preset.WHM_ST_MainCombo_Lucid) &&
                     Role.CanLucidDream(WHM_STDPS_Lucid))
@@ -356,16 +372,32 @@ internal partial class WHM : Healer
 
             if (CanWeave() || IsMoving())
             {
-                if (IsEnabled(Preset.WHM_AoE_DPS_Assize) &&
-                    ActionReady(Assize) &&
-                    HasBattleTarget() && GetTargetDistance() <= 20)
-                    return Assize;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.WHM_AoE_DPS_PresenceOfMind) &&
+                        ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 4 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
 
-                if (IsEnabled(Preset.WHM_AoE_DPS_PresenceOfMind) &&
-                    ActionReady(PresenceOfMind) &&
-                    ActionWatching.NumberOfGcdsUsed >= 4 &&
-                    !HasStatusEffect(Buffs.SacredSight))
-                    return PresenceOfMind;
+                    if (IsEnabled(Preset.WHM_AoE_DPS_Assize) &&
+                        ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.WHM_AoE_DPS_Assize) &&
+                        ActionReady(Assize) &&
+                        HasBattleTarget() && GetTargetDistance() <= 20)
+                        return Assize;
+
+                    if (IsEnabled(Preset.WHM_AoE_DPS_PresenceOfMind) &&
+                        ActionReady(PresenceOfMind) &&
+                        ActionWatching.NumberOfGcdsUsed >= 4 &&
+                        !HasStatusEffect(Buffs.SacredSight))
+                        return PresenceOfMind;
+                }
             }
 
             #endregion

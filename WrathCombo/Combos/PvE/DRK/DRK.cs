@@ -128,14 +128,29 @@ internal partial class DRK : Tank
                 (int)BossRequirement.On;
             var cdBossRequirementMet = !cdBossRequirement ||
                                        (cdBossRequirement && InBossEncounter());
-            if (IsEnabled(Preset.DRK_ST_CDs) &&
-                cdBossRequirementMet &&
-                TryGetAction<Cooldown>(comboFlags, ref newAction))
-                return newAction;
 
-            if (IsEnabled(Preset.DRK_ST_Spenders) &&
-                TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (IsEnabled(Preset.DRK_ST_CDs) &&
+                    cdBossRequirementMet &&
+                    TryGetAction<Cooldown>(comboFlags, ref newAction))
+                    return newAction;
+
+                if (IsEnabled(Preset.DRK_ST_Spenders) &&
+                    TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+            }
+            else
+            {
+                if (IsEnabled(Preset.DRK_ST_Spenders) &&
+                    TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+
+                if (IsEnabled(Preset.DRK_ST_CDs) &&
+                    cdBossRequirementMet &&
+                    TryGetAction<Cooldown>(comboFlags, ref newAction))
+                    return newAction;
+            }
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
@@ -231,12 +246,24 @@ internal partial class DRK : Tank
                 TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
             
-            if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                return newAction;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (IsEnabled(Preset.DRK_AoE_Spenders) &&
+                    TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
 
-            if (IsEnabled(Preset.DRK_AoE_Spenders) &&
-                TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
+                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                    return newAction;
+            }
+            else
+            {
+                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                    return newAction;
+
+                if (IsEnabled(Preset.DRK_AoE_Spenders) &&
+                    TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+            }
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;

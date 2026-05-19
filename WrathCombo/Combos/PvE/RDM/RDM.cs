@@ -272,11 +272,22 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_ST_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte))
-                    return ContreSixte;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
+                        return Fleche;
 
-                if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
-                    return Fleche;
+                    if (IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte))
+                        return ContreSixte;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte))
+                        return ContreSixte;
+
+                    if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
+                        return Fleche;
+                }
 
                 if (IsEnabled(Preset.RDM_ST_Engagement) && CanEngagement && 
                     (IsNotEnabled(Preset.RDM_ST_Engagement_Pooling) || PoolEngagement) &&
@@ -416,11 +427,22 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_AoE_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte))
-                    return ContreSixte;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
+                        return Fleche;
 
-                if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
-                    return Fleche;
+                    if (IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte))
+                        return ContreSixte;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte))
+                        return ContreSixte;
+
+                    if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
+                        return Fleche;
+                }
 
                 if (IsEnabled(Preset.RDM_AoE_Engagement) && CanEngagement && 
                     (IsNotEnabled(Preset.RDM_AoE_Engagement_Pooling) || PoolEngagement) &&

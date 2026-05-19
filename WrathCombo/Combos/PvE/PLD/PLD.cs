@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Objects.Types;
 using System;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
@@ -363,16 +363,24 @@ internal partial class PLD : Tank
                             return OriginalHook(FightOrFlight);
                     }
 
-                    switch (CooldownFightOrFlight)
+                    if (CooldownFightOrFlight > 15)
                     {
-                        // Circle of Scorn / Spirits Within
-                        case > 15 when IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) &&
-                                       ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0:
-                            return CircleOfScorn;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
 
-                        case > 15 when IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) &&
-                                       ActionReady(OriginalHook(SpiritsWithin)):
-                            return OriginalHook(SpiritsWithin);
+                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+                        }
+                        else
+                        {
+                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+
+                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
+                        }
                     }
                 }
 
@@ -524,13 +532,24 @@ internal partial class PLD : Tank
                         return OriginalHook(FightOrFlight);
 
                     // Circle of Scorn / Spirits Within
-                    switch (CooldownFightOrFlight)
+                    if (CooldownFightOrFlight > 15)
                     {
-                        case > 15 when IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0:
-                            return CircleOfScorn;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
 
-                        case > 15 when IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)):
-                            return OriginalHook(SpiritsWithin);
+                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+                        }
+                        else
+                        {
+                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+
+                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
+                        }
                     }
                 }
 

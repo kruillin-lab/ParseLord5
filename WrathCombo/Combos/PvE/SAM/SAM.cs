@@ -269,15 +269,30 @@ internal partial class SAM : Melee
             {
                 if (IsEnabled(Preset.SAM_ST_CDs))
                 {
-                    //Meikyo feature
-                    if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
-                        CanMeikyo())
-                        return MeikyoShisui;
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        //Ikishoten feature
+                        if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
+                            CanIkishoten())
+                            return Ikishoten;
 
-                    //Ikishoten feature
-                    if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
-                        CanIkishoten())
-                        return Ikishoten;
+                        //Meikyo feature
+                        if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
+                            CanMeikyo())
+                            return MeikyoShisui;
+                    }
+                    else
+                    {
+                        //Meikyo feature
+                        if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
+                            CanMeikyo())
+                            return MeikyoShisui;
+
+                        //Ikishoten feature
+                        if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
+                            CanIkishoten())
+                            return Ikishoten;
+                    }
                 }
 
                 if (IsEnabled(Preset.SAM_ST_Damage))
@@ -404,23 +419,47 @@ internal partial class SAM : Melee
 
                 if (IsEnabled(Preset.SAM_AoE_CDs))
                 {
-                    if (IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
-                        ActionReady(MeikyoShisui) &&
-                        !HasStatusEffect(Buffs.MeikyoShisui) &&
-                        !JustUsed(MeikyoShisui) &&
-                        ComboTimer is 0)
-                        return MeikyoShisui;
-
-                    if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
-                        ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
                     {
-                        return Kenki switch
+                        if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
+                            ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
                         {
-                            //Dumps Kenki in preparation for Ikishoten
-                            >= 50 => Kyuten,
+                            return Kenki switch
+                            {
+                                //Dumps Kenki in preparation for Ikishoten
+                                >= 50 => Kyuten,
 
-                            < 50 => Ikishoten
-                        };
+                                < 50 => Ikishoten
+                            };
+                        }
+
+                        if (IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
+                            ActionReady(MeikyoShisui) &&
+                            !HasStatusEffect(Buffs.MeikyoShisui) &&
+                            !JustUsed(MeikyoShisui) &&
+                            ComboTimer is 0)
+                            return MeikyoShisui;
+                    }
+                    else
+                    {
+                        if (IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
+                            ActionReady(MeikyoShisui) &&
+                            !HasStatusEffect(Buffs.MeikyoShisui) &&
+                            !JustUsed(MeikyoShisui) &&
+                            ComboTimer is 0)
+                            return MeikyoShisui;
+
+                        if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
+                            ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                        {
+                            return Kenki switch
+                            {
+                                //Dumps Kenki in preparation for Ikishoten
+                                >= 50 => Kyuten,
+
+                                < 50 => Ikishoten
+                            };
+                        }
                     }
                 }
 

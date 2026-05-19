@@ -1,4 +1,4 @@
-﻿#region Dependencies
+#region Dependencies
 using Dalamud.Game.ClientState.JobGauge.Types;
 using System;
 using System.Collections.Generic;
@@ -146,9 +146,9 @@ internal partial class PCT
                 return true;
             }
 
-            // ParseLord5 experiment (Simple): swap Living Muse / Steel Muse priority.
+            // ParseLord5 experiment: swap Living Muse / Steel Muse priority.
             // Baseline (flag off): Living Muse first, then Steel Muse.
-            if (flags.HasFlag(Combo.Simple) && Service.Configuration.ParseLord5ExperimentalMode)
+            if (Service.Configuration.ParseLord5ExperimentalMode)
             {
                 if (steelMuseEnabled && steelMuseReady &&
                     (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||

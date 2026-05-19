@@ -398,11 +398,22 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (WandererSong())
-                    return WanderersMinuet;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (MagesSong())
+                        return MagesBallad;
 
-                if (MagesSong())
-                    return MagesBallad;
+                    if (WandererSong())
+                        return WanderersMinuet;
+                }
+                else
+                {
+                    if (WandererSong())
+                        return WanderersMinuet;
+
+                    if (MagesSong())
+                        return MagesBallad;
+                }
 
                 if (ArmySong())
                     return ArmysPaeon;
@@ -599,11 +610,22 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (WandererSong())
-                    return WanderersMinuet;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (MagesSong())
+                        return MagesBallad;
 
-                if (MagesSong())
-                    return MagesBallad;
+                    if (WandererSong())
+                        return WanderersMinuet;
+                }
+                else
+                {
+                    if (WandererSong())
+                        return WanderersMinuet;
+
+                    if (MagesSong())
+                        return MagesBallad;
+                }
 
                 if (ArmySong())
                     return ArmysPaeon;

@@ -348,16 +348,32 @@ internal partial class SCH : Healer
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
 
-                if (IsEnabled(Preset.SCH_ST_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
-                    GetTargetHPPercent() > chainThreshold)
-                    return ChainStratagem;
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (IsEnabled(Preset.SCH_ST_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
+                        AetherflowCD <= SCH_ST_DPS_EnergyDrain &&
+                        (!SCH_ST_DPS_EnergyDrain_Burst ||
+                         ChainStrategemCD > 10 ||
+                         !LevelChecked(ChainStratagem)))
+                        return EnergyDrain;
 
-                if (IsEnabled(Preset.SCH_ST_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
-                    AetherflowCD <= SCH_ST_DPS_EnergyDrain &&
-                    (!SCH_ST_DPS_EnergyDrain_Burst ||
-                     ChainStrategemCD > 10 ||
-                     !LevelChecked(ChainStratagem)))
-                    return EnergyDrain;
+                    if (IsEnabled(Preset.SCH_ST_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
+                        GetTargetHPPercent() > chainThreshold)
+                        return ChainStratagem;
+                }
+                else
+                {
+                    if (IsEnabled(Preset.SCH_ST_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
+                        GetTargetHPPercent() > chainThreshold)
+                        return ChainStratagem;
+
+                    if (IsEnabled(Preset.SCH_ST_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
+                        AetherflowCD <= SCH_ST_DPS_EnergyDrain &&
+                        (!SCH_ST_DPS_EnergyDrain_Burst ||
+                         ChainStrategemCD > 10 ||
+                         !LevelChecked(ChainStratagem)))
+                        return EnergyDrain;
+                }
 
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_Lucid) && Role.CanLucidDream(SCH_ST_DPS_LucidOption))
                     return Role.LucidDreaming;
@@ -429,17 +445,34 @@ internal partial class SCH : Healer
             if (IsEnabled(Preset.SCH_AoE_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem) && CanWeave())
                 return BanefulImpaction;
 
-            if (IsEnabled(Preset.SCH_AoE_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
-                GetTargetHPPercent() > chainThreshold && CanWeave() &&
-                (LevelChecked(BanefulImpaction) || !SCH_AoE_DPS_ChainStratagemBanefulOption))
-                return ChainStratagem;
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (IsEnabled(Preset.SCH_AoE_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
+                    AetherflowCD <= SCH_AoE_DPS_EnergyDrain && CanWeave() &&
+                    (!SCH_AoE_DPS_EnergyDrain_Burst ||
+                     ChainStrategemCD > 10 ||
+                     !LevelChecked(ChainStratagem)))
+                    return EnergyDrain;
 
-            if (IsEnabled(Preset.SCH_AoE_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
-                AetherflowCD <= SCH_AoE_DPS_EnergyDrain && CanWeave() &&
-                (!SCH_AoE_DPS_EnergyDrain_Burst ||
-                 ChainStrategemCD > 10 ||
-                 !LevelChecked(ChainStratagem)))
-                return EnergyDrain;
+                if (IsEnabled(Preset.SCH_AoE_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
+                    GetTargetHPPercent() > chainThreshold && CanWeave() &&
+                    (LevelChecked(BanefulImpaction) || !SCH_AoE_DPS_ChainStratagemBanefulOption))
+                    return ChainStratagem;
+            }
+            else
+            {
+                if (IsEnabled(Preset.SCH_AoE_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
+                    GetTargetHPPercent() > chainThreshold && CanWeave() &&
+                    (LevelChecked(BanefulImpaction) || !SCH_AoE_DPS_ChainStratagemBanefulOption))
+                    return ChainStratagem;
+
+                if (IsEnabled(Preset.SCH_AoE_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
+                    AetherflowCD <= SCH_AoE_DPS_EnergyDrain && CanWeave() &&
+                    (!SCH_AoE_DPS_EnergyDrain_Burst ||
+                     ChainStrategemCD > 10 ||
+                     !LevelChecked(ChainStratagem)))
+                    return EnergyDrain;
+            }
 
             var dotAction = OriginalHook(Bio);
             BioList.TryGetValue(dotAction, out var dotDebuffID);

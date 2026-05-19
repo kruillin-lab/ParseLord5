@@ -264,11 +264,22 @@ internal partial class VPR : Melee
                 if (IsEnabled(Preset.VPR_ST_VicewinderWeaves) &&
                     !HasStatusEffect(Buffs.Reawakened) && InMeleeRange())
                 {
-                    if (HasStatusEffect(Buffs.HuntersVenom))
-                        return OriginalHook(Twinfang);
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
+                            return OriginalHook(Twinblood);
 
-                    if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                        return OriginalHook(Twinblood);
+                        if (HasStatusEffect(Buffs.HuntersVenom))
+                            return OriginalHook(Twinfang);
+                    }
+                    else
+                    {
+                        if (HasStatusEffect(Buffs.HuntersVenom))
+                            return OriginalHook(Twinfang);
+
+                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
+                            return OriginalHook(Twinblood);
+                    }
                 }
 
                 //Serpents Ire
@@ -381,13 +392,26 @@ internal partial class VPR : Melee
                     //Vicepit weaves
                     if (IsEnabled(Preset.VPR_AoE_VicepitWeaves))
                     {
-                        if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                            (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                            return OriginalHook(Twinfang);
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            if (HasStatusEffect(Buffs.FellskinsVenom) &&
+                                (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
+                                return OriginalHook(Twinblood);
 
-                        if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                            (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                            return OriginalHook(Twinblood);
+                            if (HasStatusEffect(Buffs.FellhuntersVenom) &&
+                                (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
+                                return OriginalHook(Twinfang);
+                        }
+                        else
+                        {
+                            if (HasStatusEffect(Buffs.FellhuntersVenom) &&
+                                (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
+                                return OriginalHook(Twinfang);
+
+                            if (HasStatusEffect(Buffs.FellskinsVenom) &&
+                                (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
+                                return OriginalHook(Twinblood);
+                        }
                     }
 
                     //Serpents Ire usage
