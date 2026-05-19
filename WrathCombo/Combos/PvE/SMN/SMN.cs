@@ -4,6 +4,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.SMN.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -52,11 +53,24 @@ internal partial class SMN : Caster
                 if (Gauge.IsTitanReady)
                     return OriginalHook(SummonTopaz);
 
-                if (Gauge.IsGarudaReady)
-                    return OriginalHook(SummonEmerald);
+                // ParseLord5 experiment: swap Ifrit / Garuda egi priority.
+                // Baseline (flag off): Garuda first, then Ifrit.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (Gauge.IsIfritReady)
+                        return OriginalHook(SummonRuby);
 
-                if (Gauge.IsIfritReady)
-                    return OriginalHook(SummonRuby);
+                    if (Gauge.IsGarudaReady)
+                        return OriginalHook(SummonEmerald);
+                }
+                else
+                {
+                    if (Gauge.IsGarudaReady)
+                        return OriginalHook(SummonEmerald);
+
+                    if (Gauge.IsIfritReady)
+                        return OriginalHook(SummonRuby);
+                }
             }
             #endregion
 
@@ -104,11 +118,23 @@ internal partial class SMN : Caster
                 if (Gauge.IsTitanReady)
                     return OriginalHook(SummonTopaz);
 
-                if (Gauge.IsGarudaReady)
-                    return OriginalHook(SummonEmerald);
+                // ParseLord5 experiment (AoE): swap Ifrit / Garuda egi priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (Gauge.IsIfritReady)
+                        return OriginalHook(SummonRuby);
 
-                if (Gauge.IsIfritReady)
-                    return OriginalHook(SummonRuby);
+                    if (Gauge.IsGarudaReady)
+                        return OriginalHook(SummonEmerald);
+                }
+                else
+                {
+                    if (Gauge.IsGarudaReady)
+                        return OriginalHook(SummonEmerald);
+
+                    if (Gauge.IsIfritReady)
+                        return OriginalHook(SummonRuby);
+                }
             }
             #endregion
 
