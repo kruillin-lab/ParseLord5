@@ -1,5 +1,6 @@
 using System;
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.MCH.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -65,13 +66,28 @@ internal partial class MCH : PhysicalRanged
                         !HasStatusEffect(Buffs.FullMetalMachinist))
                         return BarrelStabilizer;
 
-                    // Queen
-                    if (CanQueen())
-                        return OriginalHook(RookAutoturret);
+                    // ParseLord5 experiment: swap Reassemble / Queen priority.
+                    // Baseline (flag off): Queen first, then Reassemble.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        // Reassemble
+                        if (CanReassemble())
+                            return Reassemble;
 
-                    // Reassemble
-                    if (CanReassemble())
-                        return Reassemble;
+                        // Queen
+                        if (CanQueen())
+                            return OriginalHook(RookAutoturret);
+                    }
+                    else
+                    {
+                        // Queen
+                        if (CanQueen())
+                            return OriginalHook(RookAutoturret);
+
+                        // Reassemble
+                        if (CanReassemble())
+                            return Reassemble;
+                    }
 
                     // Gauss Round and Ricochet outside HC
                     if (JustUsed(OriginalHook(AirAnchor), 2f) ||
@@ -179,17 +195,35 @@ internal partial class MCH : PhysicalRanged
                         !HasStatusEffect(Buffs.FullMetalMachinist))
                         return BarrelStabilizer;
 
-                    if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
-                        return OriginalHook(RookAutoturret);
+                    // ParseLord5 experiment (AoE): swap Reassemble / Queen priority.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
+                            !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
+                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
+                            (LevelChecked(Scattergun) ||
+                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
+                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
+                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
+                            return Reassemble;
 
-                    if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
-                        !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
-                        GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
-                        (LevelChecked(Scattergun) ||
-                         GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
-                         GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
-                         HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
-                        return Reassemble;
+                        if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
+                            return OriginalHook(RookAutoturret);
+                    }
+                    else
+                    {
+                        if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
+                            return OriginalHook(RookAutoturret);
+
+                        if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
+                            !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
+                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
+                            (LevelChecked(Scattergun) ||
+                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
+                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
+                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
+                            return Reassemble;
+                    }
 
                     //gauss and ricochet outside HC
                     if (CanGaussRound &&
