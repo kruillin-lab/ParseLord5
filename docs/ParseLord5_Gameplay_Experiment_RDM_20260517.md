@@ -67,5 +67,15 @@ else
 
 ## Recommended next
 
-- RDM AoE cross-preset expansion
+- ~~RDM AoE cross-preset expansion~~ **DONE (2026-05-18).** AoE gate added — same Fleche/Contre Sixte swap.
 - Commit consolidation
+
+## Cross-Preset Expansion — RDM AoE
+
+**Preset**: `RDM_AoE_SimpleMode`. Same Fleche/Contre Sixte swap. Independent gate, same `if/else` pattern.
+
+## 23 gates, 11 jobs, all ST+AoE
+
+| WAR | DRG | SAM | WHM | DRK | AST | BRD | RDM | NIN | MCH | DNC |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 3 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |

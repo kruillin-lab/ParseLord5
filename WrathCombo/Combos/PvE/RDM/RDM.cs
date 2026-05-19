@@ -153,11 +153,23 @@ internal partial class RDM : Caster
                 if (ActionReady(Embolden) && !HasEmbolden)
                     return Embolden;
 
-                if (ActionReady(ContreSixte))
-                    return ContreSixte;
+                // ParseLord5 experiment (AoE): swap Fleche / Contre Sixte priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(Fleche))
+                        return Fleche;
 
-                if (ActionReady(Fleche))
-                    return Fleche;
+                    if (ActionReady(ContreSixte))
+                        return ContreSixte;
+                }
+                else
+                {
+                    if (ActionReady(ContreSixte))
+                        return ContreSixte;
+
+                    if (ActionReady(Fleche))
+                        return Fleche;
+                }
 
                 if (CanEngagement && PoolEngagement)
                     return Engagement;
