@@ -9,7 +9,7 @@
         <!-- This is the version that will be used when pushing to the repo.-->
         <Description>ParseLord5 is a WrathCombo-based fork and iteration.</Description>
         <Copyright>Copyleft attick 2021 thanks attick UwU</Copyright>
-        <PackageProjectUrl>https://github.com/PunishXIV/WrathCombo</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/kruillin-lab/ParseLord5</PackageProjectUrl>
         <PackageId>ParseLord5</PackageId>
         <Product>ParseLord5</Product>
     </PropertyGroup>

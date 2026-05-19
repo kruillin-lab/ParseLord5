@@ -5,7 +5,7 @@
   "DalamudApiLevel": 15,
   "Punchline": "WrathCombo-based fork and iteration.",
   "Description": "ParseLord5 is a WrathCombo-based fork and iteration that preserves the original architecture for future experimentation.",
-  "RepoUrl": "https://github.com/PunishXIV/WrathCombo",
+  "RepoUrl": "https://github.com/kruillin-lab/ParseLord5",
   "IconUrl": "https://s3.puni.sh/media/plugin/60/icon-2bwhkn3zf1f.png",
   "Changelog": "Please check the project's GitHub or Discord for a full changelog.",
   "Tags": [
