@@ -45,7 +45,7 @@ Mug increases Ninki gauge; TrickAttack applies a damage vulnerability debuff. Sw
 
 | WAR | DRG | SAM | WHM | DRK | AST | BRD | RDM | NIN |
 |---|---|---|---|---|---|---|---|---|
-| 3 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| 3 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 2 |
 
 Jobs fully covered (ST+AoE): 9
 

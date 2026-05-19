@@ -27,9 +27,8 @@
     },
     "domain-evals": {
       "shell": "powershell",
-      "command": "",
-      "timeout_seconds": 0,
-      "skip_reason": "ParseLord5 domain evals are not onboarded yet."
+      "command": ".\\scripts\\rotation-evals.ps1",
+      "timeout_seconds": 240
     },
     "markdown-audit": {
       "shell": "powershell",

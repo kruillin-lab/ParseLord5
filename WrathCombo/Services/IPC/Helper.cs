@@ -356,7 +356,7 @@ public partial class Helper(ref Leasing leasing)
         try
         {
             PrefixForIPC = prefix;
-            LeaseeIPC.WrathComboCallback((int)reason, additionalInfo);
+            LeaseeIPC.ParseLord5Callback((int)reason, additionalInfo);
             LeaseeIPC.Dispose();
         }
         catch
@@ -503,7 +503,7 @@ internal static class LeaseeIPC
         EzIPC.Init(typeof(LeaseeIPC), Helper.PrefixForIPC, SafeWrapper.IPCException);
 
 #pragma warning disable CS0649, CS8618 // Complaints of the method
-    [EzIPC] internal static readonly Action<int, string> WrathComboCallback;
+    [EzIPC] internal static readonly Action<int, string> ParseLord5Callback;
 #pragma warning restore CS8618, CS0649
 
     public static void Dispose()

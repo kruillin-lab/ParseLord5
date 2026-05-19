@@ -258,8 +258,8 @@ public partial class Provider : IDisposable
     ///     The <see cref="CancellationReason" /> (cast as an int) and a string with
     ///     any additional info will be passed to your method.<br />
     ///     The method should be of the form
-    ///     <c>void WrathComboCallback(int, string)</c>.<br />
-    ///     See <see cref="LeaseeIPC.WrathComboCallback" /> for the exact signature that
+    ///     <c>void ParseLord5Callback(int, string)</c>.<br />
+    ///     See <see cref="LeaseeIPC.ParseLord5Callback" /> for the exact signature that
     ///     will be called.
     /// </remarks>
     /// <seealso cref="RegisterForLease(string,string)" />
