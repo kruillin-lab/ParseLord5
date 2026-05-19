@@ -78,18 +78,28 @@ internal partial class WAR
                     return selectedActionID;
                 }
             }
-            // ParseLord5 experiment: under experimental mode, try GCD before oGCD.
-            // Baseline behavior (flag off): oGCD first, then GCD.
+            // ParseLord5 experiment: in weave windows, try GCD before oGCD.
+            // Baseline (flag off): oGCD first, then GCD. TryOGCDAttacks only fires inside CanWeave();
+            // TryGCDAttacks can fire outside weave — so experimental must not run GCD before oGCD globally.
             if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                if (TryGCDAttacks(comboFlags, ref actionID))
+                if (CanWeave())
+                {
+                    if (TryGCDAttacks(comboFlags, ref actionID))
+                    {
+                        TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd-exp");
+                        return actionID;
+                    }
+
+                    if (TryOGCDAttacks(comboFlags, ref actionID))
+                    {
+                        TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd-exp");
+                        return actionID;
+                    }
+                }
+                else if (TryGCDAttacks(comboFlags, ref actionID))
                 {
                     TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd-exp");
-                    return actionID;
-                }
-                if (TryOGCDAttacks(comboFlags, ref actionID))
-                {
-                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd-exp");
                     return actionID;
                 }
             }
@@ -135,12 +145,18 @@ internal partial class WAR
                         : actionID;
             }
 
-            // ParseLord5 experiment (AoE): under experimental mode, try GCD before oGCD.
+            // ParseLord5 experiment (AoE): in weave windows, try GCD before oGCD.
             if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-                if (TryOGCDAttacks(comboFlags, ref actionID))
+                if (CanWeave())
+                {
+                    if (TryGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+
+                    if (TryOGCDAttacks(comboFlags, ref actionID))
+                        return actionID;
+                }
+                else if (TryGCDAttacks(comboFlags, ref actionID))
                     return actionID;
             }
             else
