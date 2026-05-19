@@ -5,6 +5,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.RDM.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -34,11 +35,24 @@ internal partial class RDM : Caster
                 if (ActionReady(Embolden) && !HasEmbolden)
                     return Embolden;
 
-                if (ActionReady(ContreSixte))
-                    return ContreSixte;
+                // ParseLord5 experiment: swap Fleche / Contre Sixte priority.
+                // Baseline (flag off): Contre Sixte first, then Fleche.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(Fleche))
+                        return Fleche;
 
-                if (ActionReady(Fleche))
-                    return Fleche;
+                    if (ActionReady(ContreSixte))
+                        return ContreSixte;
+                }
+                else
+                {
+                    if (ActionReady(ContreSixte))
+                        return ContreSixte;
+
+                    if (ActionReady(Fleche))
+                        return Fleche;
+                }
 
                 if (CanEngagement && PoolEngagement)
                     return Engagement;
