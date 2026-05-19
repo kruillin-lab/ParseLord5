@@ -2,6 +2,7 @@ using Dalamud.Game.ClientState.JobGauge.Enums;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.BRD.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -31,11 +32,23 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (WandererSong())
-                    return WanderersMinuet;
+                // ParseLord5 experiment (AoE): swap Wanderer's Minuet / Mage's Ballad.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (MagesSong())
+                        return MagesBallad;
 
-                if (MagesSong())
-                    return MagesBallad;
+                    if (WandererSong())
+                        return WanderersMinuet;
+                }
+                else
+                {
+                    if (WandererSong())
+                        return WanderersMinuet;
+
+                    if (MagesSong())
+                        return MagesBallad;
+                }
 
                 if (ArmySong())
                     return ArmysPaeon;
@@ -190,11 +203,24 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (WandererSong())
-                    return WanderersMinuet;
+                // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
+                // Baseline (flag off): Wanderer's first, then Mage's.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (MagesSong())
+                        return MagesBallad;
 
-                if (MagesSong())
-                    return MagesBallad;
+                    if (WandererSong())
+                        return WanderersMinuet;
+                }
+                else
+                {
+                    if (WandererSong())
+                        return WanderersMinuet;
+
+                    if (MagesSong())
+                        return MagesBallad;
+                }
 
                 if (ArmySong())
                     return ArmysPaeon;

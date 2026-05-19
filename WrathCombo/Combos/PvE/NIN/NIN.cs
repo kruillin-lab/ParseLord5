@@ -5,6 +5,7 @@ using System.Linq;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.NIN.Config;
 
 namespace WrathCombo.Combos.PvE;
@@ -65,11 +66,24 @@ internal partial class NIN : Melee
                 if (CanBhavacakra && NinkiPooling)
                     return LevelChecked(Bhavacakra) ? OriginalHook(Bhavacakra) : OriginalHook(HellfrogMedium);
 
-                if (CanMugST && CombatEngageDuration().TotalSeconds > 5)
-                    return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(Bhavacakra) : OriginalHook(Mug);
+                // ParseLord5 experiment: swap TrickAttack / Mug priority.
+                // Baseline (flag off): Mug first, then TrickAttack.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (CanTrickST && CombatEngageDuration().TotalSeconds > 5)
+                        return OriginalHook(TrickAttack);
 
-                if (CanTrickST && CombatEngageDuration().TotalSeconds > 5)
-                    return OriginalHook(TrickAttack);
+                    if (CanMugST && CombatEngageDuration().TotalSeconds > 5)
+                        return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(Bhavacakra) : OriginalHook(Mug);
+                }
+                else
+                {
+                    if (CanMugST && CombatEngageDuration().TotalSeconds > 5)
+                        return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(Bhavacakra) : OriginalHook(Mug);
+
+                    if (CanTrickST && CombatEngageDuration().TotalSeconds > 5)
+                        return OriginalHook(TrickAttack);
+                }
                 
                 if (Role.CanFeint() && GroupDamageIncoming() && CanWeave())
                     return Role.Feint;
@@ -189,11 +203,23 @@ internal partial class NIN : Melee
                 if (CanHellfrogMedium && NinkiPooling)
                     return OriginalHook(HellfrogMedium);
 
-                if (CanMugAoE && CombatEngageDuration().TotalSeconds > 5)
-                    return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(HellfrogMedium) : OriginalHook(Mug);
+                // ParseLord5 experiment (AoE): swap TrickAttack / Mug priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
+                        return OriginalHook(TrickAttack);
 
-                if (CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
-                    return OriginalHook(TrickAttack);
+                    if (CanMugAoE && CombatEngageDuration().TotalSeconds > 5)
+                        return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(HellfrogMedium) : OriginalHook(Mug);
+                }
+                else
+                {
+                    if (CanMugAoE && CombatEngageDuration().TotalSeconds > 5)
+                        return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(HellfrogMedium) : OriginalHook(Mug);
+
+                    if (CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
+                        return OriginalHook(TrickAttack);
+                }
             }
             #endregion
 
