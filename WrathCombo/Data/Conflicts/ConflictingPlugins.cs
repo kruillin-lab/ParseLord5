@@ -640,10 +640,10 @@ public static class ConflictingPlugins
     ///     the current context, like Action Replacing being off in PvP
     /// </summary>
     /// <param name="conflicts">
-    ///     The output list of conflicting wrath settings.
+    ///     The output list of conflicting ParseLord5 settings.
     /// </param>
     /// <returns>
-    ///     Whether there are wrath settings conflicts.
+    ///     Whether there are ParseLord5 settings conflicts.
     /// </returns>
     private static bool TryGetWrathSettingConflicts(out Conflict[] conflicts)
     {

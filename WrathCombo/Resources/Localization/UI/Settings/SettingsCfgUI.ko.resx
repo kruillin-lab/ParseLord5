@@ -122,7 +122,7 @@
   </data>
   <data name="ActionChanging_helpMark" xml:space="preserve">
     <value>이 설정은 단축바의 스킬이 플러그인의 콤보로 대체될지 여부를 결정합니다.
-비활성화하면, 수동으로 스킬을 눌러 사용할 때 Wrath 설정의 영향을 받지 않습니다.
+비활성화하면, 수동으로 스킬을 눌러 사용할 때 ParseLord5 설정의 영향을 받지 않습니다.
 자동 순환은 이 설정과 관계없이 계속 작동합니다.</value>
   </data>
   <data name="ActionChanging_Name" xml:space="preserve">

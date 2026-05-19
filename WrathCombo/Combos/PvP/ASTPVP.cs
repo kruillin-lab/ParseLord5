@@ -69,7 +69,7 @@ internal static class ASTPvP
                     break;
                 
                 case Preset.ASTPvP_Burst_Heal:
-                    DrawAdditionalBoolChoice(ASTPvP_BurstHealRetarget, "Retarget", "Retargets Aspected Benefic to the Heal Stack(In Wrath Settings)");
+                    DrawAdditionalBoolChoice(ASTPvP_BurstHealRetarget, "Retarget", "Retargets Aspected Benefic to the Heal Stack(In ParseLord5 settings)");
                     DrawAdditionalBoolChoice(ASTPvP_BurstHeal_DoubleCast, "Double Cast", "Adds Doublecast to Aspected Benefic");
                     DrawSliderInt(1, 100, ASTPvP_Burst_HealThreshold, "HP% to use Aspected Benefic");
                     break;
@@ -77,7 +77,7 @@ internal static class ASTPvP
                 
                 case Preset.ASTPvP_Heal:
                     DrawAdditionalBoolChoice(ASTPvP_Heal_DoubleCast, "Double Cast", "Adds Doublecast to Aspected Benefic");
-                    DrawAdditionalBoolChoice(ASTPvP_Heal_Retarget, "Retarget", "Retargets Aspected Benefic to the Heal Stack(In Wrath Settings)");
+                    DrawAdditionalBoolChoice(ASTPvP_Heal_Retarget, "Retarget", "Retargets Aspected Benefic to the Heal Stack(In ParseLord5 settings)");
                     break;
             }
         }

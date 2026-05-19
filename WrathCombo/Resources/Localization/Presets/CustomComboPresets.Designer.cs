@@ -25493,7 +25493,7 @@ namespace WrathCombo.Resources.Localization.Presets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Retargets Adlo to the heal stack (In Wrath Settings) outside of the Burst Feature.
+        ///   Looks up a localized string similar to Retargets Adlo to the heal stack (In ParseLord5 settings) outside of the Burst Feature.
         /// </summary>
         internal static string SCHPvP_RetargetAdlo_Desc {
             get {
@@ -27140,7 +27140,7 @@ namespace WrathCombo.Resources.Localization.Presets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Retargets Kardia to the heal stack (In Wrath Settings) outside of the Burst Feature.
+        ///   Looks up a localized string similar to Retargets Kardia to the heal stack (In ParseLord5 settings) outside of the Burst Feature.
         /// </summary>
         internal static string SGEPvP_RetargetKardia_Desc {
             get {

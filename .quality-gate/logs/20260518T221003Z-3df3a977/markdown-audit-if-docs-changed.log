@@ -1,0 +1,16 @@
+check: markdown-audit-if-docs-changed
+command: internal-repo-markdown-audit
+exit_code: 1
+duration_seconds: 0.0
+
+STDOUT
+------
+Validated 12 changed Markdown file(s) in repo scope.
+Skipped deleted: 0.
+Skipped strict-schema: 0.
+missing_metadata_files=1
+- advisor-plan-prompt.md: tags, type, project, status, aliases, tags:type/, tags:project/, tags:status/
+
+STDERR
+------
+Changed Markdown metadata validation failed in repo scope.

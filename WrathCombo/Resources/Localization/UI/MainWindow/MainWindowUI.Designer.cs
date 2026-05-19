@@ -153,7 +153,7 @@ namespace WrathCombo.Resources.Localization.UI.MainWindow {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following Wrath settings are known to conflict with {0}&apos;s Settings:
+        ///   Looks up a localized string similar to The following ParseLord5 settings are known to conflict with {0}&apos;s Settings:
         ///{1}
         ///
         ///It is recommended you disable these settings to prevent unexpected behavior and bugs..
@@ -242,7 +242,7 @@ namespace WrathCombo.Resources.Localization.UI.MainWindow {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Wrath Combo.
+        ///   Looks up a localized string similar to ParseLord5.
         /// </summary>
         internal static string Wrath_Combo {
             get {

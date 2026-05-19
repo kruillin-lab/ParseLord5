@@ -71,7 +71,7 @@ namespace WrathCombo.Resources.Localization.UI.Settings {
         
         /// <summary>
         ///   Looks up a localized string similar to Controls whether Actions on your Hotbar will be Replaced with combos from the plugin.
-        ///If disabled, your manual presses of abilities will no longer be affected by any Wrath settings.
+        ///If disabled, your manual presses of abilities will no longer be affected by any ParseLord5 settings.
         ///
         ///Auto-Rotation will work regardless of the setting..
         /// </summary>

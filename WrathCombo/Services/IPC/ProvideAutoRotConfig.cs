@@ -13,7 +13,7 @@ namespace WrathCombo.Services.IPC;
 public partial class Provider
 {
     /// <summary>
-    ///     Get the state of Auto-Rotation Configuration in Wrath Combo.
+    ///     Get the state of Auto-Rotation Configuration in ParseLord5.
     /// </summary>
     /// <param name="passedOption">
     ///     The option to check the value of.
@@ -91,7 +91,7 @@ public partial class Provider
     }
 
     /// <summary>
-    ///     Set the state of Auto-Rotation Configuration in Wrath Combo.
+    ///     Set the state of Auto-Rotation Configuration in ParseLord5.
     /// </summary>
     /// <param name="lease">Your lease ID from <see cref="RegisterForLease(string,string)" /></param>
     /// <param name="passedOption">

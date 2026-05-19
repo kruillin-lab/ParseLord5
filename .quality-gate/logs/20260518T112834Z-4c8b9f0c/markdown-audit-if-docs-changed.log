@@ -1,0 +1,14 @@
+check: markdown-audit-if-docs-changed
+command: internal-repo-markdown-audit
+exit_code: 0
+duration_seconds: 0.0
+
+STDOUT
+------
+Validated 2 changed Markdown file(s) in repo scope.
+Skipped deleted: 0.
+Skipped strict-schema: 0.
+
+STDERR
+------
+

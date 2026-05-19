@@ -10959,7 +10959,7 @@
     <value>心关重定向</value>
   </data>
   <data name="SGEPvP_RetargetKardia_Desc" xml:space="preserve">
-    <value>在爆发功能外，将“心关”重定向到治疗队列（Wrath 设置中）。</value>
+    <value>在爆发功能外，将“心关”重定向到治疗队列（ParseLord5 设置中）。</value>
   </data>
   <data name="SAMPvP_Burst_Name" xml:space="preserve">
     <value>爆发模式</value>
@@ -11059,7 +11059,7 @@
     <value>鼓舞激励之策重定向</value>
   </data>
   <data name="SCHPvP_RetargetAdlo_Desc" xml:space="preserve">
-    <value>在爆发功能外，将“鼓舞激励之策”重定向到治疗队列（Wrath 设置中）。</value>
+    <value>在爆发功能外，将“鼓舞激励之策”重定向到治疗队列（ParseLord5 设置中）。</value>
   </data>
   <data name="SMNPvP_BurstMode_Name" xml:space="preserve">
     <value>爆发模式</value>

@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "run_id": "20260518T125116Z-65db6766",
+  "task": "Phase 7L NutriMind registry remediation [global delegated ParseLord5]",
+  "level": "normal",
+  "repo": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5",
+  "project": "parselord5",
+  "profile": "dotnet-dalamud",
+  "started": "2026-05-18T12:51:16Z",
+  "finished": "2026-05-18T12:51:18Z",
+  "branch": "parselord5-wc-base",
+  "commit": "45836134afe37c1b20e75c6a725015f5d0341226",
+  "git_status_before": " M README.md\n M WrathCombo/Resources/Localization/UI/Settings/SettingsUI.Designer.cs\n M WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ja.resx\n M WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ko.resx\n M WrathCombo/Resources/Localization/UI/Settings/SettingsUI.resx\n M WrathCombo/Resources/Localization/UI/Settings/SettingsUI.zh-Hans.resx\n M WrathCombo/Services/IPC/Helper.cs\n M WrathCombo/WrathCombo.cs\n M docs/ParseLord5_Runtime_Identity_Audit_20260517.md\n M docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md\n M res/motd.txt\n?? .quality-gate/logs/20260518T024152Z-b80356d6/build.log\n?? .quality-gate/logs/20260518T024152Z-b80356d6/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260518T024508Z-81d8d15b/build.log\n?? .quality-gate/logs/20260518T024508Z-81d8d15b/markdown-audit-if-docs-changed.log\n?? .quality-gate/logs/20260518T112834Z-4c8b9f0c/build.log\n?? .quality-gate/logs/20260518T112834Z-4c8b9f0c/markdown-audit-if-docs-changed.log\n?? .quality-gate/runs/20260518T024152Z-b80356d6.json\n?? .quality-gate/runs/20260518T024508Z-81d8d15b.json\n?? .quality-gate/runs/20260518T112834Z-4c8b9f0c.json\n?? docs/ParseLord5_Remaining_Identity_Policy_20260517.md\n?? icm/stages/04-verify/output/gate-20260518T024152Z-b80356d6.md\n?? icm/stages/04-verify/output/gate-20260518T024508Z-81d8d15b.md\n?? icm/stages/04-verify/output/gate-20260518T112834Z-4c8b9f0c.md",
+  "changed_files": [
+    {
+      "path": "README.md",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/Settings/SettingsUI.Designer.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ja.resx",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/Settings/SettingsUI.ko.resx",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/Settings/SettingsUI.resx",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Resources/Localization/UI/Settings/SettingsUI.zh-Hans.resx",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/Services/IPC/Helper.cs",
+      "status": "M",
+      "risk": "plugin-critical"
+    },
+    {
+      "path": "WrathCombo/WrathCombo.cs",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Runtime_Identity_Audit_20260517.md",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "res/motd.txt",
+      "status": "M",
+      "risk": "normal"
+    },
+    {
+      "path": "docs/ParseLord5_Remaining_Identity_Policy_20260517.md",
+      "status": "??",
+      "risk": "normal"
+    }
+  ],
+  "changed_file_triggers": {
+    "markdown-audit-if-docs-changed": [
+      "README.md",
+      "docs/ParseLord5_Runtime_Identity_Audit_20260517.md",
+      "docs/ParseLord5_Runtime_Smoke_And_Collision_Audit_20260517.md",
+      "docs/ParseLord5_Remaining_Identity_Policy_20260517.md"
+    ]
+  },
+  "checks": [
+    {
+      "name": "changed-files",
+      "command": "internal",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 0,
+      "stdout_summary": "12 changed file(s) captured after filtering 12 generated/ignored path(s).",
+      "stderr_summary": "",
+      "log_path": "",
+      "notes": "12 changed file(s) captured after filtering 12 generated/ignored path(s)."
+    },
+    {
+      "name": "build",
+      "command": "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 2.62,
+      "stdout_summary": "Determining projects to restore...\n  All projects are up-to-date for restore.\n  ECommons -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\ECommons\\ECommons\\bin\\Release\\ECommons.dll\n  WrathCombo.API -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\WrathCombo.API\\bin\\Release\\WrathCombo.API.dll\n  PunishLib -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\PunishLib\\PunishLib\\bin\\Release\\PunishLib.dll\n  WrathCombo -> C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\WrathCombo\\bin\\Release\\ParseLord5.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:02.19",
+      "stderr_summary": "",
+      "log_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T125116Z-65db6766\\build.log"
+    },
+    {
+      "name": "markdown-audit-if-docs-changed",
+      "command": "internal-repo-markdown-audit",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 0.0,
+      "stdout_summary": "Validated 4 changed Markdown file(s) in repo scope.\nSkipped deleted: 0.\nSkipped strict-schema: 0.",
+      "stderr_summary": "",
+      "log_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T125116Z-65db6766\\markdown-audit-if-docs-changed.log",
+      "notes": "Validated 4 changed Markdown file(s) in repo scope. Skipped deleted: 0. Skipped strict-schema: 0."
+    },
+    {
+      "name": "domain-evals-if-domain-changed",
+      "command": "domain-evals",
+      "exit_code": 0,
+      "status": "SKIPPED",
+      "duration_seconds": 0,
+      "stdout_summary": "",
+      "stderr_summary": "",
+      "log_path": "",
+      "notes": "No matching changed files."
+    }
+  ],
+  "findings": [],
+  "exceptions": [],
+  "result": "PASS",
+  "run_dir": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\runs",
+  "log_dir": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\.quality-gate\\logs\\20260518T125116Z-65db6766",
+  "report_path": "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\icm\\stages\\04-verify\\output\\gate-20260518T125116Z-65db6766.md"
+}

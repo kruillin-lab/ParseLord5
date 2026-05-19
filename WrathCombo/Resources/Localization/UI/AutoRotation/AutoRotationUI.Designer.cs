@@ -515,7 +515,7 @@ namespace WrathCombo.Resources.Localization.UI.AutoRotation {
         ///   Looks up a localized string similar to These NPCs will be ignored by Auto-Rotation.
         ///Every instance of this NPC will be excluded from automatic targeting (Manual will still work).
         ///To remove an NPC from this list, select it and press the Delete button below.
-        ///To add an NPC to this list, target the NPC and use the command: /wrath ignore.
+        ///To add an NPC to this list, target the NPC and use the command: /pl5 ignore.
         /// </summary>
         internal static string HelpText_IgnoredNPCs {
             get {
