@@ -2,6 +2,7 @@ using System;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.BLM.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -21,13 +22,28 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                    return Amplifier;
+                // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
+                // Baseline (flag off): Amplifier first, then Ley Lines.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
+                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f))
+                        return LeyLines;
 
-                if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                    GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
-                    !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f))
-                    return LeyLines;
+                    if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                        return Amplifier;
+                }
+                else
+                {
+                    if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                        return Amplifier;
+
+                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
+                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f))
+                        return LeyLines;
+                }
 
                 if (EndOfFirePhase)
                 {
@@ -236,13 +252,28 @@ internal partial class BLM : Caster
                     (EndOfFirePhase || EndOfIcePhaseAoE))
                     return Transpose;
 
-                if (ActionReady(Amplifier) && PolyglotTimer >= 20)
-                    return Amplifier;
+                // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
+                // Baseline (flag off): Amplifier first, then Ley Lines.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
+                        GetTargetHPPercent() > 40 && !JustUsed(LeyLines))
+                        return LeyLines;
 
-                if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                    !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
-                    GetTargetHPPercent() > 40 && !JustUsed(LeyLines))
-                    return LeyLines;
+                    if (ActionReady(Amplifier) && PolyglotTimer >= 20)
+                        return Amplifier;
+                }
+                else
+                {
+                    if (ActionReady(Amplifier) && PolyglotTimer >= 20)
+                        return Amplifier;
+
+                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
+                        GetTargetHPPercent() > 40 && !JustUsed(LeyLines))
+                        return LeyLines;
+                }
             }
 
             if ((EndOfFirePhase || EndOfIcePhaseAoE) &&
