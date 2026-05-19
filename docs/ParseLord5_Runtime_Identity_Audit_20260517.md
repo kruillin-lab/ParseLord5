@@ -156,7 +156,7 @@ The IPC is registered under the prefix `"WrathCombo"`. This means:
 | `Provider.cs` | 84 | `prefix: "WrathCombo"` | IPC is exposed as WrathCombo |
 | `Search.cs` | 200 | `ConfigFile.FullName` | Uses authoritative Dalamud config path — no hardcoded filename |
 | `Helper.cs` | 390 | `PunishXIV/WrathCombo` | IPC status check from upstream repo |
-| `Provider.cs` | 261-262 | `WrathComboCallback` | Callback method name |
+| `Provider.cs` | 261-262 | `ParseLord5Callback` | Callback method name |
 
 ### 5.3 docs/IPC.md
 

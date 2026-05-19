@@ -44,7 +44,7 @@ Document what Wrath-branded identity surfaces remain after the config-isolation,
 | Item | File | Value |
 |---|---|---|
 | IPC prefix | `Provider.cs:84` | `EzIPC.Init(output, prefix: "ParseLord5")` |
-| IPC callback name | `Helper.cs:506` | `WrathComboCallback` (deferred) |
+| IPC callback name | `Helper.cs:506` | `ParseLord5Callback` (renamed 2026-05-18) |
 | IPC status endpoint | `Helper.cs:390` | `https://raw.githubusercontent.com/PunishXIV/WrathCombo/main/res/ipc_status.txt` (deferred) |
 
 ### Policy decision: CHANGED to `"ParseLord5"`
@@ -62,7 +62,7 @@ The provider IPC prefix has been changed from `"WrathCombo"` to `"ParseLord5"`. 
 
 | Item | Status | Reason |
 |---|---|---|
-| IPC callback name `WrathComboCallback` | Deferred | External consumers implement this method signature; changing it requires consumer coordination |
+| IPC callback name `ParseLord5Callback` | Renamed (2026-05-18) | Consumers must update their callback signatures |
 | IPC status endpoint | Deferred | Upstream dependency; requires ParseLord5-owned endpoint |
 
 ---

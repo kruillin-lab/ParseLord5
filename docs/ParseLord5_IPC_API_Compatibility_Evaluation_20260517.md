@@ -51,7 +51,7 @@ EzIPC.Init(output, prefix: "WrathCombo");
 
 | Surface | File:Line | Value | Exposed? |
 |---|---|---|---|
-| Lease callback signature | `Helper.cs:506` | `WrathComboCallback(int, string)` | Yes — consumers implement this method name |
+| Lease callback signature | `Helper.cs:506` | `ParseLord5Callback(int, string)` | Yes — consumers implement this method name |
 | IPC status endpoint | `Helper.cs:390` | `PunishXIV/WrathCombo/…/ipc_status.txt` | Yes — remote kill-switch |
 | IPC debug label | `Debug.cs:1020` | `"Wrath IPC"` | Yes — in-plugin debug UI |
 
@@ -181,7 +181,7 @@ Both patterns now use matching InternalName + prefix pairs. No collision between
 
 | Surface | Value | Reason |
 |---|---|---|
-| IPC callback name | `WrathComboCallback` | External consumers implement this method signature; changing it requires consumer coordination |
+| IPC callback name | `ParseLord5Callback` | External consumers implement this method signature; changing it requires consumer coordination |
 | IPC status endpoint | `PunishXIV/WrathCombo/…/ipc_status.txt` | Upstream dependency; requires ParseLord5-owned endpoint |
 | WrathCombo.API namespace | `WrathCombo.API` | Public API surface; requires consumer coordination |
 

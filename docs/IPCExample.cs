@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ECommons.EzIpcManager;
 using ECommons.Logging;
 using ECommons.Reflection;
@@ -133,7 +133,7 @@ public class MyIPC
     }
 
     [EzIPC]
-    public void WrathComboCallback(int reason, string additionalInfo)
+    public void ParseLord5Callback(int reason, string additionalInfo)
     {
         PluginLog.Warning($"Lease was cancelled for reason {reason}. " +
                           $"Additional info: {additionalInfo}");

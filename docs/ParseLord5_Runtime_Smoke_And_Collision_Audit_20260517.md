@@ -138,7 +138,7 @@ This matrix is based on current source analysis, not a live dual-load proof.
 | `/wrath` command | Registered | **Yes** | High | Both plugins can claim `/wrath` |
 | `/scombo` command | Registered | **Yes** | High | Both plugins can claim `/scombo` |
 | IPC prefix | `WrathCombo` | **Yes** | High | Both plugins would expose same prefix |
-| IPC callback naming | `WrathComboCallback` | Yes | Medium | Part of same IPC compatibility surface |
+| IPC callback naming | `ParseLord5Callback` | Yes | Medium | Part of same IPC compatibility surface |
 | IPC status endpoint | Upstream WrathCombo URL | Shared behavior | Medium | ParseLord5 still follows WrathCombo IPC kill-switch file |
 | DTR main label | `ParseLord5` | Maybe | Medium | Safer after branding shell, but registration semantics need live test |
 | DTR opener label | `ParseLord5 Opener` | Maybe | Medium | Same as above |

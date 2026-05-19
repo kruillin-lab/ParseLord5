@@ -36,7 +36,7 @@ ParseLord5 is a WrathCombo-based fork and iteration that preserves the original 
 - **Provider prefix**: Changed from `"WrathCombo"` to `"ParseLord5"`. Resolves InternalName/prefix mismatch for external consumers.
 - **Consumer pattern**: `TryGetDalamudPlugin("ParseLord5")` + `EzIPC.Init(..., "ParseLord5")`.
 - **WrathCombo IPC**: Separate prefix, no side-by-side collision.
-- **Deferred**: `WrathComboCallback` callback name, IPC status endpoint (upstream dependency).
+- **Done (2026-05-18)**: `ParseLord5Callback` callback renamed from `WrathComboCallback`. IPC status endpoint (upstream dependency) remains deferred.
 
 ### Gameplay Experiments
 
@@ -60,7 +60,6 @@ All gated behind `ParseLord5ExperimentalMode` (default `false`). Zero shared cor
 
 | Item | Reason |
 |---|---|
-| IPC callback `WrathComboCallback` | External consumers implement this signature |
 | IPC status endpoint | Upstream dependency on `PunishXIV/WrathCombo` |
 | MOTD fetch URL | Upstream dependency |
 | `WrathCombo.API` project/namespace | Public API surface for consumers |
