@@ -5,6 +5,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.GNB.Config;
 
 #endregion
@@ -49,13 +50,24 @@ internal partial class GNB : Tank
             if (ShouldContinue(Preset.GNB_ST_Simple, CanContinue || CanHV, RemainingGCD < 0.6f))
                 return OriginalHook(Continuation);
 
-            //No Mercy
-            if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
-                return NoMercy;
+            // ParseLord5 experiment: swap No Mercy / Bloodfest priority.
+            // Baseline (flag off): No Mercy first, then Bloodfest.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
+                    return Bloodfest;
 
-            //Bloodfest
-            if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
-                return Bloodfest;
+                if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
+                    return NoMercy;
+            }
+            else
+            {
+                if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
+                    return NoMercy;
+
+                if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
+                    return Bloodfest;
+            }
 
             //Continuation (HIGH PRIORITY): within late weave window, just send now
             if (ShouldContinue(Preset.GNB_ST_Simple, CanContinue || CanHV, CanDelayedWeave()))
@@ -269,11 +281,23 @@ internal partial class GNB : Tank
                 if (ShouldContinue(Preset.GNB_AoE_Simple, CanFB, RemainingGCD < 0.6f))
                     return OriginalHook(Continuation);
 
-                if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
-                    return NoMercy;
+                // ParseLord5 experiment (AoE): swap No Mercy / Bloodfest priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
+                        return Bloodfest;
 
-                if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
-                    return Bloodfest;
+                    if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
+                        return NoMercy;
+                }
+                else
+                {
+                    if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
+                        return NoMercy;
+
+                    if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
+                        return Bloodfest;
+                }
 
                 if (ShouldContinue(Preset.GNB_AoE_Simple, CanFB, CanDelayedWeave()))
                     return OriginalHook(Continuation);

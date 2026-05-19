@@ -1,5 +1,6 @@
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.MNK.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -26,11 +27,24 @@ internal partial class MNK : Melee
             // OGCDs
             if (CanWeave() && InCombat())
             {
-                if (CanBrotherhood())
-                    return Brotherhood;
+                // ParseLord5 experiment: swap Brotherhood / Riddle of Fire priority.
+                // Baseline (flag off): Brotherhood first, then Riddle of Fire.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (CanRoF())
+                        return RiddleOfFire;
 
-                if (CanRoF())
-                    return RiddleOfFire;
+                    if (CanBrotherhood())
+                        return Brotherhood;
+                }
+                else
+                {
+                    if (CanBrotherhood())
+                        return Brotherhood;
+
+                    if (CanRoF())
+                        return RiddleOfFire;
+                }
 
                 if (CanPerfectBalance())
                     return PerfectBalance;
@@ -95,11 +109,23 @@ internal partial class MNK : Melee
             // OGCD's
             if (CanWeave() && InCombat())
             {
-                if (CanBrotherhood())
-                    return Brotherhood;
+                // ParseLord5 experiment (AoE): swap Brotherhood / Riddle of Fire priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (CanRoF())
+                        return RiddleOfFire;
 
-                if (CanRoF())
-                    return RiddleOfFire;
+                    if (CanBrotherhood())
+                        return Brotherhood;
+                }
+                else
+                {
+                    if (CanBrotherhood())
+                        return Brotherhood;
+
+                    if (CanRoF())
+                        return RiddleOfFire;
+                }
 
                 if (CanPerfectBalance(true))
                     return PerfectBalance;

@@ -1,4 +1,5 @@
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.RPR.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -46,17 +47,32 @@ internal partial class RPR : Melee
                     if (GetCooldownRemainingTime(Gluttony) <= GCD && Role.CanTrueNorth())
                         return Role.TrueNorth;
 
-                    //Gluttony
-                    if (ActionReady(Gluttony) &&
-                        GetCooldownRemainingTime(Gluttony) <= GCD / 2)
-                        return Gluttony;
+                    // ParseLord5 experiment: swap Gluttony / Bloodstalk priority.
+                    // Baseline (flag off): Gluttony first, then Bloodstalk.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (ActionReady(OriginalHook(BloodStalk)) &&
+                            (!LevelChecked(Gluttony) ||
+                             LevelChecked(Gluttony) && IsOnCooldown(Gluttony) &&
+                             (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 4)))
+                            return OriginalHook(BloodStalk);
 
-                    //Bloodstalk
-                    if (ActionReady(OriginalHook(BloodStalk)) &&
-                        (!LevelChecked(Gluttony) ||
-                         LevelChecked(Gluttony) && IsOnCooldown(Gluttony) &&
-                         (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 4)))
-                        return OriginalHook(BloodStalk);
+                        if (ActionReady(Gluttony) &&
+                            GetCooldownRemainingTime(Gluttony) <= GCD / 2)
+                            return Gluttony;
+                    }
+                    else
+                    {
+                        if (ActionReady(Gluttony) &&
+                            GetCooldownRemainingTime(Gluttony) <= GCD / 2)
+                            return Gluttony;
+
+                        if (ActionReady(OriginalHook(BloodStalk)) &&
+                            (!LevelChecked(Gluttony) ||
+                             LevelChecked(Gluttony) && IsOnCooldown(Gluttony) &&
+                             (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 4)))
+                            return OriginalHook(BloodStalk);
+                    }
                 }
 
                 //Enshroud Weaves
@@ -182,17 +198,35 @@ internal partial class RPR : Melee
                     (ActionReady(Enshroud) || HasStatusEffect(Buffs.IdealHost)))
                     return Enshroud;
 
-                if (ActionReady(Gluttony) && !HasStatusEffect(Buffs.Enshrouded) &&
-                    !HasStatusEffect(Buffs.SoulReaver) && !HasStatusEffect(Buffs.ImmortalSacrifice) &&
-                    GetCooldownRemainingTime(Gluttony) <= GCD)
-                    return Gluttony;
+                // ParseLord5 experiment (AoE): swap Gluttony / Grim Swathe priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(GrimSwathe) && InActionRange(GrimSwathe) &&
+                        !HasStatusEffect(Buffs.Enshrouded) && !HasStatusEffect(Buffs.SoulReaver) &&
+                        !HasStatusEffect(Buffs.ImmortalSacrifice) && !HasStatusEffect(Buffs.Executioner) &&
+                        (!LevelChecked(Gluttony) || LevelChecked(Gluttony) &&
+                            (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 5)))
+                        return GrimSwathe;
 
-                if (ActionReady(GrimSwathe) && InActionRange(GrimSwathe) &&
-                    !HasStatusEffect(Buffs.Enshrouded) && !HasStatusEffect(Buffs.SoulReaver) &&
-                    !HasStatusEffect(Buffs.ImmortalSacrifice) && !HasStatusEffect(Buffs.Executioner) &&
-                    (!LevelChecked(Gluttony) || LevelChecked(Gluttony) &&
-                        (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 5)))
-                    return GrimSwathe;
+                    if (ActionReady(Gluttony) && !HasStatusEffect(Buffs.Enshrouded) &&
+                        !HasStatusEffect(Buffs.SoulReaver) && !HasStatusEffect(Buffs.ImmortalSacrifice) &&
+                        GetCooldownRemainingTime(Gluttony) <= GCD)
+                        return Gluttony;
+                }
+                else
+                {
+                    if (ActionReady(Gluttony) && !HasStatusEffect(Buffs.Enshrouded) &&
+                        !HasStatusEffect(Buffs.SoulReaver) && !HasStatusEffect(Buffs.ImmortalSacrifice) &&
+                        GetCooldownRemainingTime(Gluttony) <= GCD)
+                        return Gluttony;
+
+                    if (ActionReady(GrimSwathe) && InActionRange(GrimSwathe) &&
+                        !HasStatusEffect(Buffs.Enshrouded) && !HasStatusEffect(Buffs.SoulReaver) &&
+                        !HasStatusEffect(Buffs.ImmortalSacrifice) && !HasStatusEffect(Buffs.Executioner) &&
+                        (!LevelChecked(Gluttony) || LevelChecked(Gluttony) &&
+                            (Soul is 100 || GetCooldownRemainingTime(Gluttony) > GCD * 5)))
+                        return GrimSwathe;
+                }
 
                 if (HasStatusEffect(Buffs.Enshrouded))
                 {

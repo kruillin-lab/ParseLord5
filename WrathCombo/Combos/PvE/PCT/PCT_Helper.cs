@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.PCT.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 #endregion
@@ -145,31 +146,63 @@ internal partial class PCT
                 return true;
             }
 
-            // LivingMuse
-            if (livingMuseEnabled && livingMuseReady && CanWeave() && 
-                !JustUsed(StarryMuse) && //Buff propagation issue prevention
-                (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) && //Overcap Prevention
-                (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold || //Burn Boss Threshold
-                 !LevelChecked(ScenicMuse) || //Low Level no Scenic
-                 ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) || // Hold for buffs
-                 !scenicMuseEnabled)) //Dont Hold for Buffs
+            // ParseLord5 experiment (Simple): swap Living Muse / Steel Muse priority.
+            // Baseline (flag off): Living Muse first, then Steel Muse.
+            if (flags.HasFlag(Combo.Simple) && Service.Configuration.ParseLord5ExperimentalMode)
             {
-                actionID = OriginalHook(LivingMuse);
-                return true;
-            }
+                if (steelMuseEnabled && steelMuseReady &&
+                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                     HasStatusEffect(Buffs.StarryMuse) && CanWeave() ||
+                     hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
+                     !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
+                     almostCappedOrCappedSteelMuse && CanWeave() ||
+                     ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
+                     !LevelChecked(ScenicMuse) && CanWeave()))
+                {
+                    actionID = OriginalHook(SteelMuse);
+                    return true;
+                }
 
-            // SteelMuse
-            if (steelMuseEnabled && steelMuseReady && 
-                (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold || //Burn Boss Threshold
-                 HasStatusEffect(Buffs.StarryMuse) && CanWeave() || //Use in burst if you need to
-                 hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30  || //Use When Moving but not if itll get in way of burst
-                 !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40|| //
-                 almostCappedOrCappedSteelMuse && CanWeave() || //Use because Capped
-                 ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD || //Use charge before the burst prep
-                 !LevelChecked(ScenicMuse) && CanWeave())) //Low Level no Scenic
+                if (livingMuseEnabled && livingMuseReady && CanWeave() &&
+                    !JustUsed(StarryMuse) &&
+                    (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) &&
+                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                     !LevelChecked(ScenicMuse) ||
+                     ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
+                     !scenicMuseEnabled))
+                {
+                    actionID = OriginalHook(LivingMuse);
+                    return true;
+                }
+            }
+            else
             {
-                actionID = OriginalHook(SteelMuse);
-                return true;
+                // LivingMuse
+                if (livingMuseEnabled && livingMuseReady && CanWeave() &&
+                    !JustUsed(StarryMuse) &&
+                    (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) &&
+                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                     !LevelChecked(ScenicMuse) ||
+                     ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
+                     !scenicMuseEnabled))
+                {
+                    actionID = OriginalHook(LivingMuse);
+                    return true;
+                }
+
+                // SteelMuse
+                if (steelMuseEnabled && steelMuseReady &&
+                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                     HasStatusEffect(Buffs.StarryMuse) && CanWeave() ||
+                     hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
+                     !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
+                     almostCappedOrCappedSteelMuse && CanWeave() ||
+                     ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
+                     !LevelChecked(ScenicMuse) && CanWeave()))
+                {
+                    actionID = OriginalHook(SteelMuse);
+                    return true;
+                }
             }
 
             // Portrait Mog or Madeen

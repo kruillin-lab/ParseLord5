@@ -6,6 +6,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.SCH.Config;
 using EZ = ECommons.Throttlers.EzThrottler;
 using TS = System.TimeSpan;
@@ -44,12 +45,26 @@ internal partial class SCH : Healer
                 if (HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
 
-                if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
-                    return ChainStratagem;
+                // ParseLord5 experiment: swap Chain Stratagem / Energy Drain priority.
+                // Baseline (flag off): Chain Stratagem first, then Energy Drain.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(EnergyDrain) && AetherflowCD <= 10 &&
+                        (ChainStrategemCD > 10 || !LevelChecked(ChainStratagem)))
+                        return EnergyDrain;
 
-                if (ActionReady(EnergyDrain) && AetherflowCD <= 10 &&
-                    (ChainStrategemCD > 10 || !LevelChecked(ChainStratagem)))
-                    return EnergyDrain;
+                    if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
+                        return ChainStratagem;
+                }
+                else
+                {
+                    if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
+                        return ChainStratagem;
+
+                    if (ActionReady(EnergyDrain) && AetherflowCD <= 10 &&
+                        (ChainStrategemCD > 10 || !LevelChecked(ChainStratagem)))
+                        return EnergyDrain;
+                }
 
                 if (Role.CanLucidDream(6500))
                     return Role.LucidDreaming;
@@ -98,12 +113,26 @@ internal partial class SCH : Healer
             if (HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem) && CanWeave())
                 return BanefulImpaction;
 
-            if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem && CanWeave())
-                return ChainStratagem;
+            // ParseLord5 experiment (AoE): swap Chain Stratagem / Energy Drain priority.
+            if (CanWeave())
+            {
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(EnergyDrain) && AetherflowCD <= 10)
+                        return EnergyDrain;
 
-            if (ActionReady(EnergyDrain) &&
-                AetherflowCD <= 10 && CanWeave())
-                return EnergyDrain;
+                    if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
+                        return ChainStratagem;
+                }
+                else
+                {
+                    if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
+                        return ChainStratagem;
+
+                    if (ActionReady(EnergyDrain) && AetherflowCD <= 10)
+                        return EnergyDrain;
+                }
+            }
 
             var dotAction = OriginalHook(Bio);
             BioList.TryGetValue(dotAction, out var dotDebuffID);

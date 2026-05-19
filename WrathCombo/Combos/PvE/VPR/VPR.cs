@@ -1,6 +1,7 @@
 using Dalamud.Game.ClientState.JobGauge.Enums;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.VPR.Config;
 namespace WrathCombo.Combos.PvE;
 
@@ -38,11 +39,24 @@ internal partial class VPR : Melee
                 //Vice Twin Weaves
                 if (!HasStatusEffect(Buffs.Reawakened) && InMeleeRange())
                 {
-                    if (HasStatusEffect(Buffs.HuntersVenom))
-                        return OriginalHook(Twinfang);
+                    // ParseLord5 experiment: swap Hunter's / Swiftskin's venom weave priority.
+                    // Baseline (flag off): Hunter's Venom first, then Swiftskin's Venom.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
+                            return OriginalHook(Twinblood);
 
-                    if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                        return OriginalHook(Twinblood);
+                        if (HasStatusEffect(Buffs.HuntersVenom))
+                            return OriginalHook(Twinfang);
+                    }
+                    else
+                    {
+                        if (HasStatusEffect(Buffs.HuntersVenom))
+                            return OriginalHook(Twinfang);
+
+                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
+                            return OriginalHook(Twinblood);
+                    }
                 }
 
                 //Serpents Ire
@@ -132,14 +146,27 @@ internal partial class VPR : Melee
 
                 if (!HasStatusEffect(Buffs.Reawakened))
                 {
-                    //Vicepit weaves
-                    if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                        InActionRange(TwinfangThresh))
-                        return OriginalHook(Twinfang);
+                    // ParseLord5 experiment (AoE): swap Fellhunter's / Fellskin's venom weave priority.
+                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    {
+                        if (HasStatusEffect(Buffs.FellskinsVenom) &&
+                            InActionRange(TwinbloodThresh))
+                            return OriginalHook(Twinblood);
 
-                    if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                        InActionRange(TwinbloodThresh))
-                        return OriginalHook(Twinblood);
+                        if (HasStatusEffect(Buffs.FellhuntersVenom) &&
+                            InActionRange(TwinfangThresh))
+                            return OriginalHook(Twinfang);
+                    }
+                    else
+                    {
+                        if (HasStatusEffect(Buffs.FellhuntersVenom) &&
+                            InActionRange(TwinfangThresh))
+                            return OriginalHook(Twinfang);
+
+                        if (HasStatusEffect(Buffs.FellskinsVenom) &&
+                            InActionRange(TwinbloodThresh))
+                            return OriginalHook(Twinblood);
+                    }
 
                     //Serpents Ire usage
                     if (!MaxCoils && ActionReady(SerpentsIre) &&

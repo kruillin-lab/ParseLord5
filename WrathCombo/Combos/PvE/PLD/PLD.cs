@@ -4,6 +4,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.PLD.Config;
 
 namespace WrathCombo.Combos.PvE;
@@ -80,14 +81,26 @@ internal partial class PLD : Tank
                             return OriginalHook(FightOrFlight);
                     }
 
-                    switch (CooldownFightOrFlight)
+                    // ParseLord5 experiment: swap Circle of Scorn / Spirits Within priority.
+                    // Baseline (flag off): Circle of Scorn first, then Spirits Within.
+                    if (CooldownFightOrFlight > 15)
                     {
-                        // Circle of Scorn / Spirits Within
-                        case > 15 when ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0:
-                            return CircleOfScorn;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            if (ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
 
-                        case > 15 when ActionReady(OriginalHook(SpiritsWithin)):
-                            return OriginalHook(SpiritsWithin);
+                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+                        }
+                        else
+                        {
+                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+
+                            if (ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
+                        }
                     }
                 }
 
@@ -221,14 +234,25 @@ internal partial class PLD : Tank
                         (!LevelChecked(Requiescat) || CooldownRequiescat < 0.5f && HasRequiescatMPSimple && !HasWeaved()))
                         return OriginalHook(FightOrFlight);
 
-                    // Circle of Scorn / Spirits Within
-                    switch (CooldownFightOrFlight)
+                    // ParseLord5 experiment (AoE): swap Circle of Scorn / Spirits Within priority.
+                    if (CooldownFightOrFlight > 15)
                     {
-                        case > 15 when ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0:
-                            return CircleOfScorn;
+                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        {
+                            if (ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
 
-                        case > 15 when ActionReady(OriginalHook(SpiritsWithin)):
-                            return OriginalHook(SpiritsWithin);
+                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+                        }
+                        else
+                        {
+                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                                return CircleOfScorn;
+
+                            if (ActionReady(OriginalHook(SpiritsWithin)))
+                                return OriginalHook(SpiritsWithin);
+                        }
                     }
                 }
 

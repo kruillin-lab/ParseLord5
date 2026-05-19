@@ -4,6 +4,7 @@ using System.Linq;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.SGE.Config;
 using EZ = ECommons.Throttlers.EzThrottler;
 using TS = System.TimeSpan;
@@ -45,17 +46,28 @@ internal partial class SGE : Healer
                 if (ActionReady(Druochole) && Addersgall >= 3)
                     return Druochole.RetargetIfEnabled(DosisActions);
 
-                // Psyche
-                if (ActionReady(Psyche) && InCombat())
-                    return Psyche;
+                // ParseLord5 experiment: swap Psyche / Soteria priority.
+                // Baseline (flag off): Psyche first, then Soteria.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+
+                    if (ActionReady(Psyche) && InCombat())
+                        return Psyche;
+                }
+                else
+                {
+                    if (ActionReady(Psyche) && InCombat())
+                        return Psyche;
+
+                    if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+                }
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
                     return Rhizomata;
-
-                //Soteria
-                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
             }
 
             uint dotAction = OriginalHook(Dosis);
@@ -130,18 +142,29 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(OriginalHook(Dyskrasia));
 
-                // Psyche
-                if (ActionReady(Psyche) && HasBattleTarget() &&
-                    InActionRange(Psyche))
-                    return Psyche;
+                // ParseLord5 experiment (AoE): swap Psyche / Soteria priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+
+                    if (ActionReady(Psyche) && HasBattleTarget() &&
+                        InActionRange(Psyche))
+                        return Psyche;
+                }
+                else
+                {
+                    if (ActionReady(Psyche) && HasBattleTarget() &&
+                        InActionRange(Psyche))
+                        return Psyche;
+
+                    if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                        return Soteria;
+                }
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
                     return Rhizomata;
-
-                //Soteria
-                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
             }
 
             //Eukrasia for DoT
