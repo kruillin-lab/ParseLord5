@@ -5,6 +5,7 @@ using ECommons.GameFunctions;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.AST.Config;
 using EZ = ECommons.Throttlers.EzThrottler;
 using TS = System.TimeSpan;
@@ -65,19 +66,40 @@ internal partial class AST : Healer
                 if (ActionReady(OriginalHook(AstralDraw)) && HasNoDPSCard)
                     return OriginalHook(AstralDraw);
 
-                //Divination
-                if (ActionReady(Divination) && HasBattleTarget() && 
-                    !HasDivination && !HasStatusEffect(Buffs.Divining) &&
-                    (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
-                    StandStill)
-                    return Divination;
+                // ParseLord5 experiment: swap Divination / Earthly Star priority.
+                // Baseline (flag off): Divination first, then Earthly Star.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Earthly Star
+                    if (!HasStatusEffect(Buffs.EarthlyDominance) &&
+                        ActionReady(EarthlyStar) && StandStill &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
+                        IsOffCooldown(EarthlyStar))
+                        return EarthlyStar.Retarget(replacedActions, SimpleTarget.Self);
 
-                //Earthly Star
-                if (!HasStatusEffect(Buffs.EarthlyDominance) &&
-                    ActionReady(EarthlyStar) && StandStill &&
-                    (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
-                    IsOffCooldown(EarthlyStar))
-                    return EarthlyStar.Retarget(replacedActions, SimpleTarget.Self);
+                    //Divination
+                    if (ActionReady(Divination) && HasBattleTarget() &&
+                        !HasDivination && !HasStatusEffect(Buffs.Divining) &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
+                        StandStill)
+                        return Divination;
+                }
+                else
+                {
+                    //Divination
+                    if (ActionReady(Divination) && HasBattleTarget() &&
+                        !HasDivination && !HasStatusEffect(Buffs.Divining) &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
+                        StandStill)
+                        return Divination;
+
+                    //Earthly Star
+                    if (!HasStatusEffect(Buffs.EarthlyDominance) &&
+                        ActionReady(EarthlyStar) && StandStill &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()) &&
+                        IsOffCooldown(EarthlyStar))
+                        return EarthlyStar.Retarget(replacedActions, SimpleTarget.Self);
+                }
 
                 //Oracle
                 if (HasStatusEffect(Buffs.Divining))
@@ -138,17 +160,35 @@ internal partial class AST : Healer
                 if (ActionReady(OriginalHook(AstralDraw)) && HasNoDPSCard)
                     return OriginalHook(AstralDraw);
 
-                //Divination
-                if (HasBattleTarget() && ActionReady(Divination) && StandStill &&
-                    !HasStatusEffect(Buffs.Divining) && !HasDivination &&
-                    (GetTargetHPPercent() >= 10 || InBossEncounter()))
-                    return Divination;
+                // ParseLord5 experiment (AoE): swap Divination / Earthly Star priority.
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    //Earthly Star
+                    if (LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
+                        !HasStatusEffect(Buffs.EarthlyDominance) && StandStill &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()))
+                        return EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self);
 
-                //Earthly Star
-                if (LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
-                    !HasStatusEffect(Buffs.EarthlyDominance) && StandStill &&
-                    (GetTargetHPPercent() >= 10 || InBossEncounter()))
-                    return EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self);
+                    //Divination
+                    if (HasBattleTarget() && ActionReady(Divination) && StandStill &&
+                        !HasStatusEffect(Buffs.Divining) && !HasDivination &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()))
+                        return Divination;
+                }
+                else
+                {
+                    //Divination
+                    if (HasBattleTarget() && ActionReady(Divination) && StandStill &&
+                        !HasStatusEffect(Buffs.Divining) && !HasDivination &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()))
+                        return Divination;
+
+                    //Earthly Star
+                    if (LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
+                        !HasStatusEffect(Buffs.EarthlyDominance) && StandStill &&
+                        (GetTargetHPPercent() >= 10 || InBossEncounter()))
+                        return EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self);
+                }
 
                 //Oracle
                 if (HasStatusEffect(Buffs.Divining))
