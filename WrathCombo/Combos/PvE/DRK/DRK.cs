@@ -5,6 +5,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.DRK.Config;
 
 // ReSharper disable AccessToStaticMemberViaDerivedType
@@ -179,11 +180,22 @@ internal partial class DRK : Tank
             if (TryGetAction<Cooldown>(comboFlags, ref newAction, true))
                 return newAction;
 
-            if (TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
-
-            if (TryGetAction<Cooldown>(comboFlags, ref newAction))
-                return newAction;
+            // ParseLord5 experiment: swap Spender / Cooldown_2 priority.
+            // Baseline (flag off): Spender first, then Cooldown second.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (TryGetAction<Cooldown>(comboFlags, ref newAction))
+                    return newAction;
+                if (TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+            }
+            else
+            {
+                if (TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+                if (TryGetAction<Cooldown>(comboFlags, ref newAction))
+                    return newAction;
+            }
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
@@ -259,11 +271,22 @@ internal partial class DRK : Tank
             if (TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
-            if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                return newAction;
-
-            if (TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
+            // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
+            // Baseline (flag off): Mitigation first, then Spender.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                    return newAction;
+            }
+            else
+            {
+                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                    return newAction;
+                if (TryGetAction<Spender>(comboFlags, ref newAction))
+                    return newAction;
+            }
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
