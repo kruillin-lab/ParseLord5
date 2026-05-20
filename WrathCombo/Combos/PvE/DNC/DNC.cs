@@ -189,10 +189,11 @@ internal partial class DNC : PhysicalRanged
                     CanWeave() &&
                     ActionReady(Flourish) &&
                     !WasLastWeaponskill(TechnicalFinish4) &&
-                    IsOnCooldown(Devilment) &&
-                    (GetCooldownRemainingTime(Devilment) > 50 ||
-                     (HasStatusEffect(Buffs.Devilment) &&
-                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    (IsOffCooldown(Devilment) ||
+                     (IsOnCooldown(Devilment) &&
+                      (GetCooldownRemainingTime(Devilment) > 50 ||
+                       (HasStatusEffect(Buffs.Devilment) &&
+                        GetStatusEffectRemainingTime(Buffs.Devilment) < 19)))) &&
                     !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
                     !HasStatusEffect(Buffs.FourFoldFanDance) &&
                     !HasStatusEffect(Buffs.FlourishingSymmetry) &&
@@ -572,10 +573,11 @@ internal partial class DNC : PhysicalRanged
                 if (CanWeave() &&
                     ActionReady(Flourish) &&
                     !WasLastWeaponskill(TechnicalFinish4) &&
-                    IsOnCooldown(Devilment) &&
-                    (GetCooldownRemainingTime(Devilment) > 50 ||
-                     (HasStatusEffect(Buffs.Devilment) &&
-                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    (IsOffCooldown(Devilment) ||
+                     (IsOnCooldown(Devilment) &&
+                      (GetCooldownRemainingTime(Devilment) > 50 ||
+                       (HasStatusEffect(Buffs.Devilment) &&
+                        GetStatusEffectRemainingTime(Buffs.Devilment) < 19)))) &&
                     !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
                     !HasStatusEffect(Buffs.FourFoldFanDance) &&
                     !HasStatusEffect(Buffs.FlourishingSymmetry) &&
@@ -885,10 +887,11 @@ internal partial class DNC : PhysicalRanged
                     CanWeave() &&
                     ActionReady(Flourish) &&
                     !WasLastWeaponskill(TechnicalFinish4) &&
-                    IsOnCooldown(Devilment) &&
-                    (GetCooldownRemainingTime(Devilment) > 50 ||
-                     (HasStatusEffect(Buffs.Devilment) &&
-                      GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                    (IsOffCooldown(Devilment) ||
+                     (IsOnCooldown(Devilment) &&
+                      (GetCooldownRemainingTime(Devilment) > 50 ||
+                       (HasStatusEffect(Buffs.Devilment) &&
+                        GetStatusEffectRemainingTime(Buffs.Devilment) < 19)))) &&
                     !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
                     !HasStatusEffect(Buffs.FourFoldFanDance) &&
                     !HasStatusEffect(Buffs.FlourishingSymmetry) &&
@@ -1193,10 +1196,11 @@ internal partial class DNC : PhysicalRanged
                 if (CanWeave() &&
                     ActionReady(Flourish) &&
                 !WasLastWeaponskill(TechnicalFinish4) &&
-                IsOnCooldown(Devilment) &&
-                (GetCooldownRemainingTime(Devilment) > 50 ||
-                 (HasStatusEffect(Buffs.Devilment) &&
-                  GetStatusEffectRemainingTime(Buffs.Devilment) < 19)) &&
+                (IsOffCooldown(Devilment) ||
+                 (IsOnCooldown(Devilment) &&
+                  (GetCooldownRemainingTime(Devilment) > 50 ||
+                   (HasStatusEffect(Buffs.Devilment) &&
+                    GetStatusEffectRemainingTime(Buffs.Devilment) < 19)))) &&
                 !HasStatusEffect(Buffs.ThreeFoldFanDance) &&
                 !HasStatusEffect(Buffs.FourFoldFanDance) &&
                 !HasStatusEffect(Buffs.FlourishingSymmetry) &&
