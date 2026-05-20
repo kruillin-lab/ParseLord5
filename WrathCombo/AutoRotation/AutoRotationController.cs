@@ -256,19 +256,20 @@ internal unsafe class AutoRotationController
         double effectiveHealDelay = cfg.HealerSettings.HealDelay;
         if (Service.Configuration.ParseLord5ExperimentalMode)
         {
-            if (lowestHp <= 35f)
+            double maxDelay = Math.Min(cfg.HealerSettings.HealDelay, 0.5); // Cap at 500ms in experimental mode
+            if (lowestHp <= 50f)
             {
                 effectiveHealDelay = 0.0; // Critical danger: instant heal
             }
             else if (lowestHp >= 75f)
             {
-                effectiveHealDelay = cfg.HealerSettings.HealDelay; // Healthy: full delay
+                effectiveHealDelay = maxDelay; // Healthy: capped at 500ms
             }
             else
             {
-                // Linear interpolation between 35% and 75% HP
-                double t = (lowestHp - 35f) / (75f - 35f);
-                effectiveHealDelay = t * cfg.HealerSettings.HealDelay;
+                // Linear interpolation between 50% and 75% HP
+                double t = (lowestHp - 50f) / (75f - 50f);
+                effectiveHealDelay = t * maxDelay;
             }
         }
 
