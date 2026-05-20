@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using System;
 using WrathCombo.API.Enum;
@@ -185,6 +185,8 @@ public class DPSSettingsIPCWrapper(DPSSettings settings)
     public bool AoEIgnoreManual => settings.AoEIgnoreManual;
     
     public bool UnTargetAndDisableForPenalty => settings.UnTargetAndDisableForPenalty;
+
+    public DPSRotationMode DPSManualFallbackMode => settings.DPSManualFallbackMode;
 
     #endregion
 }

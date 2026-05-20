@@ -775,7 +775,10 @@ internal unsafe class AutoRotationController
                 {
                     IGameObject? target = dpsmode switch
                     {
-                        DPSRotationMode.Manual => Svc.Targets.Target,
+                        DPSRotationMode.Manual => Svc.Targets.Target 
+                            ?? (Service.Configuration.ParseLord5ExperimentalMode && cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual
+                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode) 
+                                : null),
                         DPSRotationMode.Highest_Max => TankTargeting.GetHighestMaxTarget(),
                         DPSRotationMode.Lowest_Max => TankTargeting.GetLowestMaxTarget(),
                         DPSRotationMode.Highest_Current => TankTargeting.GetHighestCurrentTarget(),
@@ -791,7 +794,10 @@ internal unsafe class AutoRotationController
                 {
                     IGameObject? target = dpsmode switch
                     {
-                        DPSRotationMode.Manual => Svc.Targets.Target,
+                        DPSRotationMode.Manual => Svc.Targets.Target
+                            ?? (Service.Configuration.ParseLord5ExperimentalMode && cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual
+                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode) 
+                                : null),
                         DPSRotationMode.Highest_Max => DPSTargeting.GetHighestMaxTarget(),
                         DPSRotationMode.Lowest_Max => DPSTargeting.GetLowestMaxTarget(),
                         DPSRotationMode.Highest_Current => DPSTargeting.GetHighestCurrentTarget(),

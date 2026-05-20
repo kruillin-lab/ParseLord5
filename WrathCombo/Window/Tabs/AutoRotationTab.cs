@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
@@ -102,6 +102,14 @@ internal class AutoRotationTab : ConfigWindow
                 changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_EnforceBestAoETarget, ref cfg.DPSSettings.AoEIgnoreManual);
 
                 ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_EnforceBestAoETarget);
+
+                if (Service.Configuration.ParseLord5ExperimentalMode)
+                {
+                    ImGui.Spacing();
+                    ImGuiEx.TextUnderlined("Experimental: No-Target Fallback Mode");
+                    changed |= ImGuiEx.EnumCombo("###DPSManualFallbackMode", ref cfg.DPSSettings.DPSManualFallbackMode);
+                    ImGuiComponents.HelpMarker("When manual targeting mode is active and you have no hard target selected, the rotation will temporarily target using this mode. Tabbing or clicking any target will immediately override this fallback.");
+                }
             }
 
 

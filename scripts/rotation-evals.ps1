@@ -3,9 +3,13 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $PresetFile = Join-Path $RepoRoot "WrathCombo\Combos\CustomComboPreset.cs"
 $CombosDir = Join-Path $RepoRoot "WrathCombo\Combos\PvE"
+$SAMFile = Join-Path $CombosDir "SAM\SAM.cs"
+$SAMHelperFile = Join-Path $CombosDir "SAM\SAM_Helper.cs"
+$VPRFile = Join-Path $CombosDir "VPR\VPR.cs"
+$VPRHelperFile = Join-Path $CombosDir "VPR\VPR_Helper.cs"
 
 Write-Host "=== ParseLord5 Domain Evals ==="
-Write-Host "Scope: preset enumeration and structure validation"
+Write-Host "Scope: preset enumeration, structure validation, and SAM/VPR domain-specific checks"
 Write-Host ""
 
 # ---- FIXTURE 1: Preset enum has entries ----
@@ -93,8 +97,65 @@ foreach ($dir in $jobDirs) {
 Write-Host "PASS combo-files-exist-for-jobs: all jobs checked"
 $passCount++
 
+# ---- FIXTURE 5: ParseLord5ExperimentalMode present in SAM and VPR combos ----
+Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
+$samContent = Get-Content -LiteralPath $SAMFile -Raw
+$vprContent = Get-Content -LiteralPath $VPRFile -Raw
+
+$samExpCount = ([regex]::Matches($samContent, 'ParseLord5ExperimentalMode')).Count
+$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5ExperimentalMode')).Count
+
+if ($samExpCount -ge 2) {
+    Write-Host "PASS parselord5-experimental-mode-in-sam: found $samExpCount occurrences in SAM.cs (ST+AoE branches)"
+    $passCount++
+} else {
+    Write-Host "FAIL parselord5-experimental-mode-in-sam: expected >=2 occurrences in SAM.cs, found $samExpCount"
+    $failCount++
+}
+
+if ($vprExpCount -ge 2) {
+    Write-Host "PASS parselord5-experimental-mode-in-vpr: found $vprExpCount occurrences in VPR.cs (ST+AoE branches)"
+    $passCount++
+} else {
+    Write-Host "FAIL parselord5-experimental-mode-in-vpr: expected >=2 occurrences in VPR.cs, found $vprExpCount"
+    $failCount++
+}
+
+# ---- FIXTURE 6: Critical action IDs mapped (Gyofu for SAM, Twinfang/Twinblood for VPR) ----
+Write-Host "--- Fixture: critical-action-ids-mapped ---"
+$samHelperContent = Get-Content -LiteralPath $SAMHelperFile -Raw
+$vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
+
+# Gyofu must appear as a const assignment in SAM_Helper.cs
+if ($samHelperContent -match 'Gyofu\s*=\s*\d+') {
+    Write-Host "PASS sam-gyofu-id-mapped: Gyofu action ID is defined in SAM_Helper.cs"
+    $passCount++
+} else {
+    Write-Host "FAIL sam-gyofu-id-mapped: Gyofu action ID not found in SAM_Helper.cs"
+    $failCount++
+}
+
+# Twinfang must appear as a const assignment in VPR_Helper.cs
+if ($vprHelperContent -match 'Twinfang\s*=\s*\d+') {
+    Write-Host "PASS vpr-twinfang-id-mapped: Twinfang action ID is defined in VPR_Helper.cs"
+    $passCount++
+} else {
+    Write-Host "FAIL vpr-twinfang-id-mapped: Twinfang action ID not found in VPR_Helper.cs"
+    $failCount++
+}
+
+# Twinblood must appear as a const assignment in VPR_Helper.cs
+if ($vprHelperContent -match 'Twinblood\s*=\s*\d+') {
+    Write-Host "PASS vpr-twinblood-id-mapped: Twinblood action ID is defined in VPR_Helper.cs"
+    $passCount++
+} else {
+    Write-Host "FAIL vpr-twinblood-id-mapped: Twinblood action ID not found in VPR_Helper.cs"
+    $failCount++
+}
+
 Write-Host ""
 Write-Host "=== Summary ==="
 Write-Host "passed=$passCount failed=$failCount negative_controls=1 total=$(($passCount + $failCount))"
 
 if ($failCount -gt 0) { exit 1 } else { exit 0 }
+

@@ -1,4 +1,4 @@
-﻿using WrathCombo.API.Enum;
+using WrathCombo.API.Enum;
 
 namespace WrathCombo.AutoRotation;
 
@@ -33,6 +33,7 @@ public class DPSSettings
     public bool IgnoreRangeInBoss = true;
     public bool AoEIgnoreManual = false;
     public bool UnTargetAndDisableForPenalty = false;
+    public DPSRotationMode DPSManualFallbackMode = DPSRotationMode.Lowest_Current;
 }
 
 public class HealerSettings
