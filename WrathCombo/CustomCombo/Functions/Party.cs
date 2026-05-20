@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
@@ -32,7 +32,13 @@ internal abstract partial class CustomComboFunctions
     {
         if (!Player.Available) return [];
         _partyList.RemoveAll(x => x.BattleChara is null);
-        if (allowCache && !EzThrottler.Throttle("PartyUpdateThrottle", 2000))
+        int throttleTime = 2000;
+        if (Service.Configuration.ParseLord5ExperimentalMode && (InCombat() || PartyInCombat()))
+        {
+            throttleTime = 100; // Fast 100ms updates in combat when experimental mode is on
+        }
+
+        if (allowCache && !EzThrottler.Throttle("PartyUpdateThrottle", throttleTime))
             return _partyList;
 
         var existingIds = _partyList.Select(x => x.GameObjectId).ToHashSet();

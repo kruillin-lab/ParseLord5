@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons;
@@ -234,8 +234,46 @@ internal unsafe class AutoRotationController
             return attr.AutoAction?.IsHeal == true && ActionReady(AutoRotationHelper.InvokeCombo(x.Key, attr, ref _));
         });
 
+        // ParseLord5: Dynamic linear reaction delay scaled by lowest HP% among heal targets
+        float lowestHp = 100f;
+        if (healTarget != null)
+        {
+            lowestHp = GetTargetHPPercent(healTarget);
+        }
+        else if (aoeheal)
+        {
+            foreach (var member in GetPartyMembers())
+            {
+                if (member.BattleChara is not null && !member.BattleChara.IsDead)
+                {
+                    float hp = GetTargetHPPercent(member.BattleChara);
+                    if (hp < lowestHp)
+                        lowestHp = hp;
+                }
+            }
+        }
+
+        double effectiveHealDelay = cfg.HealerSettings.HealDelay;
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+        {
+            if (lowestHp <= 35f)
+            {
+                effectiveHealDelay = 0.0; // Critical danger: instant heal
+            }
+            else if (lowestHp >= 75f)
+            {
+                effectiveHealDelay = cfg.HealerSettings.HealDelay; // Healthy: full delay
+            }
+            else
+            {
+                // Linear interpolation between 35% and 75% HP
+                double t = (lowestHp - 35f) / (75f - 35f);
+                effectiveHealDelay = t * cfg.HealerSettings.HealDelay;
+            }
+        }
+
         bool canHeal = TimeToHeal is not null
-                       && (DateTime.Now - TimeToHeal.Value).TotalSeconds >= cfg.HealerSettings.HealDelay
+                       && (DateTime.Now - TimeToHeal.Value).TotalSeconds >= effectiveHealDelay
                        && actCheck;
 
         // Healer cleanse/rez logic
