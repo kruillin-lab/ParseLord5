@@ -48,7 +48,6 @@ internal unsafe class AutoRotationController
 
     public static bool WouldLikeToGroundTarget;
     public static bool Paused;
-    public static int UnpauseSeconds;
 
     public static IGameObject? AutorotHealTarget;
     public static bool AutorotRaidwiding;
@@ -58,7 +57,6 @@ internal unsafe class AutoRotationController
     public AutoRotationController()
     {
         OnPartyCombatChanged += ResetError;
-        Svc.Chat.ChatMessage += ScanForWarnings;
         OnStatusChanged += StatusChanged;
     }
 
@@ -67,24 +65,9 @@ internal unsafe class AutoRotationController
         Svc.Log.Verbose($"[AutoRotStatusCheck] {((ushort)statusId).StatusName()} {(onPlayer ? "Gained" : "Lost")}");
     }
 
-    private void ScanForWarnings(Dalamud.Game.Chat.IHandleableChatMessage message)
-    {
-        if (message.LogKind != Dalamud.Game.Text.XivChatType.SystemMessage)
-            return;
-
-        bool pauseWarningFound = false;
-
-        if (pauseWarningFound)
-        {
-            Paused = true;
-            Svc.Framework.RunOnTick(() => Paused = false, TimeSpan.FromSeconds(UnpauseSeconds));
-        }
-    }
-
     public void Dispose()
     {
         OnPartyCombatChanged -= ResetError;
-        Svc.Chat.ChatMessage -= ScanForWarnings;
     }
 
     private void ResetError(bool state)
