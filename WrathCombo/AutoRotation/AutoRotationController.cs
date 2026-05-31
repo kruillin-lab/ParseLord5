@@ -1085,20 +1085,15 @@ internal unsafe class AutoRotationController
                 .FirstOrDefault();
         }
 
-        public static IGameObject? GetLowestCurrentTarget()
-        {
-            return BaseSelection
-                .OrderByDescending(x => IsCombatPriority(x))
-                .ThenBy(x => GetTargetCurrentHP(x))
-                .FirstOrDefault();
-        }
+        public static IGameObject? GetLowestCurrentTarget() => GetCurrentTarget(lowestFirst: true);
+        public static IGameObject? GetHighestCurrentTarget() => GetCurrentTarget(lowestFirst: false);
 
-        public static IGameObject? GetHighestCurrentTarget()
+        private static IGameObject? GetCurrentTarget(bool lowestFirst)
         {
-            return BaseSelection
-                .OrderByDescending(x => IsCombatPriority(x))
-                .ThenByDescending(x => GetTargetCurrentHP(x))
-                .FirstOrDefault();
+            var ordered = BaseSelection.OrderByDescending(x => IsCombatPriority(x));
+            return lowestFirst
+                ? ordered.ThenBy(x => GetTargetCurrentHP(x)).FirstOrDefault()
+                : ordered.ThenByDescending(x => GetTargetCurrentHP(x)).FirstOrDefault();
         }
 
         public static IGameObject? GetLowestMaxTarget()
@@ -1139,29 +1134,13 @@ internal unsafe class AutoRotationController
             }
             return null;
         }
-        internal static IGameObject? GetHighestCurrent()
-        {
-            if (GetPartyMembers().Count == 0) return Player.Object;
-            var target = GetPartyMembers()
-                .Where(x => !x.BattleChara.IsDead &&
-                            x.BattleChara.IsTargetable &&
-                            GetTargetDistance(x.BattleChara) <= QueryRange &&
-                            !TargetHasImmortality(x.BattleChara) &&
-                            GetTargetHPPercent(x.BattleChara) <=
-                            (TargetHasExcog(x.BattleChara) ? cfg.HealerSettings.SingleTargetExcogHPP :
-                                TargetHasRegen(x.BattleChara) ? cfg.HealerSettings.SingleTargetRegenHPP :
-                                cfg.HealerSettings.SingleTargetHPP) &&
-                            IsInLineOfSight(x.BattleChara))
-                .OrderBy(x => TargetHasTrueInvuln(x.BattleChara))
-                .ThenByDescending(x => GetTargetHPPercent(x.BattleChara))
-                .FirstOrDefault();
-            return target?.BattleChara;
-        }
+        internal static IGameObject? GetHighestCurrent() => GetHealTarget(lowestFirst: false);
+        internal static IGameObject? GetLowestCurrent() => GetHealTarget(lowestFirst: true);
 
-        internal static IGameObject? GetLowestCurrent()
+        private static IGameObject? GetHealTarget(bool lowestFirst)
         {
             if (GetPartyMembers().Count == 0) return Player.Object;
-            var target = GetPartyMembers()
+            var candidates = GetPartyMembers()
                 .Where(x => !x.BattleChara.IsDead &&
                             x.BattleChara.IsTargetable &&
                             GetTargetDistance(x.BattleChara) <= QueryRange &&
@@ -1171,9 +1150,10 @@ internal unsafe class AutoRotationController
                                 TargetHasRegen(x.BattleChara) ? cfg.HealerSettings.SingleTargetRegenHPP :
                                 cfg.HealerSettings.SingleTargetHPP) &&
                             IsInLineOfSight(x.BattleChara))
-                .OrderBy(x => TargetHasTrueInvuln(x.BattleChara))
-                .ThenBy(x => GetTargetHPPercent(x.BattleChara))
-                .FirstOrDefault();
+                .OrderBy(x => TargetHasTrueInvuln(x.BattleChara));
+            var target = lowestFirst
+                ? candidates.ThenBy(x => GetTargetHPPercent(x.BattleChara)).FirstOrDefault()
+                : candidates.ThenByDescending(x => GetTargetHPPercent(x.BattleChara)).FirstOrDefault();
             return target?.BattleChara;
         }
 
@@ -1236,22 +1216,17 @@ internal unsafe class AutoRotationController
 
     public static class TankTargeting
     {
-        public static IGameObject? GetLowestCurrentTarget()
-        {
-            return DPSTargeting.BaseSelection
-                .OrderByDescending(x => DPSTargeting.IsCombatPriority(x))
-                .ThenByDescending(x => x.TargetObject?.GameObjectId != Player.Object?.GameObjectId)
-                .ThenBy(x => GetTargetCurrentHP(x))
-                .ThenBy(x => GetTargetHPPercent(x)).FirstOrDefault();
-        }
+        public static IGameObject? GetLowestCurrentTarget() => GetCurrentTarget(lowestFirst: true);
+        public static IGameObject? GetHighestCurrentTarget() => GetCurrentTarget(lowestFirst: false);
 
-        public static IGameObject? GetHighestCurrentTarget()
+        private static IGameObject? GetCurrentTarget(bool lowestFirst)
         {
-            return DPSTargeting.BaseSelection
+            var ordered = DPSTargeting.BaseSelection
                 .OrderByDescending(x => DPSTargeting.IsCombatPriority(x))
-                .ThenByDescending(x => x.TargetObject?.GameObjectId != Player.Object?.GameObjectId)
-                .ThenByDescending(x => GetTargetCurrentHP(x))
-                .ThenBy(x => GetTargetHPPercent(x)).FirstOrDefault();
+                .ThenByDescending(x => x.TargetObject?.GameObjectId != Player.Object?.GameObjectId);
+            return lowestFirst
+                ? ordered.ThenBy(x => GetTargetCurrentHP(x)).ThenBy(x => GetTargetHPPercent(x)).FirstOrDefault()
+                : ordered.ThenByDescending(x => GetTargetCurrentHP(x)).ThenBy(x => GetTargetHPPercent(x)).FirstOrDefault();
         }
 
         public static IGameObject? GetLowestMaxTarget()
