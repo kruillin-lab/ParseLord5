@@ -366,49 +366,61 @@ internal unsafe class AutoRotationController
 
     private static bool ProcessAutoActions(Dictionary<Preset, bool> autoActions, ref uint _, bool canHeal, bool stOnly)
     {
-        // Pre-filter and cache attributes to avoid repeated lookups
-        var filteredActions = autoActions
-            .Select(x => new { Preset = x.Key, Attributes = x.Key.Attributes() })
-            .Where(x => x.Attributes is { AutoAction: not null, ReplaceSkill: not null })
-            .Where(x => x.Attributes.AutoAction.IsHeal == canHeal)
-            .Where(x => !stOnly || x.Attributes.AutoAction.IsAoE == false)
-            .OrderByDescending(x => x.Attributes.AutoAction.IsAoE);
-
-        foreach (var entry in filteredActions)
+        // Two-pass iteration: AoE presets first, then ST presets.
+        // Preserves the original OrderByDescending(IsAoE) ordering without allocating
+        // anonymous wrapper objects or a sorted list.
+        for (int pass = 0; pass < 2; pass++)
         {
-            var attributes = entry.Attributes;
-            var action = attributes.AutoAction!;
+            bool passIsAoE = pass == 0;
 
-            // Skip if locked
-            if ((action.IsAoE && LockedST) || (!action.IsAoE && LockedAoE))
+            // In stOnly mode, skip the AoE pass entirely.
+            if (stOnly && passIsAoE)
                 continue;
 
-            // Skip if rez invuln is up
-            if (!action.IsHeal && HasStatusEffect(418))
-                continue;
-
-            uint gameAct = attributes.ReplaceSkill!.ActionIDs.First();
-            var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, gameAct, checkCastingActive: false, checkRecastActive: false);
-
-            if (!LevelChecked(gameAct) || status == 581)
-                continue;
-
-            if (action.IsHeal)
+            foreach (var kvp in autoActions)
             {
-                AutomateHealing(entry.Preset, attributes, gameAct);
-                continue;
-            }
+                var attributes = kvp.Key.Attributes();
+                var autoAction = attributes.AutoAction;
+                var replaceSkill = attributes.ReplaceSkill;
 
-            // Tank logic
-            if (Player.Object?.GetRole() is CombatRole.Tank)
-            {
-                AutomateRotation(entry.Preset, attributes, gameAct);
-                continue;
-            }
+                if (autoAction is null || replaceSkill is null)
+                    continue;
+                if (autoAction.IsHeal != canHeal)
+                    continue;
+                if (autoAction.IsAoE != passIsAoE)
+                    continue;
 
-            // DPS logic
-            if (!action.IsHeal && AutomateRotation(entry.Preset, attributes, gameAct))
-                return false;
+                // Skip if locked
+                if ((autoAction.IsAoE && LockedST) || (!autoAction.IsAoE && LockedAoE))
+                    continue;
+
+                // Skip if rez invuln is up
+                if (!autoAction.IsHeal && HasStatusEffect(418))
+                    continue;
+
+                uint gameAct = replaceSkill.ActionIDs.First();
+                var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, gameAct, checkCastingActive: false, checkRecastActive: false);
+
+                if (!LevelChecked(gameAct) || status == 581)
+                    continue;
+
+                if (autoAction.IsHeal)
+                {
+                    AutomateHealing(kvp.Key, attributes, gameAct);
+                    continue;
+                }
+
+                // Tank logic
+                if (Player.Object?.GetRole() is CombatRole.Tank)
+                {
+                    AutomateRotation(kvp.Key, attributes, gameAct);
+                    continue;
+                }
+
+                // DPS logic
+                if (AutomateRotation(kvp.Key, attributes, gameAct))
+                    return false;
+            }
         }
 
         return false;
