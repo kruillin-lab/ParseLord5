@@ -1,4 +1,14 @@
-﻿# Guides on using specific parts of Wrath
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
+# Guides on using specific parts of Wrath
 
 - [IPC](/docs/IPC.md) - for other plugins to control Wrath Combo settings.
 - [Action Retargeting](/docs/Retargeting.md) - for retargeting an action.

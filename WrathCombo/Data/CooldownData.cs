@@ -1,4 +1,4 @@
-﻿using ECommons.DalamudServices;
+using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
 using WrathCombo.Services.ActionRequestIPC;
@@ -46,7 +46,7 @@ internal class CooldownData
 
     /// <summary> Gets the maximum number of charges for an action at the current level. </summary>
     /// <returns> Number of charges. </returns>
-    public ushort MaxCharges => ActionManager.GetMaxCharges(ActionID, 0);
+    public ushort MaxCharges => Math.Max((ushort)1, ActionManager.GetMaxCharges(ActionID, 0));
 
     /// <summary> Gets a value indicating whether the action has charges, not charges available. </summary>
     public bool HasCharges => MaxCharges > 1;

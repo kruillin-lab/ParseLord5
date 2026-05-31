@@ -54,14 +54,9 @@
         <DalamudDevPlugins>$(HOME)/Library/Application Support/XIV on Mac/devPlugins/</DalamudDevPlugins>
     </PropertyGroup>
 
-    <!-- Build Parameter Overrides for Debug -->
-    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- Deploy Debug and Release builds directly to Dalamud devPlugins -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release'">
         <OutputPath>$(DalamudDevPlugins)</OutputPath>
-    </PropertyGroup>
-
-    <!-- Build Parameter Overrides for Release -->
-    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <OutputPath>bin\Release</OutputPath>
     </PropertyGroup>
 
     <!-- Logo -->

@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Hooking;
 using ECommons;
@@ -106,7 +106,7 @@ public static class ActionWatching
         CanQueueAction?.Dispose();
     }
 
-    /// <summary> Handles logic when an action causes an effect. </summary>
+
     private unsafe static void ReceiveActionEffectDetour(uint casterEntityId, Character* casterPtr, Vector3* targetPos, Header* header, TargetEffects* effects, GameObjectId* targetEntityIds)
     {
         ReceiveActionEffectHook!.Original(casterEntityId, casterPtr, targetPos, header, effects, targetEntityIds);
@@ -327,10 +327,18 @@ public static class ActionWatching
 
                 var castTime = ActionManager.GetAdjustedCastTime((ActionType)actionType, actionId);
                 token = source.Token;
-                UpdatingActions = true;
-                UpdateActionTask = Svc.Framework.RunOnTick(() =>
-                UpdateLastUsedAction(actionId, actionType, targetObjectId, Math.Max(castTime - 480, 0)),
-                TimeSpan.FromMilliseconds(Math.Max(castTime - 480, 0)), cancellationToken: token);
+                
+                if (castTime == 0)
+                {
+                    UpdateLastUsedAction(actionId, actionType, targetObjectId, 0);
+                }
+                else
+                {
+                    UpdatingActions = true;
+                    UpdateActionTask = Svc.Framework.RunOnTick(() =>
+                    UpdateLastUsedAction(actionId, actionType, targetObjectId, Math.Max(castTime - 480, 0)),
+                    TimeSpan.FromMilliseconds(Math.Max(castTime - 480, 0)), cancellationToken: token);
+                }
 
                 // Update Helpers
                 NIN.InMudra = NIN.MudraSigns.Contains(actionId);

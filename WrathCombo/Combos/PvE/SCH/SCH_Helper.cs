@@ -50,6 +50,39 @@ internal partial class SCH
                                             
     internal static bool ShieldCheck => GetPartyBuffPercent(Buffs.Galvanize) <= SCH_AoE_Heal_SuccorShieldOption &&
                                         GetPartyBuffPercent(SGE.Buffs.EukrasianPrognosis) <= SCH_AoE_Heal_SuccorShieldOption;
+
+    /// <summary>
+    /// When the heal target already has Galvanize, prefer Emergency Tactics → Adloquium over Physick.
+    /// </summary>
+    internal static bool TryShieldedEmergencyAdloquium(IGameObject? healTarget, out uint action)
+    {
+        action = 0;
+        if (healTarget is null || !HasStatusEffect(Buffs.Galvanize, healTarget, true))
+            return false;
+
+        if (IsEnabled(Preset.SCH_ST_Heal))
+        {
+            if (!IsEnabled(Preset.SCH_ST_Heal_Adloquium))
+                return false;
+
+            if (GetTargetHPPercent(healTarget, SCH_ST_Heal_IncludeShields) > SCH_ST_Heal_AdloquiumOption)
+                return false;
+        }
+
+        if (ActionReady(OriginalHook(EmergencyTactics)) && !HasStatusEffect(Buffs.EmergencyTactics))
+        {
+            action = OriginalHook(EmergencyTactics);
+            return true;
+        }
+
+        if (ActionReady(OriginalHook(Adloquium)))
+        {
+            action = OriginalHook(Adloquium);
+            return true;
+        }
+
+        return false;
+    }
     internal static bool CanChainStrategem => ActionReady(ChainStratagem) &&
                                               CanApplyStatus(CurrentTarget, Debuffs.ChainStratagem) &&
                                               !HasStatusEffect(Debuffs.ChainStratagem, CurrentTarget, true);

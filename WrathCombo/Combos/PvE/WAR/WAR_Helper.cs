@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.WAR.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 using PartyRequirement = WrathCombo.Combos.PvE.All.Enums.PartyRequirement;
@@ -15,8 +16,16 @@ namespace WrathCombo.Combos.PvE;
 internal partial class WAR : Tank
 {
     #region Variables
-    internal static WARGauge Gauge = GetJobGauge<WARGauge>(); //WAR gauge
+    /// <summary>Live job gauge (do not cache in a static field).</summary>
+    private static WARGauge Gauge => GetJobGauge<WARGauge>();
     internal static int BeastGauge => Gauge.BeastGauge;
+
+    /// <summary>Standard or delayed weave window — matches DRK tank handling.</summary>
+    private static bool CanWarWeave => CanWeave() || CanDelayedWeave();
+
+    /// <summary>Broader window for Auto-Mode ticks between strict weave checks.</summary>
+    private static bool InWarOgcdWindow =>
+        CanWarWeave || (AnimationLock <= BaseActionQueue && RemainingGCD > BaseAnimationLock);
     internal static (float Cooldown, float Status, int Stacks) IR => (GetCooldownRemainingTime(OriginalHook(Berserk)), GetStatusEffectRemainingTime(Buffs.InnerReleaseBuff), GetStatusEffectStacks(Buffs.InnerReleaseStacks));
     internal static (float Status, int Stacks) BF => (GetStatusEffectRemainingTime(Buffs.BurgeoningFury), GetStatusEffectStacks(Buffs.BurgeoningFury));
     internal static (bool Status, bool Stacks) HasIR => (IR.Status > 0, IR.Stacks > 0 || HasStatusEffect(Buffs.InnerReleaseStacks));
@@ -184,7 +193,7 @@ internal partial class WAR : Tank
             flags.HasFlag(Combo.ST) ? WAR_ST_Onslaught_TimeStill : WAR_AoE_Onslaught_TimeStill;
         #endregion
         
-        if (InCombat() && HasBattleTarget() && CanWeave())
+        if (InCombat() && HasBattleTarget() && InWarOgcdWindow)
         {
             if (interruptEnabled && Role.CanInterject())
             {
@@ -197,22 +206,24 @@ internal partial class WAR : Tank
                 actionID = Role.LowBlow;
                 return true;
             }
-            
-            if (innerReleaseEnabled &&
-                ActionReady(OriginalHook(Berserk)) && HasSurgingTempest && !HasWrathful &&
-                GetTargetHPPercent() >= innerReleaseStopThreshold) //Health Threshold Check, boss check built into config
+
+            // ParseLord5 experiment: swap Infuriate / Inner Release weave priority.
+            // Baseline (flag off): Inner Release first, then Infuriate.
+            if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                actionID = OriginalHook(Berserk);
-                return true;
+                if (TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
+                    return true;
+
+                if (TryInnerReleaseWeave(innerReleaseEnabled, innerReleaseStopThreshold, ref actionID))
+                    return true;
             }
-            
-            if (infuriateEnabled && 
-                ActionReady(Infuriate) && !HasNascentChaos && !JustUsed(Infuriate) && !HasIR.Stacks && 
-                BeastGauge <= infuriateGaugeThreshold && //Gauge slider check
-                GetRemainingCharges(Infuriate) > infuriateChargeThreshold) //Charge slider check
+            else
             {
-                actionID = Infuriate;
-                return true;
+                if (TryInnerReleaseWeave(innerReleaseEnabled, innerReleaseStopThreshold, ref actionID))
+                    return true;
+
+                if (TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
+                    return true;
             }
                 
             if (onslaughtEnabled && 
@@ -252,6 +263,34 @@ internal partial class WAR : Tank
         }
         return false;
     }
+
+    private static bool TryInnerReleaseWeave(bool enabled, int stopThreshold, ref uint actionID)
+    {
+        if (!enabled ||
+            !ActionReady(OriginalHook(Berserk)) || !HasSurgingTempest || HasWrathful ||
+            GetTargetHPPercent() < stopThreshold)
+            return false;
+
+        actionID = OriginalHook(Berserk);
+        return true;
+    }
+
+    private static bool TryInfuriateWeave(bool enabled, int gaugeThreshold, int chargeThreshold, ref uint actionID)
+    {
+        if (!enabled ||
+            !ActionReady(Infuriate) || HasNascentChaos || JustUsed(Infuriate) || HasIR.Stacks ||
+            BeastGauge > gaugeThreshold ||
+            GetRemainingCharges(Infuriate) <= chargeThreshold)
+            return false;
+
+        actionID = Infuriate;
+        return true;
+    }
+    /// <summary>oGCD weaves first; GCD spenders only outside weave windows.</summary>
+    private static bool TryWarRotationAttacks(Combo flags, ref uint actionID) =>
+        TryOGCDAttacks(flags, ref actionID) ||
+        TryGCDAttacks(flags, ref actionID);
+
     #endregion
     
     #region GCD Attacks
@@ -327,7 +366,8 @@ internal partial class WAR : Tank
         bool useSmartAoE = flags.HasFlag(Combo.Simple) ? true : WAR_AoE_Decimate_Smart; 
         #endregion
         
-        if (HasBattleTarget())  
+        // GCD spenders must not run during weave windows — they starve oGCD slots on the combo button.
+        if (!InWarOgcdWindow && HasBattleTarget())
         {
             #region Primal Rend
             if (primalRendEnabled && HasSurgingTempest && HasStatusEffect(Buffs.PrimalRendReady) && 
@@ -519,6 +559,9 @@ internal partial class WAR : Tank
             (CombatEngageDuration().TotalSeconds <= 15 && IsMoving()))
             return false;
         #endregion
+
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+            return TrySmartNonBossMits(rotationFlags, ref actionID);
         
         #region HolmGang Invulnerability
         var holmgangThreshold = rotationFlags.HasFlag(RotationMode.simple) ? 10 : WAR_Mitigation_NonBoss_Holmgang_Health;
@@ -533,7 +576,7 @@ internal partial class WAR : Tank
         
         #region Raw Intuition/Bloodwhetting
         if (IsEnabled(Preset.WAR_Mitigation_NonBoss_RawIntuition) && 
-            ActionReady(OriginalHook(RawIntuition)) && CanWeave() && !justMitted)
+            ActionReady(OriginalHook(RawIntuition)) && InWarOgcdWindow && !justMitted)
         {
             actionID = OriginalHook(RawIntuition);
             return true;
@@ -544,7 +587,7 @@ internal partial class WAR : Tank
         float mitigationThreshold = rotationFlags.HasFlag(RotationMode.simple) 
             ? 10 
             : WAR_Mitigation_NonBoss_MitigationThreshold;
-        if (GetAvgEnemyHPPercentInRange(10f) <= mitigationThreshold || !CanWeave() || justMitted) 
+        if (GetAvgEnemyHPPercentInRange(10f) <= mitigationThreshold || !InWarOgcdWindow || justMitted) 
             return false;
         #endregion
         
@@ -624,8 +667,11 @@ internal partial class WAR : Tank
     private static bool CanUseBossMits(RotationMode rotationFlags, ref uint actionID)
     {
         #region Initial Bailout
-        if (!InCombat() || !CanWeave() || !InBossEncounter() || !IsEnabled(Preset.WAR_Mitigation_Boss)) return false;
+        if (!InCombat() || !InWarOgcdWindow || !InBossEncounter() || !IsEnabled(Preset.WAR_Mitigation_Boss)) return false;
         #endregion
+
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+            return TrySmartBossMits(rotationFlags, ref actionID);
         
         #region Vengeance
         var vengeanceFirst = rotationFlags.HasFlag(RotationMode.simple)

@@ -177,62 +177,60 @@ internal partial class SCH : Healer
                 return Role.Esuna.RetargetIfEnabled(Physick);
             
             if (ActionReady(Aetherflow) && !HasAetherflow &&
-                InCombat())
+                InCombat() && CanWeave())
                 return Aetherflow;
             
             if (ActionReady(Dissipation) && !HasAetherflow &&
-                InCombat() && !FairyBusy)
+                InCombat() && !FairyBusy && CanWeave())
                 return Dissipation;
             
             if (Role.CanLucidDream(6500) && CanWeave()) 
                 return Role.LucidDreaming;
             
-            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation))
+            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave())
                 return Consolation;
             
-            if (ActionReady(Excogitation) &&
+            if (ActionReady(Excogitation) && InCombat() && CanWeave() &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Excogitation.RetargetIfEnabled(Physick);
             
-            if (ActionReady(Lustrate) &&
+            if (ActionReady(Lustrate) && InCombat() && CanWeave() &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Lustrate.RetargetIfEnabled(Physick);
             
-            if (ActionReady(SacredSoil) && !InBossEncounter() &&
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return SacredSoil.Retarget(Physick, SimpleTarget.Self);
             
-            if (ActionReady(Protraction) && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty())) 
+            if (ActionReady(Protraction) && InCombat() && CanWeave() && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty())) 
                 return Protraction.RetargetIfEnabled(Physick);
             
-            if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && !FairyBusy && ActionReady(Aetherpact))
+            if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && !FairyBusy && ActionReady(Aetherpact))
                 return Aetherpact.RetargetIfEnabled(Physick);
 
-            if (!InBossEncounter() && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) && HasPetPresent() && !FairyBusy)
             {
-                if (ActionReady(WhisperingDawn))
+                if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
                 
-                if (ActionReady(FeyIllumination))
+                if (ActionReady(FeyIllumination) && GetPartyAvgHPPercent() <= 90)
                     return FeyIllumination;
                 
-                if (ActionReady(FeyBlessing))
+                if (ActionReady(FeyBlessing) && GetPartyAvgHPPercent() <= 90)
                     return FeyBlessing;
                 
-                if (ActionReady(OriginalHook(SummonSeraph)))
+                if (ActionReady(OriginalHook(SummonSeraph)) && GetPartyAvgHPPercent() <= 85)
                     return OriginalHook(SummonSeraph);
                 
-                if (ActionReady(Seraphism))
+                if (ActionReady(Seraphism) && GetPartyAvgHPPercent() <= 75)
                     return Seraphism;
             }
 
-            if (ActionReady(Expedient) && !InBossEncounter())
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return Expedient;
-            
-            if (ActionReady(OriginalHook(Adloquium)))
-                return ActionReady(OriginalHook(EmergencyTactics)) && (HasStatusEffect(Buffs.Galvanize, healTarget, true) || !HasStatusEffect(Buffs.EmergencyTactics))
-                    ? OriginalHook(EmergencyTactics)
-                    : OriginalHook(Adloquium).RetargetIfEnabled(Physick);
+
+            if (TryShieldedEmergencyAdloquium(healTarget, out var shieldedHeal))
+                return shieldedHeal.RetargetIfEnabled(Physick);
             
             return actionID.RetargetIfEnabled();
         }
@@ -250,42 +248,42 @@ internal partial class SCH : Healer
             if (EndAetherpact)
                 return DissolveUnion;
             
-            if (ActionReady(Expedient) && GroupDamageIncoming())
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && GroupDamageIncoming())
                 return Expedient;
             
-            if (ActionReady(SacredSoil) && GroupDamageIncoming())
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && GroupDamageIncoming())
                 return SacredSoil.Retarget([Succor, Concitation], SimpleTarget.Self);
             
             if (ActionReady(Aetherflow) && !HasAetherflow &&
-                InCombat())
+                InCombat() && CanWeave())
                 return Aetherflow;
             
             if (Role.CanLucidDream(6500) && CanWeave()) 
                 return Role.LucidDreaming;
 
-            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation))
+            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave())
                 return Consolation;
 
-            if (InCombat() && IsOffCooldown(Indomitability) && LevelChecked(Indomitability))
+            if (InCombat() && CanWeave() && IsOffCooldown(Indomitability) && LevelChecked(Indomitability) && GetPartyAvgHPPercent() <= 85)
                 return !HasAetherflow && ActionReady(Recitation)
                     ? Recitation
                     : Indomitability;
 
-            if (HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && HasPetPresent() && !FairyBusy)
             {
-                if (ActionReady(WhisperingDawn))
+                if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
                 
-                if (ActionReady(FeyIllumination))
+                if (ActionReady(FeyIllumination) && GetPartyAvgHPPercent() <= 90)
                     return FeyIllumination;
                 
-                if (ActionReady(FeyBlessing))
+                if (ActionReady(FeyBlessing) && GetPartyAvgHPPercent() <= 90)
                     return FeyBlessing;
                 
-                if (ActionReady(OriginalHook(SummonSeraph)))
+                if (ActionReady(OriginalHook(SummonSeraph)) && GetPartyAvgHPPercent() <= 85)
                     return OriginalHook(SummonSeraph);
                 
-                if (ActionReady(Seraphism))
+                if (ActionReady(Seraphism) && GetPartyAvgHPPercent() <= 75)
                     return Seraphism;
             }
             
@@ -571,6 +569,10 @@ internal partial class SCH : Healer
                         return spell.RetargetIfEnabled(Physick);
                 }
             }
+
+            if (TryShieldedEmergencyAdloquium(healTarget, out var shieldedHeal))
+                return shieldedHeal.RetargetIfEnabled(Physick);
+
             return actionID
                 .RetargetIfEnabled(Physick);
         }

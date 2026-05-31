@@ -78,43 +78,10 @@ internal partial class WAR
                     return selectedActionID;
                 }
             }
-            // ParseLord5 experiment: in weave windows, try GCD before oGCD.
-            // Baseline (flag off): oGCD first, then GCD. TryOGCDAttacks only fires inside CanWeave();
-            // TryGCDAttacks can fire outside weave — so experimental must not run GCD before oGCD globally.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (TryWarRotationAttacks(comboFlags, ref actionID))
             {
-                if (CanWeave())
-                {
-                    if (TryGCDAttacks(comboFlags, ref actionID))
-                    {
-                        TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd-exp");
-                        return actionID;
-                    }
-
-                    if (TryOGCDAttacks(comboFlags, ref actionID))
-                    {
-                        TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd-exp");
-                        return actionID;
-                    }
-                }
-                else if (TryGCDAttacks(comboFlags, ref actionID))
-                {
-                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd-exp");
-                    return actionID;
-                }
-            }
-            else
-            {
-                if (TryOGCDAttacks(comboFlags, ref actionID))
-                {
-                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "ogcd");
-                    return actionID;
-                }
-                if (TryGCDAttacks(comboFlags, ref actionID))
-                {
-                    TraceParseLord5WarSTSimple(HeavySwing, actionID, "gcd");
-                    return actionID;
-                }
+                TraceParseLord5WarSTSimple(HeavySwing, actionID, "rotation");
+                return actionID;
             }
             
             var fallbackActionID = STCombo;
@@ -145,27 +112,8 @@ internal partial class WAR
                         : actionID;
             }
 
-            // ParseLord5 experiment (AoE): in weave windows, try GCD before oGCD.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
-            {
-                if (CanWeave())
-                {
-                    if (TryGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-
-                    if (TryOGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-                }
-                else if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
-            else
-            {
-                if (TryOGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-                if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
+            if (TryWarRotationAttacks(comboFlags, ref actionID))
+                return actionID;
             
             return AoECombo;
         }
@@ -198,27 +146,8 @@ internal partial class WAR
             if (IsEnabled(Preset.WAR_ST_BalanceOpener) && Opener().FullOpener(ref actionID))
                 return actionID;
             
-            if (Service.Configuration.ParseLord5ExperimentalMode)
-            {
-                if (CanWeave())
-                {
-                    if (TryGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-
-                    if (TryOGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-                }
-                else if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
-            else
-            {
-                if (TryOGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-                
-                if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
+            if (TryWarRotationAttacks(comboFlags, ref actionID))
+                return actionID;
             
             return STCombo;
         }
@@ -247,27 +176,8 @@ internal partial class WAR
                         : actionID;
             }
             
-            if (Service.Configuration.ParseLord5ExperimentalMode)
-            {
-                if (CanWeave())
-                {
-                    if (TryGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-
-                    if (TryOGCDAttacks(comboFlags, ref actionID))
-                        return actionID;
-                }
-                else if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
-            else
-            {
-                if (TryOGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-                
-                if (TryGCDAttacks(comboFlags, ref actionID))
-                    return actionID;
-            }
+            if (TryWarRotationAttacks(comboFlags, ref actionID))
+                return actionID;
             
             return AoECombo;
         }

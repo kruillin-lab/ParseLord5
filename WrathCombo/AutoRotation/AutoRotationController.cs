@@ -775,10 +775,12 @@ internal unsafe class AutoRotationController
                 {
                     IGameObject? target = dpsmode switch
                     {
-                        DPSRotationMode.Manual => Svc.Targets.Target 
-                            ?? (Service.Configuration.ParseLord5ExperimentalMode && cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual
-                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode) 
-                                : null),
+                        DPSRotationMode.Manual =>
+                            (Service.Configuration.ParseLord5ExperimentalMode && 
+                             (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
+                             cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
+                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)
+                                : Svc.Targets.Target,
                         DPSRotationMode.Highest_Max => TankTargeting.GetHighestMaxTarget(),
                         DPSRotationMode.Lowest_Max => TankTargeting.GetLowestMaxTarget(),
                         DPSRotationMode.Highest_Current => TankTargeting.GetHighestCurrentTarget(),
@@ -794,10 +796,12 @@ internal unsafe class AutoRotationController
                 {
                     IGameObject? target = dpsmode switch
                     {
-                        DPSRotationMode.Manual => Svc.Targets.Target
-                            ?? (Service.Configuration.ParseLord5ExperimentalMode && cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual
-                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode) 
-                                : null),
+                        DPSRotationMode.Manual =>
+                            (Service.Configuration.ParseLord5ExperimentalMode && 
+                             (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
+                             cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
+                                ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)
+                                : Svc.Targets.Target,
                         DPSRotationMode.Highest_Max => DPSTargeting.GetHighestMaxTarget(),
                         DPSRotationMode.Lowest_Max => DPSTargeting.GetLowestMaxTarget(),
                         DPSRotationMode.Highest_Current => DPSTargeting.GetHighestCurrentTarget(),
@@ -895,8 +899,7 @@ internal unsafe class AutoRotationController
                     return false;
                 }
 
-                var canQueue = outAct.ActionAttackType() is { } type && ((type is ActionAttackType.Ability && AnimationLock == 0) || (type is not ActionAttackType.Ability && RemainingGCD <= cfg.QueueWindow));
-                if (!canQueue)
+                if (!AutoRotCanPressAction(outAct))
                 {
                     OverrideTarget = null;
                     return false;
@@ -973,7 +976,7 @@ internal unsafe class AutoRotationController
                 target = dp;
 
             var canUseSelf = NIN.MudraSigns.Contains(outAct)
-                ? target is not null && target.IsHostile()
+                ? (target is not null && target.IsHostile()) || NIN.InMudra
                 : ActionManager.CanUseActionOnTarget(outAct, Player.GameObject);
 
             var blockedSelfBuffs = GetCooldown(outAct).CooldownTotal >= 5;
@@ -996,7 +999,7 @@ internal unsafe class AutoRotationController
             var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), target is null ? player.GameObject() : target.Struct());
             var inRange = acRangeCheck is 0 or 565 || canUseSelf;
 
-            var canUse = (canUseSelf || canUseTarget || areaTargeted) && outAct.ActionAttackType() is { } type && ((type is ActionAttackType.Ability && AnimationLock == 0) || (type is not ActionAttackType.Ability && RemainingGCD <= cfg.QueueWindow));
+            var canUse = (canUseSelf || canUseTarget || areaTargeted) && AutoRotCanPressAction(outAct);
             var isHeal = attributes.AutoAction!.IsHeal;
 
             if ((!isHeal && cfg.DPSSettings.DPSAlwaysHardTarget && mode is not DPSRotationMode.Manual) || (isHeal && cfg.HealerSettings.HealerAlwaysHardTarget && mode is not HealerRotationMode.Manual))
@@ -1048,6 +1051,14 @@ internal unsafe class AutoRotationController
 
             return false;
         }
+
+        /// <summary>
+        ///     Matches <see cref="CanQueue" /> weave timing so oGCDs are not rejected while a short animation lock remains.
+        /// </summary>
+        private static bool AutoRotCanPressAction(uint outAct) =>
+            outAct.ActionAttackType() is { } type &&
+            ((type is ActionAttackType.Ability && AnimationLock <= BaseActionQueue) ||
+             (type is not ActionAttackType.Ability && RemainingGCD <= cfg.QueueWindow));
 
         public static uint InvokeCombo(Preset preset, PresetStorage.PresetData attributes, ref uint originalAct, IGameObject? optionalTarget = null)
         {

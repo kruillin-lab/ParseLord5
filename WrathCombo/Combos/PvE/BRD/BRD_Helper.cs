@@ -34,7 +34,7 @@ internal partial class BRD
     
     
     // Gauge Stuff
-    internal static BRDGauge? gauge = GetJobGauge<BRDGauge>();
+    internal static BRDGauge gauge => GetJobGauge<BRDGauge>();
     internal static int SongTimerInSeconds => gauge.SongTimer / 1000;
     internal static bool SongNone => gauge.Song == Song.None;
     internal static bool SongWanderer => gauge.Song == Song.WanderersMinuet;
@@ -54,7 +54,8 @@ internal partial class BRD
     internal static bool CanBardWeave => CanWeave();
     internal static bool CanWeaveDelayed => CanDelayedWeave();
     internal static bool CanIronJaws => LevelChecked(IronJaws);
-    internal static bool BuffTime => GetCooldownRemainingTime(RagingStrikes) < 2.7;
+    // Only the pre-burst tail of the RS cooldown — not when RS is already off cooldown (remaining == 0).
+    internal static bool BuffTime => IsOnCooldown(RagingStrikes) && GetCooldownRemainingTime(RagingStrikes) < 2.7;
     internal static bool BuffWindow => HasStatusEffect(Buffs.RagingStrikes) && 
                                        (HasStatusEffect(Buffs.BattleVoice) || !LevelChecked(BattleVoice)) &&
                                        (HasStatusEffect(Buffs.RadiantFinale) || !LevelChecked(RadiantFinale));
@@ -338,7 +339,7 @@ internal partial class BRD
             if (BRD_Adv_Opener_Selection == 0 && Opener1.LevelChecked) return Opener1;
             if (BRD_Adv_Opener_Selection == 1 && Opener2.LevelChecked) return Opener2;
             if (BRD_Adv_Opener_Selection == 2 && Opener3.LevelChecked) return Opener3;
-            if (BRD_Adv_Opener_Selection == 3 && Opener3.LevelChecked) return Opener4;
+            if (BRD_Adv_Opener_Selection == 3 && Opener4.LevelChecked) return Opener4;
         }
         return Opener1.LevelChecked ? Opener1 : WrathOpener.Dummy;
     }

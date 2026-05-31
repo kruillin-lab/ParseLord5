@@ -581,24 +581,24 @@ internal partial class AST : Healer
             if (CanWeave() && Role.CanLucidDream(6500))
                 return Role.LucidDreaming;
             
-            if (ActionReady(EssentialDignity) && GetTargetHPPercent(healTarget) <= 30)
+            if (ActionReady(EssentialDignity) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 50)
                 return EssentialDignity.RetargetIfEnabled(Benefic);
             
-            if (ActionReady(Exaltation) && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
+            if (ActionReady(Exaltation) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Exaltation.RetargetIfEnabled(Benefic);
 
-            if (!InBossEncounter())
+            if (InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
             {
-                if (ActionReady(OriginalHook(CelestialOpposition)))
+                if (ActionReady(OriginalHook(CelestialOpposition)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CelestialOpposition);
 
-                if (ActionReady(OriginalHook(NeutralSect)))
+                if (ActionReady(OriginalHook(NeutralSect)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(NeutralSect);
 
-                if (HasLady && LevelChecked(MinorArcana))
+                if (HasLady && LevelChecked(MinorArcana) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(LadyOfCrown);
 
-                if (ActionReady(OriginalHook(CollectiveUnconscious)))
+                if (ActionReady(OriginalHook(CollectiveUnconscious)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CollectiveUnconscious);
             }
 
@@ -647,17 +647,20 @@ internal partial class AST : Healer
             if (HasStatusEffect(Buffs.HoroscopeHelios))
                 return HoroscopeHeal;
             
-            if (ActionReady(OriginalHook(CelestialOpposition)))
-                return OriginalHook(CelestialOpposition);
-            
-            if (HasLady && LevelChecked(MinorArcana))
-                return OriginalHook(LadyOfCrown);
-            
-            if (ActionReady(OriginalHook(CollectiveUnconscious)))
-                return OriginalHook(CollectiveUnconscious);
+            if (InCombat() && CanWeave())
+            {
+                if (ActionReady(OriginalHook(CelestialOpposition)) && GetPartyAvgHPPercent() <= 90)
+                    return OriginalHook(CelestialOpposition);
+                
+                if (HasLady && LevelChecked(MinorArcana) && GetPartyAvgHPPercent() <= 90)
+                    return OriginalHook(LadyOfCrown);
+                
+                if (ActionReady(OriginalHook(CollectiveUnconscious)) && GetPartyAvgHPPercent() <= 90)
+                    return OriginalHook(CollectiveUnconscious);
 
-            if (ActionReady(OriginalHook(NeutralSect)))
-                return OriginalHook(NeutralSect);
+                if (ActionReady(OriginalHook(NeutralSect)) && GetPartyAvgHPPercent() <= 90)
+                    return OriginalHook(NeutralSect);
+            }
             
             if (LevelChecked(Macrocosmos) && IsOffCooldown(Macrocosmos))
                 return Macrocosmos;

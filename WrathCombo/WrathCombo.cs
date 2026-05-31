@@ -34,6 +34,7 @@ using WrathCombo.Services;
 using WrathCombo.Services.ActionRequestIPC;
 using WrathCombo.Services.IPC;
 using WrathCombo.Services.IPC_Subscriber;
+using WrathCombo.Services.SmartMitigation;
 using WrathCombo.Window;
 using WrathCombo.Window.Tabs;
 using GenericHelpers = ECommons.GenericHelpers;
@@ -305,6 +306,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
     private void ClientState_TerritoryChanged(uint obj)
     {
         UpdateCaches(false, true, false);
+        CombatTelemetryService.Clear();
 
         Task.Run(StancePartner.CheckForIPCControl);
     }
@@ -341,6 +343,9 @@ public sealed partial class WrathCombo : IDalamudPlugin
             TargetHelper.Draw();
 
             AutoRotationController.Run();
+
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+                CombatTelemetryService.Update();
 
             if (Player.IsDead)
             {

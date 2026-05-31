@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.JobGauge.Types;
+using Dalamud.Game.ClientState.JobGauge.Types;
 using ECommons.DalamudServices;
 using System;
 using System.Collections.Frozen;
@@ -22,7 +22,12 @@ internal partial class NIN
 
     #region Mudra Logic
     public static uint CurrentNinjutsu => OriginalHook(Ninjutsu);
-    internal static bool InMudra = false;
+    private static bool _inMudraBackup = false;
+    internal static bool InMudra
+    {
+        get => HasStatusEffect(Buffs.Mudra) || _inMudraBackup;
+        set => _inMudraBackup = value;
+    }
     internal static bool Rabbitting => GetStatusEffect(Buffs.Mudra)?.Param == 255;
     internal static bool MudraPhase => WasLastAction(Ten) || WasLastAction(Chi) || WasLastAction(Jin) || WasLastAction(TenCombo) || WasLastAction(ChiCombo) || WasLastAction(JinCombo);
     internal static bool MudraReady => MudraCasting.CanCast();

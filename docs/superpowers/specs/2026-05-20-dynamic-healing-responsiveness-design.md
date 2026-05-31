@@ -1,3 +1,13 @@
+---
+tags:
+  - type/doc
+  - project/parselord5
+  - status/active
+type: doc
+project: parselord5
+status: active
+aliases: []
+---
 # Dynamic Healing Responsiveness Design Spec
 
 **Date**: 2026-05-20

@@ -451,11 +451,11 @@ internal partial class WHM : Healer
             
             var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
             
-            if (ActionReady(Benediction) && 
+            if (ActionReady(Benediction) && InCombat() && CanWeave() &&
                 GetTargetHPPercent(healTarget) <= 20)
                 return Benediction.RetargetIfEnabled(Cure);
             
-            if (ActionReady(Tetragrammaton) && 
+            if (ActionReady(Tetragrammaton) && InCombat() && CanWeave() &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Tetragrammaton.RetargetIfEnabled(Cure);
             
@@ -471,8 +471,8 @@ internal partial class WHM : Healer
             if (CanWeave() && Role.CanLucidDream(6500))
                 return Role.LucidDreaming;
             
-            if (ActionReady(Asylum) && 
-                !InBossEncounter() &&
+            if (ActionReady(Asylum) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(Cure ,SimpleTarget.Self);
             
@@ -481,15 +481,16 @@ internal partial class WHM : Healer
                 GetTargetHPPercent(healTarget) >= 40)
                 return Regen.RetargetIfEnabled(Cure);
 
-            if (ActionReady(DivineBenison) && 
-                GetStatusEffect(Buffs.DivineBenison, healTarget) == null)
+            if (ActionReady(DivineBenison) && InCombat() && CanWeave() &&
+                GetStatusEffect(Buffs.DivineBenison, healTarget) == null &&
+                GetTargetHPPercent(healTarget) <= 95)
                 return DivineBenison.RetargetIfEnabled(Cure);
 
-            if (ActionReady(Aquaveil) && IsOffCooldown(Aquaveil) && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
+            if (ActionReady(Aquaveil) && InCombat() && CanWeave() && IsOffCooldown(Aquaveil) && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Aquaveil.RetargetIfEnabled(Cure);
 
-            if (ActionReady(OriginalHook(Temperance)) && 
-                !InBossEncounter())
+            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return OriginalHook(Temperance);
             
             if (ActionReady(AfflatusSolace) && !BloodLilyReady)
@@ -515,29 +516,29 @@ internal partial class WHM : Healer
 
             var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
 
-            if (ActionReady(Assize))
+            if (ActionReady(Assize) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90)
                 return Assize;
             
-            if (ActionReady(Asylum) &&
+            if (ActionReady(Asylum) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90 &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(Medica1, SimpleTarget.Self);
 
             if (CanWeave() && Role.CanLucidDream(WHM_AoEHeals_Lucid))
                 return Role.LucidDreaming;
             
-            if (ActionReady(OriginalHook(Temperance)) && 
+            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() &&
                 (GetPartyAvgHPPercent() <= 70 ||
                  GroupDamageIncoming() ||
                  HasStatusEffect(Buffs.DivineGrace)))
                 return OriginalHook(Temperance);
             
-            if (LevelChecked(LiturgyOfTheBell) &&
+            if (LevelChecked(LiturgyOfTheBell) && InCombat() && CanWeave() &&
                 IsOffCooldown(LiturgyOfTheBell) &&
                 (GetPartyAvgHPPercent() <= 50 ||
                  GroupDamageIncoming()))
                 return LiturgyOfTheBell;
 
-            if (ActionReady(PlenaryIndulgence) &&
+            if (ActionReady(PlenaryIndulgence) && InCombat() && CanWeave() &&
                 (GetPartyAvgHPPercent() <= 70 ||
                  GroupDamageIncoming()))
                 return PlenaryIndulgence;

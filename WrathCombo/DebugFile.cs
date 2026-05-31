@@ -83,11 +83,14 @@ public static class DebugFile
                      $"'{displayValue}'");
     }
 
-    /// Get the path to the debug file.
     public static string GetDebugFilePath()
     {
+#if DEBUG
         var separator = DesktopPath?.Contains('\\') == true ? "\\" : "/";
         return $"{DesktopPath}{separator}WrathDebug.txt";
+#else
+        return string.Empty;
+#endif
     }
 
     /// <summary>
@@ -106,6 +109,7 @@ public static class DebugFile
     /// </param>
     public static void MakeDebugFile(ClassJob? job = null, bool allJobs = false)
     {
+#if DEBUG
         _redundantIDs = [];
 
         if (allJobs)
@@ -163,6 +167,9 @@ public static class DebugFile
                 ". Upload this file where requested.\n" +
                 "If you're unsure of where the file was created, use: /wrath debug path");
         }
+#else
+        DuoLog.Information("Debug file generation is only available in Debug builds.");
+#endif
     }
 
     private static void AddPluginInfo()

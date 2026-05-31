@@ -117,6 +117,16 @@ internal partial class BRD : PhysicalRanged
                 if (Role.CanSecondWind(40))
                     return Role.SecondWind;
 
+                if (ActionReady(Troubadour) && GroupDamageIncoming() && !JustUsed(NaturesMinne) &&
+                    NumberOfAlliesInRange(Troubadour) >= GetPartyMembers().Count * .75 &&
+                    !HasAnyStatusEffects([Buffs.Troubadour, DNC.Buffs.ShieldSamba, MCH.Buffs.Tactician], anyOwner: true))
+                    return Troubadour;
+
+                if (ActionReady(NaturesMinne) && GroupDamageIncoming() && !JustUsed(Troubadour) &&
+                    NumberOfAlliesInRange(NaturesMinne) >= GetPartyMembers().Count * .75 &&
+                    !HasAnyStatusEffects([Buffs.Troubadour, Buffs.NaturesMinne], anyOwner: true))
+                    return NaturesMinne;
+
                 if (ActionReady(TheWardensPaeon))
                 {
                     if (HasCleansableDebuff(LocalPlayer))
@@ -284,14 +294,14 @@ internal partial class BRD : PhysicalRanged
                 if (Role.CanSecondWind(40))
                     return Role.SecondWind;
                 
-                if (ActionReady(Troubadour) && !GroupDamageIncoming() && !JustUsed(NaturesMinne) &&
+                if (ActionReady(Troubadour) && GroupDamageIncoming() && !JustUsed(NaturesMinne) &&
                     NumberOfAlliesInRange(Troubadour) >= GetPartyMembers().Count * .75 &&
-                    !HasAnyStatusEffects([Buffs.Troubadour, DNC.Buffs.ShieldSamba, MCH.Buffs.Tactician, Buffs.WanderersMinuet], anyOwner: true))
+                    !HasAnyStatusEffects([Buffs.Troubadour, DNC.Buffs.ShieldSamba, MCH.Buffs.Tactician], anyOwner: true))
                     return Troubadour;
 
-                if (ActionReady(NaturesMinne) && !GroupDamageIncoming() && !JustUsed(Troubadour) &&
+                if (ActionReady(NaturesMinne) && GroupDamageIncoming() && !JustUsed(Troubadour) &&
                     NumberOfAlliesInRange(NaturesMinne) >= GetPartyMembers().Count * .75 &&
-                    !HasAnyStatusEffects([Buffs.Troubadour, Buffs.NaturesMinne, Buffs.WanderersMinuet], anyOwner: true))
+                    !HasAnyStatusEffects([Buffs.Troubadour, Buffs.NaturesMinne], anyOwner: true))
                     return NaturesMinne;
 
                 if (ActionReady(TheWardensPaeon))
@@ -602,7 +612,7 @@ internal partial class BRD : PhysicalRanged
             #endregion
 
             #region Songs
-            if (IsEnabled(Preset.BRD_Adv_Song) && InCombat())
+            if (IsEnabled(Preset.BRD_Adv_Song) && InCombat() && (CanBardWeave || !BardHasTarget))
             {
                 if (SongChangePitchPerfect())
                     return PitchPerfect;
