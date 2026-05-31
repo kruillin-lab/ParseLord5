@@ -73,13 +73,6 @@ internal unsafe class AutoRotationController
             return;
 
         bool pauseWarningFound = false;
-        bool raidwideWarningFound = false;
-        var logMessages = Svc.Data.Excel.GetSheet<LogMessage>();
-        switch (Content.TerritoryID)
-        {
-            default:
-                break;
-        }
 
         if (pauseWarningFound)
         {
@@ -409,12 +402,12 @@ internal unsafe class AutoRotationController
             // Tank logic
             if (Player.Object?.GetRole() is CombatRole.Tank)
             {
-                AutomateTanking(entry.Preset, attributes, gameAct);
+                AutomateRotation(entry.Preset, attributes, gameAct);
                 continue;
             }
 
             // DPS logic
-            if (!action.IsHeal && AutomateDPS(entry.Preset, attributes, gameAct))
+            if (!action.IsHeal && AutomateRotation(entry.Preset, attributes, gameAct))
                 return false;
         }
 
@@ -682,20 +675,7 @@ internal unsafe class AutoRotationController
 
     }
 
-    private static bool AutomateDPS(Preset preset, PresetStorage.PresetData attributes, uint gameAct)
-    {
-        var mode = cfg.DPSRotationMode;
-        if (attributes.AutoAction!.IsAoE)
-        {
-            return AutoRotationHelper.ExecuteAoE(mode, preset, attributes, gameAct);
-        }
-        else
-        {
-            return AutoRotationHelper.ExecuteST(mode, preset, attributes, gameAct);
-        }
-    }
-
-    private static bool AutomateTanking(Preset preset, PresetStorage.PresetData attributes, uint gameAct)
+    private static bool AutomateRotation(Preset preset, PresetStorage.PresetData attributes, uint gameAct)
     {
         var mode = cfg.DPSRotationMode;
         if (attributes.AutoAction!.IsAoE)
