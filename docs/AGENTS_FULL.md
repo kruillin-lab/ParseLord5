@@ -45,3 +45,39 @@ Build-mode executor prompts — single markdown block, sections in order:
 11. **How to Proceed** — next milestone or wait
 
 Terse bullets only. Preserve exact paths, error strings, identifiers.
+
+## Cursor Cloud specific instructions
+
+ParseLord5 is a **Dalamud in-process plugin**; there is no standalone `dotnet run` or dev server. Cloud verification is **compile + domain evals**; in-game load requires Windows + FFXIV + XIVLauncher/Dalamud.
+
+### Prerequisites (one-time on a fresh VM)
+
+- **.NET 10 SDK** on `PATH` (install to `~/.dotnet` if missing; `export PATH="$HOME/.dotnet:$PATH"`).
+- **Git submodules**: `ECommons`, `PunishLib`, `WrathCombo.API` (run `git submodule update --init --recursive`).
+- **Dalamud dev hook DLLs** at `~/.xlcore/dalamud/Hooks/dev/` on Linux (Windows: `%AppData%\XIVLauncher\addon\Hooks\dev\`). Download `https://goatcorp.github.io/dalamud-distrib/latest.zip` when `Dalamud.dll` is absent.
+
+### Build and verify (Linux)
+
+```bash
+export PATH="$HOME/.dotnet:$PATH"
+dotnet build WrathCombo/WrathCombo.csproj -c Release
+pwsh -File scripts/rotation-evals.ps1
+```
+
+Release output: `WrathCombo/bin/Release/ParseLord5.dll` and `ParseLord5.json` (`InternalName` / `DalamudApiLevel` 15).
+
+### Lint / tests
+
+- No dedicated linter or `dotnet test` projects.
+- Domain checks: `scripts/rotation-evals.ps1` (preset enum, job coverage, unique IDs).
+- Full solution build: `dotnet build WrathCombo.slnx -c Release`.
+
+### In-game dev loop (not available in Cloud Agent VMs)
+
+On a Windows machine with XIVLauncher: build Debug (outputs to devPlugins), add DLL under Dalamud **Experimental → Dev Plugin Locations**, enable **Auto Reload**, use `/pl5` or `/wrath`. Disable other WrathCombo/ParseLord5 instances to avoid collisions.
+
+### Gotchas
+
+- Build fails with thousands of `AtkUnitBase` / `FFXIVClientStructs` errors → Dalamud hook path is missing or stale; refresh `latest.zip` into the `Hooks/dev` folder above.
+- `quality-gate.json` `markdown-audit` command is Windows-local and not runnable in Cloud.
+- Submodule pins must match; do not bump `ECommons` without a deliberate compatibility pass.
