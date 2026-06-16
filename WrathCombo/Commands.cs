@@ -153,7 +153,7 @@ public partial class WrathCombo
 
     private void OutputOpenerStatus()
     {
-        Svc.Log.Debug($"{WrathOpener.CurrentOpener.Enabled}");
+        Svc.Log.Debug($"{WrathOpener.CurrentOpener?.Enabled}");
         if (WrathOpener.CurrentOpener is not null && WrathOpener.CurrentOpener != WrathOpener.Dummy && WrathOpener.CurrentOpener.Enabled)
         {
             var status = WrathOpener.OpenerStatus();

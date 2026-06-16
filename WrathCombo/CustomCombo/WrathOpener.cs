@@ -337,7 +337,7 @@ public abstract class WrathOpener
     private static void ResetAfterCombat(ConditionFlag flag, bool value)
     {
         if (flag == ConditionFlag.InCombat && !value)
-            CurrentOpener.ResetOpener();
+            CurrentOpener?.ResetOpener();
     }
 
     private static void RevertInterruptedCasts(uint interruptedAction)
