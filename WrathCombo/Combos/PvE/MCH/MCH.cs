@@ -68,26 +68,16 @@ internal partial class MCH : PhysicalRanged
 
                     // ParseLord5 experiment: swap Reassemble / Queen priority.
                     // Baseline (flag off): Queen first, then Reassemble.
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        // Reassemble
-                        if (CanReassemble())
-                            return Reassemble;
+                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                        // Queen
-                        if (CanQueen())
-                            return OriginalHook(RookAutoturret);
-                    }
-                    else
-                    {
-                        // Queen
-                        if (CanQueen())
-                            return OriginalHook(RookAutoturret);
+                    if (reassembleFirst && CanReassemble())
+                        return Reassemble;
 
-                        // Reassemble
-                        if (CanReassemble())
-                            return Reassemble;
-                    }
+                    if (CanQueen())
+                        return OriginalHook(RookAutoturret);
+
+                    if (!reassembleFirst && CanReassemble())
+                        return Reassemble;
 
                     // Gauss Round and Ricochet outside HC
                     if (JustUsed(OriginalHook(AirAnchor), 2f) ||
@@ -196,34 +186,25 @@ internal partial class MCH : PhysicalRanged
                         return BarrelStabilizer;
 
                     // ParseLord5 experiment (AoE): swap Reassemble / Queen priority.
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
-                            !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
-                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
-                            (LevelChecked(Scattergun) ||
-                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
-                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
-                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
-                            return Reassemble;
+                    // Baseline (flag off): Queen first, then Reassemble.
+                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
+                    var canReassemble =
+                        ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
+                        !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
+                        GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
+                        (LevelChecked(Scattergun) ||
+                         GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
+                         GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
+                         HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator));
 
-                        if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
-                            return OriginalHook(RookAutoturret);
-                    }
-                    else
-                    {
-                        if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
-                            return OriginalHook(RookAutoturret);
+                    if (reassembleFirst && canReassemble)
+                        return Reassemble;
 
-                        if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
-                            !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
-                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
-                            (LevelChecked(Scattergun) ||
-                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
-                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
-                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
-                            return Reassemble;
-                    }
+                    if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
+                        return OriginalHook(RookAutoturret);
+
+                    if (!reassembleFirst && canReassemble)
+                        return Reassemble;
 
                     //gauss and ricochet outside HC
                     if (CanGaussRound &&
@@ -354,52 +335,37 @@ internal partial class MCH : PhysicalRanged
 
                 if (!IsOverheated)
                 {
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        // Reassemble
-                        if (IsEnabled(Preset.MCH_ST_Adv_Reassemble) &&
-                            GetRemainingCharges(Reassemble) > MCH_ST_ReassemblePool &&
-                            GetTargetHPPercent() > HPThresholdReassemble &&
-                            CanReassemble())
-                            return Reassemble;
+                    // ParseLord5 experiment: Reassemble→Barrel→Queen; baseline Queen→Barrel→Reassemble.
+                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
+                    var canReassemble =
+                        IsEnabled(Preset.MCH_ST_Adv_Reassemble) &&
+                        GetRemainingCharges(Reassemble) > MCH_ST_ReassemblePool &&
+                        GetTargetHPPercent() > HPThresholdReassemble &&
+                        CanReassemble();
+                    var canQueen =
+                        IsEnabled(Preset.MCH_ST_Adv_TurretQueen) &&
+                        CanQueen();
 
-                        // BarrelStabilizer
-                        if (IsEnabled(Preset.MCH_ST_Adv_Stabilizer) &&
-                            ActionReady(BarrelStabilizer) &&
-                            (MCH_ST_BarrelStabilizerBossOption == 0 && GetTargetHPPercent() > HPThresholdBarrelStabilizer ||
-                             TargetIsBoss()) &&
-                            GetCooldownRemainingTime(Wildfire) <= 20 &&
-                            !HasStatusEffect(Buffs.FullMetalMachinist))
-                            return BarrelStabilizer;
+                    if (reassembleFirst && canReassemble)
+                        return Reassemble;
 
-                        // Queen
-                        if (IsEnabled(Preset.MCH_ST_Adv_TurretQueen) &&
-                            CanQueen())
-                            return OriginalHook(RookAutoturret);
-                    }
-                    else
-                    {
-                        // Queen
-                        if (IsEnabled(Preset.MCH_ST_Adv_TurretQueen) &&
-                            CanQueen())
-                            return OriginalHook(RookAutoturret);
+                    if (!reassembleFirst && canQueen)
+                        return OriginalHook(RookAutoturret);
 
-                        // BarrelStabilizer
-                        if (IsEnabled(Preset.MCH_ST_Adv_Stabilizer) &&
-                            ActionReady(BarrelStabilizer) &&
-                            (MCH_ST_BarrelStabilizerBossOption == 0 && GetTargetHPPercent() > HPThresholdBarrelStabilizer ||
-                             TargetIsBoss()) &&
-                            GetCooldownRemainingTime(Wildfire) <= 20 &&
-                            !HasStatusEffect(Buffs.FullMetalMachinist))
-                            return BarrelStabilizer;
+                    // BarrelStabilizer
+                    if (IsEnabled(Preset.MCH_ST_Adv_Stabilizer) &&
+                        ActionReady(BarrelStabilizer) &&
+                        (MCH_ST_BarrelStabilizerBossOption == 0 && GetTargetHPPercent() > HPThresholdBarrelStabilizer ||
+                         TargetIsBoss()) &&
+                        GetCooldownRemainingTime(Wildfire) <= 20 &&
+                        !HasStatusEffect(Buffs.FullMetalMachinist))
+                        return BarrelStabilizer;
 
-                        // Reassemble
-                        if (IsEnabled(Preset.MCH_ST_Adv_Reassemble) &&
-                            GetRemainingCharges(Reassemble) > MCH_ST_ReassemblePool &&
-                            GetTargetHPPercent() > HPThresholdReassemble &&
-                            CanReassemble())
-                            return Reassemble;
-                    }
+                    if (reassembleFirst && canQueen)
+                        return OriginalHook(RookAutoturret);
+
+                    if (!reassembleFirst && canReassemble)
+                        return Reassemble;
 
                     // Gauss Round and Ricochet outside HC
                     if (IsEnabled(Preset.MCH_ST_Adv_GaussRicochet) &&
@@ -532,44 +498,31 @@ internal partial class MCH : PhysicalRanged
                         GetTargetHPPercent() > MCH_AoE_BarrelStabilizerHPThreshold)
                         return BarrelStabilizer;
 
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        if (IsEnabled(Preset.MCH_AoE_Adv_Reassemble) &&
-                            GetTargetHPPercent() > MCH_AoE_ReassembleHPThreshold &&
-                            ActionReady(Reassemble) && !HasStatusEffect(Buffs.Reassembled) &&
-                            !JustUsed(Flamethrower, 10f) &&
-                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
-                            (LevelChecked(Scattergun) ||
-                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
-                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
-                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
-                            return Reassemble;
+                    // ParseLord5 experiment (AoE Adv): swap Reassemble / Queen priority.
+                    // Baseline (flag off): Queen first, then Reassemble.
+                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
+                    var canReassemble =
+                        IsEnabled(Preset.MCH_AoE_Adv_Reassemble) &&
+                        GetTargetHPPercent() > MCH_AoE_ReassembleHPThreshold &&
+                        ActionReady(Reassemble) && !HasStatusEffect(Buffs.Reassembled) &&
+                        !JustUsed(Flamethrower, 10f) &&
+                        GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
+                        (LevelChecked(Scattergun) ||
+                         GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
+                         GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
+                         HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator));
 
-                        if (IsEnabled(Preset.MCH_AoE_Adv_Queen) &&
-                            ActionReady(OriginalHook(RookAutoturret)) &&
-                            Battery >= MCH_AoE_TurretBatteryUsage &&
-                            GetTargetHPPercent() > MCH_AoE_QueenHpThreshold)
-                            return OriginalHook(RookAutoturret);
-                    }
-                    else
-                    {
-                        if (IsEnabled(Preset.MCH_AoE_Adv_Queen) &&
-                            ActionReady(OriginalHook(RookAutoturret)) &&
-                            Battery >= MCH_AoE_TurretBatteryUsage &&
-                            GetTargetHPPercent() > MCH_AoE_QueenHpThreshold)
-                            return OriginalHook(RookAutoturret);
+                    if (reassembleFirst && canReassemble)
+                        return Reassemble;
 
-                        if (IsEnabled(Preset.MCH_AoE_Adv_Reassemble) &&
-                            GetTargetHPPercent() > MCH_AoE_ReassembleHPThreshold &&
-                            ActionReady(Reassemble) && !HasStatusEffect(Buffs.Reassembled) &&
-                            !JustUsed(Flamethrower, 10f) &&
-                            GetRemainingCharges(Reassemble) > MCH_AoE_ReassemblePool &&
-                            (LevelChecked(Scattergun) ||
-                             GetCooldownRemainingTime(AirAnchor) < GCD && LevelChecked(AirAnchor) ||
-                             GetCooldownRemainingTime(Chainsaw) < GCD && LevelChecked(Chainsaw) ||
-                             HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator)))
-                            return Reassemble;
-                    }
+                    if (IsEnabled(Preset.MCH_AoE_Adv_Queen) &&
+                        ActionReady(OriginalHook(RookAutoturret)) &&
+                        Battery >= MCH_AoE_TurretBatteryUsage &&
+                        GetTargetHPPercent() > MCH_AoE_QueenHpThreshold)
+                        return OriginalHook(RookAutoturret);
+
+                    if (!reassembleFirst && canReassemble)
+                        return Reassemble;
 
                     //gauss and ricochet outside HC
                     if (IsEnabled(Preset.MCH_AoE_Adv_GaussRicochet))
