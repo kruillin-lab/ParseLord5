@@ -1,0 +1,25 @@
+WrathCombo/AutoRotation/AutoRotationController.cs
+  s_8142d970b6bf28::t_309fb1d110b3f5 428-429
+WrathCombo.Tests/HealDelayCurveTests.cs
+  s_8142d970b6bf28::t_03e6d759abbedc 1-84
+WrathCombo/Services/HealDelayCurve.cs
+  s_8142d970b6bf28::t_316634d08e2a41 1-28
+WrathCombo.Tests/WrathCombo.Tests.csproj
+  s_8142d970b6bf28::t_68e3d7453271db 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "e29bb77631d2160dc77e2b328420d9a816643eab",
+  "prompts": {},
+  "sessions": {
+    "s_8142d970b6bf28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22fc6be5-f829-4bef-8e3e-9e57d8739ec6",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
