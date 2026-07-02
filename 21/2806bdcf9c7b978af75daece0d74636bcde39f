@@ -1,0 +1,87 @@
+WrathCombo/Combos/PvE/WAR/WAR.cs
+  s_163b504a5a5408::t_08e82343779503 28
+WrathCombo/Window/Tabs/AutoRotationTab.cs
+  s_163b504a5a5408::t_5e949d70d84487 106
+WrathCombo/Combos/PvE/DNC/DNC.cs
+  s_163b504a5a5408::t_08e82343779503 185,570,883,1193
+WrathCombo/Combos/PvE/DRG/DRG.cs
+  s_163b504a5a5408::t_08e82343779503 26,140,263,418
+WrathCombo/Core/Configuration.ExperimentalFlags.cs
+  s_163b504a5a5408::t_1c261bcb0af985 1-38
+WrathCombo/Combos/PvE/DRK/DRK.cs
+  s_163b504a5a5408::t_08e82343779503 132,200,249,303
+WrathCombo/Combos/PvE/PCT/PCT_Helper.cs
+  s_163b504a5a5408::t_08e82343779503 152
+WrathCombo/Combos/PvE/RPR/RPR.cs
+  s_163b504a5a5408::t_08e82343779503 52,202,343,551
+WrathCombo/Combos/PvE/NIN/NIN.cs
+  s_163b504a5a5408::t_08e82343779503 71,207,346,514
+WrathCombo/Combos/PvE/SAM/SAM.cs
+  s_163b504a5a5408::t_08e82343779503 31,143,272,422
+WrathCombo/Combos/PvE/WAR/WAR_Helper.cs
+  s_163b504a5a5408::t_08e82343779503 212,563,673
+WrathCombo/Combos/PvE/VPR/VPR.cs
+  s_163b504a5a5408::t_08e82343779503 44,150,267,395
+WrathCombo/Combos/PvE/WHM/WHM.cs
+  s_163b504a5a5408::t_08e82343779503 55,137,250,392,492,510
+WrathCombo/Combos/PvE/AST/AST.cs
+  s_163b504a5a5408::t_08e82343779503 75,173,334,499,608
+WrathCombo/Combos/PvE/MNK/MNK.cs
+  s_163b504a5a5408::t_08e82343779503 32,113,218,337
+WrathCombo/Combos/PvE/SCH/SCH.cs
+  s_163b504a5a5408::t_08e82343779503 50,119,201,211,229,360,457
+WrathCombo/Combos/PvE/BRD/BRD.cs
+  s_163b504a5a5408::t_08e82343779503 36,218,411,623
+WrathCombo/Combos/PvE/DRK/DRK_ActionLogic.cs
+  s_163b504a5a5408::t_08e82343779503 351
+WrathCombo/Combos/PvE/DRK/DRK_SmartMitigation.cs
+  s_163b504a5a5408::t_08e82343779503 539
+WrathCombo/Combos/PvE/GNB/GNB_Helper.cs
+  s_163b504a5a5408::t_08e82343779503 120,232
+WrathCombo/Combos/PvE/SGE/SGE.cs
+  s_163b504a5a5408::t_08e82343779503 51,146,267,402,517,523,539
+WrathCombo/WrathCombo.cs
+  s_163b504a5a5408::t_93bb5446fde7ab 33,350
+WrathCombo/Combos/PvE/GNB/GNB.cs
+  s_163b504a5a5408::t_08e82343779503 55,177,294,381
+WrathCombo/Combos/PvE/MCH/MCH.cs
+  s_163b504a5a5408::t_08e82343779503 71,199,357,535
+WrathCombo/AutoRotation/AutoRotationController.cs
+  s_163b504a5a5408::t_93bb5446fde7ab 429,972,993
+WrathCombo/Combos/PvE/RDM/RDM.cs
+  s_163b504a5a5408::t_08e82343779503 40,157,276,431
+WrathCombo/Combos/PvE/WAR/WAR_SmartMitigation.cs
+  s_163b504a5a5408::t_08e82343779503 786
+WrathCombo/Combos/PvE/PLD/PLD.cs
+  s_163b504a5a5408::t_08e82343779503 21,117,269,397,566
+WrathCombo/Combos/PvE/ALL/ParseLord5Experiments.cs
+  s_163b504a5a5408::t_28b67b7e16754a 1-32
+WrathCombo/Combos/PvE/PLD/PLD_Helper.cs
+  s_163b504a5a5408::t_08e82343779503 235,360
+WrathCombo/Combos/PvE/PLD/PLD_SmartMitigation.cs
+  s_163b504a5a5408::t_08e82343779503 513
+WrathCombo/CustomCombo/Functions/Party.cs
+  s_163b504a5a5408::t_93bb5446fde7ab 36
+WrathCombo/Combos/PvE/GNB/GNB_SmartMitigation.cs
+  s_163b504a5a5408::t_08e82343779503 508
+WrathCombo/Combos/PvE/SMN/SMN.cs
+  s_163b504a5a5408::t_08e82343779503 58,122,193,271
+WrathCombo/Combos/PvE/BLM/BLM.cs
+  s_163b504a5a5408::t_08e82343779503 27,257,361,609
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "212806bdcf9c7b978af75daece0d74636bcde39f",
+  "prompts": {},
+  "sessions": {
+    "s_163b504a5a5408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85c8f042-2d4e-43a5-b97a-56ac041f5f29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
