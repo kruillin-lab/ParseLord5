@@ -52,7 +52,7 @@ internal partial class GNB : Tank
 
             // ParseLord5 experiment: swap No Mercy / Bloodfest priority.
             // Baseline (flag off): No Mercy first, then Bloodfest.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
                     return Bloodfest;
@@ -174,7 +174,7 @@ internal partial class GNB : Tank
             if (ShouldContinue(Preset.GNB_ST_Continuation, CanContinue || CanHV, RemainingGCD < 0.6f))
                 return OriginalHook(Continuation);
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
                     return Bloodfest;
@@ -291,7 +291,7 @@ internal partial class GNB : Tank
                     return OriginalHook(Continuation);
 
                 // ParseLord5 experiment (AoE): swap No Mercy / Bloodfest priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
                         return Bloodfest;
@@ -378,7 +378,7 @@ internal partial class GNB : Tank
                 if (ShouldContinue(Preset.GNB_AoE_FatedBrand, CanFB, RemainingGCD < 0.6f))
                     return OriginalHook(Continuation);
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
                         return Bloodfest;

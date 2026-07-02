@@ -37,7 +37,7 @@ internal partial class RDM : Caster
 
                 // ParseLord5 experiment: swap Fleche / Contre Sixte priority.
                 // Baseline (flag off): Contre Sixte first, then Fleche.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Fleche))
                         return Fleche;
@@ -154,7 +154,7 @@ internal partial class RDM : Caster
                     return Embolden;
 
                 // ParseLord5 experiment (AoE): swap Fleche / Contre Sixte priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Fleche))
                         return Fleche;
@@ -273,7 +273,7 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_ST_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
                         return Fleche;
@@ -428,7 +428,7 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_AoE_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
                         return Fleche;

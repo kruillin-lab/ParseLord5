@@ -33,7 +33,7 @@ internal partial class BRD : PhysicalRanged
                     return EmpyrealArrow;
 
                 // ParseLord5 experiment (AoE): swap Wanderer's Minuet / Mage's Ballad.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (MagesSong())
                         return MagesBallad;
@@ -215,7 +215,7 @@ internal partial class BRD : PhysicalRanged
 
                 // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
                 // Baseline (flag off): Wanderer's first, then Mage's.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (MagesSong())
                         return MagesBallad;
@@ -408,7 +408,7 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (MagesSong())
                         return MagesBallad;
@@ -620,7 +620,7 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (MagesSong())
                         return MagesBallad;

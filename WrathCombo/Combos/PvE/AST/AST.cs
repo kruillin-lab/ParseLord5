@@ -72,7 +72,7 @@ internal partial class AST : Healer
 
                 // ParseLord5 experiment: swap Divination / Earthly Star priority.
                 // Baseline (flag off): Divination first, then Earthly Star.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Earthly Star
                     if (!HasStatusEffect(Buffs.EarthlyDominance) &&
@@ -170,7 +170,7 @@ internal partial class AST : Healer
                     return OriginalHook(AstralDraw);
 
                 // ParseLord5 experiment (AoE): swap Divination / Earthly Star priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Earthly Star
                     if (LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
@@ -331,7 +331,7 @@ internal partial class AST : Healer
                     !HasStatusEffect(Buffs.Lightspeed) && DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Earthly Star
                     if (IsEnabled(Preset.AST_ST_DPS_EarthlyStar) && IsOffCooldown(EarthlyStar) && 
@@ -496,7 +496,7 @@ internal partial class AST : Healer
                     DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Earthly Star
                     if (IsEnabled(Preset.AST_AOE_DPS_EarthlyStar) && 
@@ -605,7 +605,7 @@ internal partial class AST : Healer
             if (ActionReady(Exaltation) && InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Exaltation.RetargetIfEnabled(Benefic);
 
-            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
             {
                 if (ActionReady(OriginalHook(CelestialOpposition)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CelestialOpposition);

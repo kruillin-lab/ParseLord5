@@ -149,7 +149,7 @@ internal partial class PCT
 
             // ParseLord5 experiment: swap Living Muse / Steel Muse priority.
             // Baseline (flag off): Living Muse first, then Steel Muse.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (steelMuseEnabled && steelMuseReady && CanWeave() &&
                     (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||

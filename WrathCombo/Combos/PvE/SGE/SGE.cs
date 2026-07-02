@@ -48,7 +48,7 @@ internal partial class SGE : Healer
 
                 // ParseLord5 experiment: swap Psyche / Soteria priority.
                 // Baseline (flag off): Psyche first, then Soteria.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
                         return Soteria;
@@ -143,7 +143,7 @@ internal partial class SGE : Healer
                         .RetargetIfEnabled(OriginalHook(Dyskrasia));
 
                 // ParseLord5 experiment (AoE): swap Psyche / Soteria priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
                         return Soteria;
@@ -264,7 +264,7 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(dosisActions);
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Soteria
                     if (IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
@@ -399,7 +399,7 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(OriginalHook(Dyskrasia));
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Soteria
                     if (IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
@@ -514,13 +514,13 @@ internal partial class SGE : Healer
                 return Soteria;
 
             if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
                 return OriginalHook(Physis);
 
             if (ActionReady(Kerachole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Kerachole) && GetTargetHPPercent(healTarget) <= 90 &&
                 TraitLevelChecked(Traits.EnhancedKerachole) &&
                 HasAddersgall() &&
-                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
                 return Kerachole;
 
             if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
@@ -536,7 +536,7 @@ internal partial class SGE : Healer
             if (ActionReady(Druochole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Druochole) && HasAddersgall() && GetTargetHPPercent(healTarget) <= 75)
                 return Druochole.RetargetIfEnabled(Diagnosis);
 
-            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
             {
                 if (ActionReady(Holos) && GetTargetHPPercent(healTarget) <= 80)
                     return Holos;

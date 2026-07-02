@@ -30,6 +30,7 @@ using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
 using WrathCombo.Data.Conflicts;
 using WrathCombo.Resources.Localization.UI.MainWindow;
+using WrathCombo.Combos.PvE;
 using WrathCombo.Services;
 using WrathCombo.Services.ActionRequestIPC;
 using WrathCombo.Services.IPC;
@@ -346,7 +347,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
             AutoRotationController.Run();
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.CombatTelemetry)
                 CombatTelemetryService.Update();
 
             if (Player.IsDead)

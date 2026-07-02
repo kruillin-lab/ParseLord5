@@ -55,7 +55,7 @@ internal partial class SMN : Caster
 
                 // ParseLord5 experiment: swap Ifrit / Garuda egi priority.
                 // Baseline (flag off): Garuda first, then Ifrit.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (Gauge.IsIfritReady)
                         return OriginalHook(SummonRuby);
@@ -119,7 +119,7 @@ internal partial class SMN : Caster
                     return OriginalHook(SummonTopaz);
 
                 // ParseLord5 experiment (AoE): swap Ifrit / Garuda egi priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (Gauge.IsIfritReady)
                         return OriginalHook(SummonRuby);
@@ -190,7 +190,7 @@ internal partial class SMN : Caster
                 return actionID;
 
             #region Egi Priority
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 int[] tempPriority = ((int[])SMN_ST_Egi_Priority).ToArray();
                 if (tempPriority.Length > 2)
@@ -268,7 +268,7 @@ internal partial class SMN : Caster
                 return actionID;
 
             #region Egi Priority
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 int[] tempPriority = ((int[])SMN_AoE_Egi_Priority).ToArray();
                 if (tempPriority.Length > 2)

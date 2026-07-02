@@ -209,7 +209,7 @@ internal partial class WAR : Tank
 
             // ParseLord5 experiment: swap Infuriate / Inner Release weave priority.
             // Baseline (flag off): Inner Release first, then Infuriate.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
                     return true;
@@ -560,7 +560,7 @@ internal partial class WAR : Tank
             return false;
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
             return TrySmartNonBossMits(rotationFlags, ref actionID);
         
         #region HolmGang Invulnerability
@@ -670,7 +670,7 @@ internal partial class WAR : Tank
         if (!InCombat() || !InWarOgcdWindow || !InBossEncounter() || !IsEnabled(Preset.WAR_Mitigation_Boss)) return false;
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
             return TrySmartBossMits(rotationFlags, ref actionID);
         
         #region Vengeance

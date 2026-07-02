@@ -426,7 +426,7 @@ internal unsafe class AutoRotationController
         }
 
         double effectiveHealDelay = cfg.HealerSettings.HealDelay;
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.DynamicHealCurve)
         {
             double maxDelay = Math.Min(cfg.HealerSettings.HealDelay, 0.5); // Cap at 500ms in experimental mode
             if (lowestHp <= 50f)
@@ -969,7 +969,7 @@ internal unsafe class AutoRotationController
                     IGameObject? target = dpsmode switch
                     {
                         DPSRotationMode.Manual =>
-                            (Service.Configuration.ParseLord5ExperimentalMode && 
+                            (ParseLord5Experiments.NoTargetDpsFallback && 
                              (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
                              cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
                                 ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)
@@ -990,7 +990,7 @@ internal unsafe class AutoRotationController
                     IGameObject? target = dpsmode switch
                     {
                         DPSRotationMode.Manual =>
-                            (Service.Configuration.ParseLord5ExperimentalMode && 
+                            (ParseLord5Experiments.NoTargetDpsFallback && 
                              (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
                              cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
                                 ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)

@@ -29,7 +29,7 @@ internal partial class MNK : Melee
             {
                 // ParseLord5 experiment: swap Brotherhood / Riddle of Fire priority.
                 // Baseline (flag off): Brotherhood first, then Riddle of Fire.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (CanRoF())
                         return RiddleOfFire;
@@ -110,7 +110,7 @@ internal partial class MNK : Melee
             if (CanWeave() && InCombat())
             {
                 // ParseLord5 experiment (AoE): swap Brotherhood / Riddle of Fire priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (CanRoF())
                         return RiddleOfFire;
@@ -215,7 +215,7 @@ internal partial class MNK : Melee
             {
                 if (IsEnabled(Preset.MNK_STUseBuffs))
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (IsEnabled(Preset.MNK_STUseROF) &&
                             GetTargetHPPercent() > HPThresholdRoF &&
@@ -334,7 +334,7 @@ internal partial class MNK : Melee
                 if (IsEnabled(Preset.MNK_AoEUseBuffs) &&
                     GetTargetHPPercent() >= MNK_AoE_BuffsHPThreshold)
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (IsEnabled(Preset.MNK_AoEUseROF) &&
                             CanRoF())

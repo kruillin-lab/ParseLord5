@@ -117,7 +117,7 @@ internal partial class GNB : Tank
             return false;
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
             return TrySmartNonBossMits(rotationFlags, ref actionID);
         
         #region Superbolide Invulnerability
@@ -229,7 +229,7 @@ internal partial class GNB : Tank
         if (!InCombat() || !CanWeave() || !InBossEncounter() || !IsEnabled(Preset.GNB_Mit_Advanced_Boss)) return false;
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
             return TrySmartBossMits(rotationFlags, ref actionID);
         
         #region Nebula

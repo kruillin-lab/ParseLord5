@@ -129,7 +129,7 @@ internal partial class DRK : Tank
             var cdBossRequirementMet = !cdBossRequirement ||
                                        (cdBossRequirement && InBossEncounter());
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (IsEnabled(Preset.DRK_ST_CDs) &&
                     cdBossRequirementMet &&
@@ -197,7 +197,7 @@ internal partial class DRK : Tank
 
             // ParseLord5 experiment: swap Spender / Cooldown_2 priority.
             // Baseline (flag off): Spender first, then Cooldown second.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (TryGetAction<Cooldown>(comboFlags, ref newAction))
                     return newAction;
@@ -246,7 +246,7 @@ internal partial class DRK : Tank
                 TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
             
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (IsEnabled(Preset.DRK_AoE_Spenders) &&
                     TryGetAction<Spender>(comboFlags, ref newAction))
@@ -300,7 +300,7 @@ internal partial class DRK : Tank
 
             // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
             // Baseline (flag off): Mitigation first, then Spender.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (TryGetAction<Spender>(comboFlags, ref newAction))
                     return newAction;

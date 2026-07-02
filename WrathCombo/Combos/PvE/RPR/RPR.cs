@@ -49,7 +49,7 @@ internal partial class RPR : Melee
 
                     // ParseLord5 experiment: swap Gluttony / Bloodstalk priority.
                     // Baseline (flag off): Gluttony first, then Bloodstalk.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (ActionReady(OriginalHook(BloodStalk)) &&
                             (!LevelChecked(Gluttony) ||
@@ -199,7 +199,7 @@ internal partial class RPR : Melee
                     return Enshroud;
 
                 // ParseLord5 experiment (AoE): swap Gluttony / Grim Swathe priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(GrimSwathe) && InActionRange(GrimSwathe) &&
                         !HasStatusEffect(Buffs.Enshrouded) && !HasStatusEffect(Buffs.SoulReaver) &&
@@ -340,7 +340,7 @@ internal partial class RPR : Melee
                         GetRemainingCharges(Role.TrueNorth) > RPR_ManualTN)
                         return Role.TrueNorth;
 
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         //Bloodstalk
                         if (IsEnabled(Preset.RPR_ST_Bloodstalk) &&
@@ -548,7 +548,7 @@ internal partial class RPR : Melee
                     (ActionReady(Enshroud) || HasStatusEffect(Buffs.IdealHost)))
                     return Enshroud;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.RPR_AoE_GrimSwathe) &&
                         ActionReady(GrimSwathe) && InActionRange(OriginalHook(GrimSwathe)) &&

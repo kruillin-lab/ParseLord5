@@ -52,7 +52,7 @@ internal partial class WHM : Healer
             {
                 // ParseLord5 experiment: swap Assize / PresenceOfMind priority.
                 // Baseline (flag off): PresenceOfMind first, then Assize.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Assize) &&
                         HasBattleTarget() && GetTargetDistance() <= 20)
@@ -134,7 +134,7 @@ internal partial class WHM : Healer
             {
                 // ParseLord5 experiment (AoE): swap Assize / PresenceOfMind priority.
                 // Baseline (flag off): Assize first, then PresenceOfMind.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(PresenceOfMind) &&
                         ActionWatching.NumberOfGcdsUsed >= 4 &&
@@ -247,7 +247,7 @@ internal partial class WHM : Healer
 
             if (CanWeave())
             {
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.WHM_ST_MainCombo_Assize) &&
                         ActionReady(Assize) &&
@@ -389,7 +389,7 @@ internal partial class WHM : Healer
 
             if (CanWeave() || IsMoving())
             {
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.WHM_AoE_DPS_PresenceOfMind) &&
                         ActionReady(PresenceOfMind) &&
@@ -489,7 +489,7 @@ internal partial class WHM : Healer
                 return Role.LucidDreaming;
             
             if (ActionReady(Asylum) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Asylum) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
+                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(Cure ,SimpleTarget.Self);
             
@@ -507,7 +507,7 @@ internal partial class WHM : Healer
                 return Aquaveil.RetargetIfEnabled(Cure);
 
             if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
                 return OriginalHook(Temperance);
             
             if (ActionReady(AfflatusSolace) && !BloodLilyReady)

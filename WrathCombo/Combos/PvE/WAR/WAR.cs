@@ -25,7 +25,7 @@ internal partial class WAR
         var hasBattleTarget = HasBattleTarget();
 
         // Keep WAR's local Minimal guard and make the underlying trace requirements explicit here.
-        if (!Service.Configuration.ParseLord5ExperimentalMode ||
+        if (!ParseLord5Experiments.JobRotationExperiments ||
             !Minimal ||
             !inCombat ||
             !hasBattleTarget)

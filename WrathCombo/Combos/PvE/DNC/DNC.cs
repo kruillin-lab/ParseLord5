@@ -182,7 +182,7 @@ internal partial class DNC : PhysicalRanged
 
             #region Weaves
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 // ST Flourish
                 if (IsEnabled(Preset.DNC_ST_Adv_Flourish) &&
@@ -567,7 +567,7 @@ internal partial class DNC : PhysicalRanged
 
             // ST Devilment
             // ParseLord5 experiment: swap Flourish / Devilment priority.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 // ST Flourish
                 if (CanWeave() &&
@@ -880,7 +880,7 @@ internal partial class DNC : PhysicalRanged
 
             #region Weaves
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 // AoE Flourish
                 if (IsEnabled(Preset.DNC_AoE_Adv_Flourish) &&
@@ -1190,7 +1190,7 @@ internal partial class DNC : PhysicalRanged
 
             // AoE Devilment
             // ParseLord5 experiment (AoE): swap Flourish / Devilment priority.
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 // AoE Flourish
                 if (CanWeave() &&

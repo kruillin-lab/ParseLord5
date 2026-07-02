@@ -24,7 +24,7 @@ internal partial class BLM : Caster
             {
                 // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
                 // Baseline (flag off): Amplifier first, then Ley Lines.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
                         GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
@@ -254,7 +254,7 @@ internal partial class BLM : Caster
 
                 // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
                 // Baseline (flag off): Amplifier first, then Ley Lines.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
                         !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
@@ -358,7 +358,7 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.BLM_ST_LeyLines) &&
                         ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
@@ -606,7 +606,7 @@ internal partial class BLM : Caster
                     (EndOfFirePhase || EndOfIcePhaseAoE))
                     return Transpose;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
                         ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&

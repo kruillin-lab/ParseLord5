@@ -68,7 +68,7 @@ internal partial class MCH : PhysicalRanged
 
                     // ParseLord5 experiment: swap Reassemble / Queen priority.
                     // Baseline (flag off): Queen first, then Reassemble.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         // Reassemble
                         if (CanReassemble())
@@ -196,7 +196,7 @@ internal partial class MCH : PhysicalRanged
                         return BarrelStabilizer;
 
                     // ParseLord5 experiment (AoE): swap Reassemble / Queen priority.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (ActionReady(Reassemble) && !HasStatusEffect(Buffs.Wildfire) &&
                             !HasStatusEffect(Buffs.Reassembled) && !JustUsed(Flamethrower, 10f) &&
@@ -354,7 +354,7 @@ internal partial class MCH : PhysicalRanged
 
                 if (!IsOverheated)
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         // Reassemble
                         if (IsEnabled(Preset.MCH_ST_Adv_Reassemble) &&
@@ -532,7 +532,7 @@ internal partial class MCH : PhysicalRanged
                         GetTargetHPPercent() > MCH_AoE_BarrelStabilizerHPThreshold)
                         return BarrelStabilizer;
 
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (IsEnabled(Preset.MCH_AoE_Adv_Reassemble) &&
                             GetTargetHPPercent() > MCH_AoE_ReassembleHPThreshold &&

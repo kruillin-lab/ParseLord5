@@ -23,7 +23,7 @@ internal partial class DRG : Melee
                 {
                     // ParseLord5 experiment: swap LanceCharge / BattleLitany priority.
                     // Baseline (flag off): BattleLitany first, then LanceCharge.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         //Lance Charge Feature
                         if (CanLanceCharge)
@@ -137,7 +137,7 @@ internal partial class DRG : Melee
                 if (CanDRGWeave())
                 {
                     // ParseLord5 experiment (AoE): swap LanceCharge / BattleLitany priority.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         //Lance Charge Feature
                         if (ActionReady(LanceCharge))
@@ -260,7 +260,7 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_ST_Buffs))
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             //Lance Charge Feature
                             if (IsEnabled(Preset.DRG_ST_LanceCharge) &&
@@ -415,7 +415,7 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_AoE_Buffs))
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             //Lance Charge Feature
                             if (IsEnabled(Preset.DRG_AoE_LanceCharge) &&

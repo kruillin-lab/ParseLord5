@@ -47,7 +47,7 @@ internal partial class SCH : Healer
 
                 // ParseLord5 experiment: swap Chain Stratagem / Energy Drain priority.
                 // Baseline (flag off): Chain Stratagem first, then Energy Drain.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(EnergyDrain) && AetherflowCD <= 10 &&
                         (ChainStrategemCD > 10 || !LevelChecked(ChainStratagem)))
@@ -116,7 +116,7 @@ internal partial class SCH : Healer
             // ParseLord5 experiment (AoE): swap Chain Stratagem / Energy Drain priority.
             if (CanWeave())
             {
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(EnergyDrain) && AetherflowCD <= 10)
                         return EnergyDrain;
@@ -198,7 +198,7 @@ internal partial class SCH : Healer
                 GetTargetHPPercent(healTarget) <= 50)
                 return Lustrate.RetargetIfEnabled(Physick);
             
-            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return SacredSoil.Retarget(Physick, SimpleTarget.Self);
             
@@ -208,7 +208,7 @@ internal partial class SCH : Healer
             if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Aetherpact) && !FairyBusy && ActionReady(Aetherpact))
                 return Aetherpact.RetargetIfEnabled(Physick);
 
-            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) && HasPetPresent() && !FairyBusy)
             {
                 if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
@@ -226,7 +226,7 @@ internal partial class SCH : Healer
                     return Seraphism;
             }
 
-            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
                 return Expedient;
 
             if (TryShieldedEmergencyAdloquium(healTarget, out var shieldedHeal))
@@ -357,7 +357,7 @@ internal partial class SCH : Healer
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.SCH_ST_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
                         AetherflowCD <= SCH_ST_DPS_EnergyDrain &&
@@ -454,7 +454,7 @@ internal partial class SCH : Healer
             if (IsEnabled(Preset.SCH_AoE_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem) && CanWeave())
                 return BanefulImpaction;
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.JobRotationExperiments)
             {
                 if (IsEnabled(Preset.SCH_AoE_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
                     AetherflowCD <= SCH_AoE_DPS_EnergyDrain && CanWeave() &&

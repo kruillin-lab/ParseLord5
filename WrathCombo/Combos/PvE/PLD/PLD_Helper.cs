@@ -232,7 +232,7 @@ internal partial class PLD
 
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
         {
             var mitAnchor = actionID;
             if (TrySmartNonBossMits(rotationFlags, ref actionID))
@@ -357,7 +357,7 @@ internal partial class PLD
 
         #endregion
 
-        if (Service.Configuration.ParseLord5ExperimentalMode)
+        if (ParseLord5Experiments.SmartMitigation)
         {
             var mitAnchor = actionID;
             if (TrySmartBossMits(rotationFlags, ref actionID))

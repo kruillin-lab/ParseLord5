@@ -28,7 +28,7 @@ internal partial class SAM : Melee
             {
                 // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
                 // Baseline (flag off): Meikyo first, then Ikishoten.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     //Ikishoten Feature
                     if (TryGetIkishotenAction(out uint ikishotenAction))
@@ -140,7 +140,7 @@ internal partial class SAM : Melee
 
                 // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
                 // Baseline (flag off): Meikyo first, then Ikishoten.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
                     {
@@ -269,7 +269,7 @@ internal partial class SAM : Melee
             {
                 if (IsEnabled(Preset.SAM_ST_CDs))
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         //Ikishoten feature
                         if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
@@ -419,7 +419,7 @@ internal partial class SAM : Melee
 
                 if (IsEnabled(Preset.SAM_AoE_CDs))
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
                             ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))

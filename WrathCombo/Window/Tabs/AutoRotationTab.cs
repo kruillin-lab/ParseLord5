@@ -103,7 +103,7 @@ internal class AutoRotationTab : ConfigWindow
 
                 ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_EnforceBestAoETarget);
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.NoTargetDpsFallback)
                 {
                     ImGui.Spacing();
                     ImGuiEx.TextUnderlined("Experimental: No-Target Fallback Mode");

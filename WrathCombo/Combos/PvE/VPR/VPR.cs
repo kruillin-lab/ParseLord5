@@ -41,7 +41,7 @@ internal partial class VPR : Melee
                 {
                     // ParseLord5 experiment: swap Hunter's / Swiftskin's venom weave priority.
                     // Baseline (flag off): Hunter's Venom first, then Swiftskin's Venom.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (HasStatusEffect(Buffs.SwiftskinsVenom))
                             return OriginalHook(Twinblood);
@@ -147,7 +147,7 @@ internal partial class VPR : Melee
                 if (!HasStatusEffect(Buffs.Reawakened))
                 {
                     // ParseLord5 experiment (AoE): swap Fellhunter's / Fellskin's venom weave priority.
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (HasStatusEffect(Buffs.FellskinsVenom) &&
                             InActionRange(TwinbloodThresh))
@@ -264,7 +264,7 @@ internal partial class VPR : Melee
                 if (IsEnabled(Preset.VPR_ST_VicewinderWeaves) &&
                     !HasStatusEffect(Buffs.Reawakened) && InMeleeRange())
                 {
-                    if (Service.Configuration.ParseLord5ExperimentalMode)
+                    if (ParseLord5Experiments.JobRotationExperiments)
                     {
                         if (HasStatusEffect(Buffs.SwiftskinsVenom))
                             return OriginalHook(Twinblood);
@@ -392,7 +392,7 @@ internal partial class VPR : Melee
                     //Vicepit weaves
                     if (IsEnabled(Preset.VPR_AoE_VicepitWeaves))
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             if (HasStatusEffect(Buffs.FellskinsVenom) &&
                                 (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))

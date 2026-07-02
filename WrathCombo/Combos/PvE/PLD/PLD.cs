@@ -18,7 +18,7 @@ internal partial class PLD : Tank
 
     private static void TraceParseLord5Pld(uint anchorActionId, uint selectedActionId, string source)
     {
-        if (!Service.Configuration.ParseLord5ExperimentalMode || !InCombat() || !HasBattleTarget())
+        if (!ParseLord5Experiments.SmartMitigation || !InCombat() || !HasBattleTarget())
             return;
 
         var now = Environment.TickCount64;
@@ -114,7 +114,7 @@ internal partial class PLD : Tank
                     // Baseline (flag off): Circle of Scorn first, then Spirits Within.
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             if (ActionReady(OriginalHook(SpiritsWithin)))
                                 return OriginalHook(SpiritsWithin);
@@ -266,7 +266,7 @@ internal partial class PLD : Tank
                     // ParseLord5 experiment (AoE): swap Circle of Scorn / Spirits Within priority.
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             if (ActionReady(OriginalHook(SpiritsWithin)))
                                 return OriginalHook(SpiritsWithin);
@@ -394,7 +394,7 @@ internal partial class PLD : Tank
 
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             if (IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
                                 return OriginalHook(SpiritsWithin);
@@ -563,7 +563,7 @@ internal partial class PLD : Tank
                     // Circle of Scorn / Spirits Within
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (Service.Configuration.ParseLord5ExperimentalMode)
+                        if (ParseLord5Experiments.JobRotationExperiments)
                         {
                             if (IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
                                 return OriginalHook(SpiritsWithin);

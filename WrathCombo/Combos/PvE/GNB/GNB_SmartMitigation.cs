@@ -505,7 +505,7 @@ internal partial class GNB
         uint currentHp = 0,
         uint maxHp = 0)
     {
-        if (!Service.Configuration.ParseLord5ExperimentalMode)
+        if (!ParseLord5Experiments.SmartMitigation)
             return;
 
         var now = Environment.TickCount64;

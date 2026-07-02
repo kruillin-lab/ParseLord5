@@ -348,7 +348,7 @@ internal partial class DRK
                 P.UIHelper.PresetControlled(preset)?.enabled != true)
                 return false;
 
-            if (Service.Configuration.ParseLord5ExperimentalMode)
+            if (ParseLord5Experiments.SmartMitigation)
             {
                 if (InBossEncounter())
                 {

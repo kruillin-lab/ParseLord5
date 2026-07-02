@@ -68,7 +68,7 @@ internal partial class NIN : Melee
 
                 // ParseLord5 experiment: swap TrickAttack / Mug priority.
                 // Baseline (flag off): Mug first, then TrickAttack.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (CanTrickST && CombatEngageDuration().TotalSeconds > 5)
                         return OriginalHook(TrickAttack);
@@ -204,7 +204,7 @@ internal partial class NIN : Melee
                     return OriginalHook(HellfrogMedium);
 
                 // ParseLord5 experiment (AoE): swap TrickAttack / Mug priority.
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
                         return OriginalHook(TrickAttack);
@@ -343,7 +343,7 @@ internal partial class NIN : Melee
                     (NinkiPooling || !NIN_ST_AdvancedMode_Bhavacakra_Pooling))
                     return LevelChecked(Bhavacakra) ? OriginalHook(Bhavacakra) : OriginalHook(HellfrogMedium);
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.NIN_ST_AdvancedMode_TrickAttack) && CanTrickST && CombatEngageDuration().TotalSeconds > 5 &&
                         GetTargetHPPercent() > STTrickThreshold)
@@ -511,7 +511,7 @@ internal partial class NIN : Melee
                     (NinkiPooling || !NIN_AoE_AdvancedMode_HellfrogMedium_Pooling))
                     return OriginalHook(HellfrogMedium);
 
-                if (Service.Configuration.ParseLord5ExperimentalMode)
+                if (ParseLord5Experiments.JobRotationExperiments)
                 {
                     if (IsEnabled(Preset.NIN_AoE_AdvancedMode_TrickAttack) && CanTrickAoE && CombatEngageDuration().TotalSeconds > 5 &&
                         GetTargetHPPercent() > AoETrickThreshold)
