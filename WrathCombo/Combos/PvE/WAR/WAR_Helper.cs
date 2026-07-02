@@ -208,23 +208,18 @@ internal partial class WAR : Tank
             }
 
             // ParseLord5 experiment: swap Infuriate / Inner Release weave priority.
+            // Experimental (flag on): Infuriate first, then Inner Release.
             // Baseline (flag off): Inner Release first, then Infuriate.
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
-                    return true;
+            var infuriateFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (TryInnerReleaseWeave(innerReleaseEnabled, innerReleaseStopThreshold, ref actionID))
-                    return true;
-            }
-            else
-            {
-                if (TryInnerReleaseWeave(innerReleaseEnabled, innerReleaseStopThreshold, ref actionID))
-                    return true;
+            if (infuriateFirst && TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
+                return true;
 
-                if (TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
-                    return true;
-            }
+            if (TryInnerReleaseWeave(innerReleaseEnabled, innerReleaseStopThreshold, ref actionID))
+                return true;
+
+            if (!infuriateFirst && TryInfuriateWeave(infuriateEnabled, infuriateGaugeThreshold, infuriateChargeThreshold, ref actionID))
+                return true;
                 
             if (onslaughtEnabled && 
                 ActionReady(Onslaught) && HasSurgingTempest &&

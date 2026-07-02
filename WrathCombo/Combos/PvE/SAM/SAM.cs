@@ -28,26 +28,19 @@ internal partial class SAM : Melee
             {
                 // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
                 // Baseline (flag off): Meikyo first, then Ikishoten.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    //Ikishoten Feature
-                    if (TryGetIkishotenAction(out uint ikishotenAction))
-                        return ikishotenAction;
+                var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canIkishoten = TryGetIkishotenAction(out uint ikishotenAction);
 
-                    //Meikyo Feature
-                    if (CanMeikyo())
-                        return MeikyoShisui;
-                }
-                else
-                {
-                    //Meikyo Feature
-                    if (CanMeikyo())
-                        return MeikyoShisui;
+                //Ikishoten Feature
+                if (ikishotenFirst && canIkishoten)
+                    return ikishotenAction;
 
-                    //Ikishoten Feature
-                    if (TryGetIkishotenAction(out uint ikishotenAction))
-                        return ikishotenAction;
-                }
+                //Meikyo Feature
+                if (CanMeikyo())
+                    return MeikyoShisui;
+
+                if (!ikishotenFirst && canIkishoten)
+                    return ikishotenAction;
 
                 if (GetTargetHPPercent() < ShintenTreshhold)
                     return ExecuteKenkiSpender(actionID, true);
@@ -140,43 +133,37 @@ internal partial class SAM : Melee
 
                 // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
                 // Baseline (flag off): Meikyo first, then Ikishoten.
-                if (ParseLord5Experiments.JobRotationExperiments)
+                var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canIkishoten = ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady);
+                var canMeikyo =
+                    ActionReady(MeikyoShisui) &&
+                    !HasStatusEffect(Buffs.MeikyoShisui) &&
+                    !JustUsed(MeikyoShisui) &&
+                    ComboTimer is 0;
+
+                if (ikishotenFirst && canIkishoten)
                 {
-                    if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                    return Kenki switch
                     {
-                        return Kenki switch
-                        {
-                            //Dumps Kenki in preparation for Ikishoten
-                            >= 50 => Kyuten,
+                        //Dumps Kenki in preparation for Ikishoten
+                        >= 50 => Kyuten,
 
-                            < 50 => Ikishoten
-                        };
-                    }
-
-                    if (ActionReady(MeikyoShisui) &&
-                        !HasStatusEffect(Buffs.MeikyoShisui) &&
-                        !JustUsed(MeikyoShisui) &&
-                        ComboTimer is 0)
-                        return MeikyoShisui;
+                        < 50 => Ikishoten
+                    };
                 }
-                else
+
+                if (canMeikyo)
+                    return MeikyoShisui;
+
+                if (!ikishotenFirst && canIkishoten)
                 {
-                    if (ActionReady(MeikyoShisui) &&
-                        !HasStatusEffect(Buffs.MeikyoShisui) &&
-                        !JustUsed(MeikyoShisui) &&
-                        ComboTimer is 0)
-                        return MeikyoShisui;
-
-                    if (ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                    return Kenki switch
                     {
-                        return Kenki switch
-                        {
-                            //Dumps Kenki in preparation for Ikishoten
-                            >= 50 => Kyuten,
+                        //Dumps Kenki in preparation for Ikishoten
+                        >= 50 => Kyuten,
 
-                            < 50 => Ikishoten
-                        };
-                    }
+                        < 50 => Ikishoten
+                    };
                 }
 
                 if (ActionReady(Zanshin) && HasStatusEffect(Buffs.ZanshinReady))
@@ -269,30 +256,27 @@ internal partial class SAM : Melee
             {
                 if (IsEnabled(Preset.SAM_ST_CDs))
                 {
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        //Ikishoten feature
-                        if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
-                            TryGetIkishotenAction(out uint ikishotenAction, IsEnabled(Preset.SAM_ST_Shinten)))
-                            return ikishotenAction;
+                    // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
+                    // Baseline (flag off): Meikyo first, then Ikishoten.
+                    var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
+                    uint ikishotenAction = 0;
+                    var canIkishoten =
+                        IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
+                        TryGetIkishotenAction(out ikishotenAction, IsEnabled(Preset.SAM_ST_Shinten));
+                    var canMeikyo =
+                        IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
+                        CanMeikyo();
 
-                        //Meikyo feature
-                        if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
-                            CanMeikyo())
-                            return MeikyoShisui;
-                    }
-                    else
-                    {
-                        //Meikyo feature
-                        if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
-                            CanMeikyo())
-                            return MeikyoShisui;
+                    //Ikishoten feature
+                    if (ikishotenFirst && canIkishoten)
+                        return ikishotenAction;
 
-                        //Ikishoten feature
-                        if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
-                            TryGetIkishotenAction(out uint ikishotenAction, IsEnabled(Preset.SAM_ST_Shinten)))
-                            return ikishotenAction;
-                    }
+                    //Meikyo feature
+                    if (canMeikyo)
+                        return MeikyoShisui;
+
+                    if (!ikishotenFirst && canIkishoten)
+                        return ikishotenAction;
                 }
 
                 if (IsEnabled(Preset.SAM_ST_Damage))
@@ -419,47 +403,42 @@ internal partial class SAM : Melee
 
                 if (IsEnabled(Preset.SAM_AoE_CDs))
                 {
-                    if (ParseLord5Experiments.JobRotationExperiments)
+                    // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
+                    // Baseline (flag off): Meikyo first, then Ikishoten.
+                    var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
+                    var canIkishoten =
+                        IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
+                        ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady);
+                    var canMeikyo =
+                        IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
+                        ActionReady(MeikyoShisui) &&
+                        !HasStatusEffect(Buffs.MeikyoShisui) &&
+                        !JustUsed(MeikyoShisui) &&
+                        ComboTimer is 0;
+
+                    if (ikishotenFirst && canIkishoten)
                     {
-                        if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
-                            ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                        return Kenki switch
                         {
-                            return Kenki switch
-                            {
-                                //Dumps Kenki in preparation for Ikishoten
-                                >= 50 => Kyuten,
+                            //Dumps Kenki in preparation for Ikishoten
+                            >= 50 => Kyuten,
 
-                                < 50 => Ikishoten
-                            };
-                        }
-
-                        if (IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
-                            ActionReady(MeikyoShisui) &&
-                            !HasStatusEffect(Buffs.MeikyoShisui) &&
-                            !JustUsed(MeikyoShisui) &&
-                            ComboTimer is 0)
-                            return MeikyoShisui;
+                            < 50 => Ikishoten
+                        };
                     }
-                    else
+
+                    if (canMeikyo)
+                        return MeikyoShisui;
+
+                    if (!ikishotenFirst && canIkishoten)
                     {
-                        if (IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
-                            ActionReady(MeikyoShisui) &&
-                            !HasStatusEffect(Buffs.MeikyoShisui) &&
-                            !JustUsed(MeikyoShisui) &&
-                            ComboTimer is 0)
-                            return MeikyoShisui;
-
-                        if (IsEnabled(Preset.SAM_AOE_CDs_Ikishoten) &&
-                            ActionReady(Ikishoten) && !HasStatusEffect(Buffs.ZanshinReady))
+                        return Kenki switch
                         {
-                            return Kenki switch
-                            {
-                                //Dumps Kenki in preparation for Ikishoten
-                                >= 50 => Kyuten,
+                            //Dumps Kenki in preparation for Ikishoten
+                            >= 50 => Kyuten,
 
-                                < 50 => Ikishoten
-                            };
-                        }
+                            < 50 => Ikishoten
+                        };
                     }
                 }
 

@@ -100,13 +100,14 @@ foreach ($dir in $jobDirs) {
 Write-Host "PASS combo-files-exist-for-jobs: all jobs checked"
 $passCount++
 
-# ---- FIXTURE 5: ParseLord5ExperimentalMode present in SAM and VPR combos ----
+# ---- FIXTURE 5: ParseLord5 experimental gating present in SAM and VPR combos ----
+# Call sites use ParseLord5Experiments.<Flag> since the per-feature flag split (212806bdc).
 Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
 $samContent = Get-Content -LiteralPath $SAMFile -Raw
 $vprContent = Get-Content -LiteralPath $VPRFile -Raw
 
-$samExpCount = ([regex]::Matches($samContent, 'ParseLord5ExperimentalMode')).Count
-$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5ExperimentalMode')).Count
+$samExpCount = ([regex]::Matches($samContent, 'ParseLord5Experiments\.')).Count
+$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count
 
 if ($samExpCount -ge 2) {
     Write-Host "PASS parselord5-experimental-mode-in-sam: found $samExpCount occurrences in SAM.cs (ST+AoE branches)"
@@ -158,8 +159,11 @@ if ($vprHelperContent -match 'Twinblood\s*=\s*\d+') {
 
 # ---- FIXTURE 7: SAM ST Ikishoten can recover after the exact second-GCD window ----
 Write-Host "--- Fixture: sam-st-ikishoten-recovery ---"
+# Dedup (guarded-ladder rewrite) hoisted each duplicated call into a single copy:
+# 4 calls (2 sites x 2 flag-order copies) became 2, and the advanced site now uses a
+# predeclared out var (`out ikishotenAction`) for definite assignment.
 $samIkishotenCallCount = ([regex]::Matches($samContent, 'TryGetIkishotenAction\s*\(')).Count
-$samAdvancedIkishotenCallCount = ([regex]::Matches($samContent, 'TryGetIkishotenAction\s*\(\s*out uint ikishotenAction,\s*IsEnabled\(Preset\.SAM_ST_Shinten\)\s*\)')).Count
+$samAdvancedIkishotenCallCount = ([regex]::Matches($samContent, 'TryGetIkishotenAction\s*\(\s*out (uint )?ikishotenAction,\s*IsEnabled\(Preset\.SAM_ST_Shinten\)\s*\)')).Count
 $samIkishotenHelperBlock = [regex]::Match(
     $samHelperContent,
     'private static bool TryGetIkishotenAction\(out uint action, bool allowKenkiDump = true\)(?<body>[\s\S]*?)\r?\n    private static bool CanSenei'
@@ -172,14 +176,14 @@ $samHasKenkiDump = $samIkishotenHelperBlock -match 'allowKenkiDump' -and
     $samIkishotenHelperBlock -match 'InActionRange\(Shinten\)' -and
     $samIkishotenHelperBlock -match 'action\s*=\s*Shinten'
 
-if ($samIkishotenCallCount -ge 4 -and $samAdvancedIkishotenCallCount -ge 2 -and $samHasLateWindow -and -not $samHasExactOnlyWindow -and $samHasKenkiSafeIkishoten -and $samHasKenkiDump) {
+if ($samIkishotenCallCount -ge 2 -and $samAdvancedIkishotenCallCount -ge 1 -and $samHasLateWindow -and -not $samHasExactOnlyWindow -and $samHasKenkiSafeIkishoten -and $samHasKenkiDump) {
     Write-Host "PASS sam-st-ikishoten-recovery: ST routes recover after GCD 2 and dump Kenki before Ikishoten overcap"
     $passCount++
 } else {
-    if ($samIkishotenCallCount -lt 4) {
+    if ($samIkishotenCallCount -lt 2) {
         Write-Host "  Expected all ST Ikishoten branches to call TryGetIkishotenAction, found $samIkishotenCallCount"
     }
-    if ($samAdvancedIkishotenCallCount -lt 2) {
+    if ($samAdvancedIkishotenCallCount -lt 1) {
         Write-Host "  Expected Advanced ST Ikishoten branches to honor the Shinten toggle, found $samAdvancedIkishotenCallCount"
     }
     if (-not $samHasLateWindow) {

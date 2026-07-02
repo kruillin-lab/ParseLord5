@@ -148,62 +148,43 @@ internal partial class PCT
             }
 
             // ParseLord5 experiment: swap Living Muse / Steel Muse priority.
+            // Experimental (flag on): Steel Muse first, then Living Muse.
             // Baseline (flag off): Living Muse first, then Steel Muse.
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (steelMuseEnabled && steelMuseReady && CanWeave() &&
-                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     HasStatusEffect(Buffs.StarryMuse) ||
-                     hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
-                     !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
-                     almostCappedOrCappedSteelMuse ||
-                     ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
-                     !LevelChecked(ScenicMuse)))
-                {
-                    actionID = OriginalHook(SteelMuse);
-                    return true;
-                }
+            var steelMuseFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (livingMuseEnabled && livingMuseReady && CanWeave() &&
-                    !JustUsed(StarryMuse) &&
-                    (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) &&
-                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     !LevelChecked(ScenicMuse) ||
-                     ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
-                     !scenicMuseEnabled))
-                {
-                    actionID = OriginalHook(LivingMuse);
-                    return true;
-                }
+            var canSteelMuse = steelMuseEnabled && steelMuseReady && CanWeave() &&
+                (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                 HasStatusEffect(Buffs.StarryMuse) ||
+                 hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
+                 !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
+                 almostCappedOrCappedSteelMuse ||
+                 ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
+                 !LevelChecked(ScenicMuse));
+
+            var canLivingMuse = livingMuseEnabled && livingMuseReady && CanWeave() &&
+                !JustUsed(StarryMuse) &&
+                (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) &&
+                (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
+                 !LevelChecked(ScenicMuse) ||
+                 ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
+                 !scenicMuseEnabled);
+
+            if (steelMuseFirst && canSteelMuse)
+            {
+                actionID = OriginalHook(SteelMuse);
+                return true;
             }
-            else
-            {
-                // LivingMuse
-                if (livingMuseEnabled && livingMuseReady && CanWeave() &&
-                    !JustUsed(StarryMuse) &&
-                    (!portraitReady || GetRemainingCharges(LivingMuse) == GetMaxCharges(LivingMuse)) &&
-                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     !LevelChecked(ScenicMuse) ||
-                     ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
-                     !scenicMuseEnabled))
-                {
-                    actionID = OriginalHook(LivingMuse);
-                    return true;
-                }
 
-                // SteelMuse
-                if (steelMuseEnabled && steelMuseReady && CanWeave() &&
-                    (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     HasStatusEffect(Buffs.StarryMuse) ||
-                     hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
-                     !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
-                     almostCappedOrCappedSteelMuse ||
-                     ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
-                     !LevelChecked(ScenicMuse)))
-                {
-                    actionID = OriginalHook(SteelMuse);
-                    return true;
-                }
+            if (canLivingMuse)
+            {
+                actionID = OriginalHook(LivingMuse);
+                return true;
+            }
+
+            if (!steelMuseFirst && canSteelMuse)
+            {
+                actionID = OriginalHook(SteelMuse);
+                return true;
             }
 
             // Portrait Mog or Madeen

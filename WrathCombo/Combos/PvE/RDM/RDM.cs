@@ -37,22 +37,16 @@ internal partial class RDM : Caster
 
                 // ParseLord5 experiment: swap Fleche / Contre Sixte priority.
                 // Baseline (flag off): Contre Sixte first, then Fleche.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ActionReady(Fleche))
-                        return Fleche;
+                var flecheFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (ActionReady(ContreSixte))
-                        return ContreSixte;
-                }
-                else
-                {
-                    if (ActionReady(ContreSixte))
-                        return ContreSixte;
+                if (flecheFirst && ActionReady(Fleche))
+                    return Fleche;
 
-                    if (ActionReady(Fleche))
-                        return Fleche;
-                }
+                if (ActionReady(ContreSixte))
+                    return ContreSixte;
+
+                if (!flecheFirst && ActionReady(Fleche))
+                    return Fleche;
 
                 if (CanEngagement && PoolEngagement)
                     return Engagement;
@@ -154,22 +148,17 @@ internal partial class RDM : Caster
                     return Embolden;
 
                 // ParseLord5 experiment (AoE): swap Fleche / Contre Sixte priority.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ActionReady(Fleche))
-                        return Fleche;
+                // Baseline (flag off): Contre Sixte first, then Fleche.
+                var flecheFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (ActionReady(ContreSixte))
-                        return ContreSixte;
-                }
-                else
-                {
-                    if (ActionReady(ContreSixte))
-                        return ContreSixte;
+                if (flecheFirst && ActionReady(Fleche))
+                    return Fleche;
 
-                    if (ActionReady(Fleche))
-                        return Fleche;
-                }
+                if (ActionReady(ContreSixte))
+                    return ContreSixte;
+
+                if (!flecheFirst && ActionReady(Fleche))
+                    return Fleche;
 
                 if (CanEngagement && PoolEngagement)
                     return Engagement;
@@ -273,24 +262,22 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_ST_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
-                        return Fleche;
+                // ParseLord5 experiment: swap Fleche / Contre Sixte priority.
+                // Baseline (flag off): Contre Sixte first, then Fleche.
+                var flecheFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canFleche = IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche);
+                var canContreSixte = IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte);
 
-                    if (IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte))
-                        return ContreSixte;
-                }
-                else
-                {
-                    if (IsEnabled(Preset.RDM_ST_ContreSixte) && ActionReady(ContreSixte))
-                        return ContreSixte;
+                if (flecheFirst && canFleche)
+                    return Fleche;
 
-                    if (IsEnabled(Preset.RDM_ST_Fleche) && ActionReady(Fleche))
-                        return Fleche;
-                }
+                if (canContreSixte)
+                    return ContreSixte;
 
-                if (IsEnabled(Preset.RDM_ST_Engagement) && CanEngagement && 
+                if (!flecheFirst && canFleche)
+                    return Fleche;
+
+                if (IsEnabled(Preset.RDM_ST_Engagement) && CanEngagement &&
                     (IsNotEnabled(Preset.RDM_ST_Engagement_Pooling) || PoolEngagement) &&
                     (IsNotEnabled(Preset.RDM_ST_Engagement_Saving) || SaveEngagement))
                     return Engagement;
@@ -428,24 +415,22 @@ internal partial class RDM : Caster
                 if (IsEnabled(Preset.RDM_AoE_Embolden) && ActionReady(Embolden) && !HasEmbolden && canUseEmbolden)
                     return Embolden;
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
-                        return Fleche;
+                // ParseLord5 experiment (AoE): swap Fleche / Contre Sixte priority.
+                // Baseline (flag off): Contre Sixte first, then Fleche.
+                var flecheFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canFleche = IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche);
+                var canContreSixte = IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte);
 
-                    if (IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte))
-                        return ContreSixte;
-                }
-                else
-                {
-                    if (IsEnabled(Preset.RDM_AoE_ContreSixte) && ActionReady(ContreSixte))
-                        return ContreSixte;
+                if (flecheFirst && canFleche)
+                    return Fleche;
 
-                    if (IsEnabled(Preset.RDM_AoE_Fleche) && ActionReady(Fleche))
-                        return Fleche;
-                }
+                if (canContreSixte)
+                    return ContreSixte;
 
-                if (IsEnabled(Preset.RDM_AoE_Engagement) && CanEngagement && 
+                if (!flecheFirst && canFleche)
+                    return Fleche;
+
+                if (IsEnabled(Preset.RDM_AoE_Engagement) && CanEngagement &&
                     (IsNotEnabled(Preset.RDM_AoE_Engagement_Pooling) || PoolEngagement) &&
                     (IsNotEnabled(Preset.RDM_AoE_Engagement_Saving) || SaveEngagement))
                     return Engagement;

@@ -24,26 +24,20 @@ internal partial class BLM : Caster
             {
                 // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
                 // Baseline (flag off): Amplifier first, then Ley Lines.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
-                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f))
-                        return LeyLines;
+                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canLeyLines =
+                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                    GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
+                    !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f);
 
-                    if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                        return Amplifier;
-                }
-                else
-                {
-                    if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                        return Amplifier;
+                if (leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
-                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        GetRemainingCharges(LeyLines) > 1 && !JustUsed(LeyLines) &&
-                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(2.5f))
-                        return LeyLines;
-                }
+                if (ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                    return Amplifier;
+
+                if (!leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
                 if (EndOfFirePhase)
                 {
@@ -254,26 +248,20 @@ internal partial class BLM : Caster
 
                 // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
                 // Baseline (flag off): Amplifier first, then Ley Lines.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
-                        GetTargetHPPercent() > 40 && !JustUsed(LeyLines))
-                        return LeyLines;
+                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canLeyLines =
+                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                    !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
+                    GetTargetHPPercent() > 40 && !JustUsed(LeyLines);
 
-                    if (ActionReady(Amplifier) && PolyglotTimer >= 20)
-                        return Amplifier;
-                }
-                else
-                {
-                    if (ActionReady(Amplifier) && PolyglotTimer >= 20)
-                        return Amplifier;
+                if (leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
-                    if (ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill) &&
-                        GetTargetHPPercent() > 40 && !JustUsed(LeyLines))
-                        return LeyLines;
-                }
+                if (ActionReady(Amplifier) && PolyglotTimer >= 20)
+                    return Amplifier;
+
+                if (!leyLinesFirst && canLeyLines)
+                    return LeyLines;
             }
 
             if ((EndOfFirePhase || EndOfIcePhaseAoE) &&
@@ -358,36 +346,27 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (IsEnabled(Preset.BLM_ST_LeyLines) &&
-                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !JustUsed(LeyLines) &&
-                        GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
-                        (BLM_ST_LeyLinesMovement == 1 ||
-                         BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
-                        GetTargetHPPercent() > HPThresholdLeylines)
-                        return LeyLines;
+                // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
+                // Baseline (flag off): Amplifier first, then Ley Lines.
+                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canLeyLines =
+                    IsEnabled(Preset.BLM_ST_LeyLines) &&
+                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                    !JustUsed(LeyLines) &&
+                    GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
+                    (BLM_ST_LeyLinesMovement == 1 ||
+                     BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
+                    GetTargetHPPercent() > HPThresholdLeylines;
 
-                    if (IsEnabled(Preset.BLM_ST_Amplifier) &&
-                        ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                        return Amplifier;
-                }
-                else
-                {
-                    if (IsEnabled(Preset.BLM_ST_Amplifier) &&
-                        ActionReady(Amplifier) && !HasMaxPolyglotStacks)
-                        return Amplifier;
+                if (leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
-                    if (IsEnabled(Preset.BLM_ST_LeyLines) &&
-                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !JustUsed(LeyLines) &&
-                        GetRemainingCharges(LeyLines) > BLM_ST_LeyLinesCharges &&
-                        (BLM_ST_LeyLinesMovement == 1 ||
-                         BLM_ST_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_ST_LeyLinesTimeStill)) &&
-                        GetTargetHPPercent() > HPThresholdLeylines)
-                        return LeyLines;
-                }
+                if (IsEnabled(Preset.BLM_ST_Amplifier) &&
+                    ActionReady(Amplifier) && !HasMaxPolyglotStacks)
+                    return Amplifier;
+
+                if (!leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
                 if (EndOfFirePhase)
                 {
@@ -606,36 +585,27 @@ internal partial class BLM : Caster
                     (EndOfFirePhase || EndOfIcePhaseAoE))
                     return Transpose;
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
-                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !JustUsed(LeyLines) &&
-                        GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
-                        (BLM_AoE_LeyLinesMovement == 1 ||
-                         BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
-                        GetTargetHPPercent() > BLM_AoE_LeyLinesOption)
-                        return LeyLines;
+                // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
+                // Baseline (flag off): Amplifier first, then Ley Lines.
+                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
+                var canLeyLines =
+                    IsEnabled(Preset.BLM_AoE_LeyLines) &&
+                    ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
+                    !JustUsed(LeyLines) &&
+                    GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
+                    (BLM_AoE_LeyLinesMovement == 1 ||
+                     BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
+                    GetTargetHPPercent() > BLM_AoE_LeyLinesOption;
 
-                    if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
-                        ActionReady(Amplifier) && PolyglotTimer >= 20)
-                        return Amplifier;
-                }
-                else
-                {
-                    if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
-                        ActionReady(Amplifier) && PolyglotTimer >= 20)
-                        return Amplifier;
+                if (leyLinesFirst && canLeyLines)
+                    return LeyLines;
 
-                    if (IsEnabled(Preset.BLM_AoE_LeyLines) &&
-                        ActionReady(LeyLines) && !HasStatusEffect(Buffs.LeyLines) &&
-                        !JustUsed(LeyLines) &&
-                        GetRemainingCharges(LeyLines) > BLM_AoE_LeyLinesCharges &&
-                        (BLM_AoE_LeyLinesMovement == 1 ||
-                         BLM_AoE_LeyLinesMovement == 0 && !IsMoving() && TimeStoodStill > TimeSpan.FromSeconds(BLM_AoE_LeyLinesTimeStill)) &&
-                        GetTargetHPPercent() > BLM_AoE_LeyLinesOption)
-                        return LeyLines;
-                }
+                if (IsEnabled(Preset.BLM_AoE_Amplifier) &&
+                    ActionReady(Amplifier) && PolyglotTimer >= 20)
+                    return Amplifier;
+
+                if (!leyLinesFirst && canLeyLines)
+                    return LeyLines;
             }
 
             if (IsEnabled(Preset.BLM_AoE_UsePolyglot) &&

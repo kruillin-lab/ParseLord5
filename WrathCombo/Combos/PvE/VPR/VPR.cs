@@ -41,22 +41,15 @@ internal partial class VPR : Melee
                 {
                     // ParseLord5 experiment: swap Hunter's / Swiftskin's venom weave priority.
                     // Baseline (flag off): Hunter's Venom first, then Swiftskin's Venom.
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                            return OriginalHook(Twinblood);
+                    var swiftskinFirst = ParseLord5Experiments.JobRotationExperiments;
+                    if (swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
+                        return OriginalHook(Twinblood);
 
-                        if (HasStatusEffect(Buffs.HuntersVenom))
-                            return OriginalHook(Twinfang);
-                    }
-                    else
-                    {
-                        if (HasStatusEffect(Buffs.HuntersVenom))
-                            return OriginalHook(Twinfang);
+                    if (HasStatusEffect(Buffs.HuntersVenom))
+                        return OriginalHook(Twinfang);
 
-                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                            return OriginalHook(Twinblood);
-                    }
+                    if (!swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
+                        return OriginalHook(Twinblood);
                 }
 
                 //Serpents Ire
@@ -147,26 +140,21 @@ internal partial class VPR : Melee
                 if (!HasStatusEffect(Buffs.Reawakened))
                 {
                     // ParseLord5 experiment (AoE): swap Fellhunter's / Fellskin's venom weave priority.
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                            InActionRange(TwinbloodThresh))
-                            return OriginalHook(Twinblood);
+                    // Baseline (flag off): Fellhunter's Venom first, then Fellskin's Venom.
+                    var fellskinFirst = ParseLord5Experiments.JobRotationExperiments;
+                    var canFellskinsVenom = HasStatusEffect(Buffs.FellskinsVenom) &&
+                                             InActionRange(TwinbloodThresh);
+                    var canFellhuntersVenom = HasStatusEffect(Buffs.FellhuntersVenom) &&
+                                               InActionRange(TwinfangThresh);
 
-                        if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                            InActionRange(TwinfangThresh))
-                            return OriginalHook(Twinfang);
-                    }
-                    else
-                    {
-                        if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                            InActionRange(TwinfangThresh))
-                            return OriginalHook(Twinfang);
+                    if (fellskinFirst && canFellskinsVenom)
+                        return OriginalHook(Twinblood);
 
-                        if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                            InActionRange(TwinbloodThresh))
-                            return OriginalHook(Twinblood);
-                    }
+                    if (canFellhuntersVenom)
+                        return OriginalHook(Twinfang);
+
+                    if (!fellskinFirst && canFellskinsVenom)
+                        return OriginalHook(Twinblood);
 
                     //Serpents Ire usage
                     if (!MaxCoils && ActionReady(SerpentsIre) &&
@@ -264,22 +252,17 @@ internal partial class VPR : Melee
                 if (IsEnabled(Preset.VPR_ST_VicewinderWeaves) &&
                     !HasStatusEffect(Buffs.Reawakened) && InMeleeRange())
                 {
-                    if (ParseLord5Experiments.JobRotationExperiments)
-                    {
-                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                            return OriginalHook(Twinblood);
+                    // ParseLord5 experiment: swap Hunter's / Swiftskin's venom weave priority.
+                    // Baseline (flag off): Hunter's Venom first, then Swiftskin's Venom.
+                    var swiftskinFirst = ParseLord5Experiments.JobRotationExperiments;
+                    if (swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
+                        return OriginalHook(Twinblood);
 
-                        if (HasStatusEffect(Buffs.HuntersVenom))
-                            return OriginalHook(Twinfang);
-                    }
-                    else
-                    {
-                        if (HasStatusEffect(Buffs.HuntersVenom))
-                            return OriginalHook(Twinfang);
+                    if (HasStatusEffect(Buffs.HuntersVenom))
+                        return OriginalHook(Twinfang);
 
-                        if (HasStatusEffect(Buffs.SwiftskinsVenom))
-                            return OriginalHook(Twinblood);
-                    }
+                    if (!swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
+                        return OriginalHook(Twinblood);
                 }
 
                 //Serpents Ire
@@ -392,26 +375,22 @@ internal partial class VPR : Melee
                     //Vicepit weaves
                     if (IsEnabled(Preset.VPR_AoE_VicepitWeaves))
                     {
-                        if (ParseLord5Experiments.JobRotationExperiments)
-                        {
-                            if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                                (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                                return OriginalHook(Twinblood);
+                        // ParseLord5 experiment (AoE): swap Fellhunter's / Fellskin's venom weave priority.
+                        // Baseline (flag off): Fellhunter's Venom first, then Fellskin's Venom.
+                        var fellskinFirst = ParseLord5Experiments.JobRotationExperiments;
+                        var canFellskinsVenom = HasStatusEffect(Buffs.FellskinsVenom) &&
+                                                 (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1);
+                        var canFellhuntersVenom = HasStatusEffect(Buffs.FellhuntersVenom) &&
+                                                   (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1);
 
-                            if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                                (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                                return OriginalHook(Twinfang);
-                        }
-                        else
-                        {
-                            if (HasStatusEffect(Buffs.FellhuntersVenom) &&
-                                (InActionRange(TwinfangThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                                return OriginalHook(Twinfang);
+                        if (fellskinFirst && canFellskinsVenom)
+                            return OriginalHook(Twinblood);
 
-                            if (HasStatusEffect(Buffs.FellskinsVenom) &&
-                                (InActionRange(TwinbloodThresh) || VPR_AoE_VicepitComboRangeCheck == 1))
-                                return OriginalHook(Twinblood);
-                        }
+                        if (canFellhuntersVenom)
+                            return OriginalHook(Twinfang);
+
+                        if (!fellskinFirst && canFellskinsVenom)
+                            return OriginalHook(Twinblood);
                     }
 
                     //Serpents Ire usage

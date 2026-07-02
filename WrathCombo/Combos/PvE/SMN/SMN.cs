@@ -54,23 +54,16 @@ internal partial class SMN : Caster
                     return OriginalHook(SummonTopaz);
 
                 // ParseLord5 experiment: swap Ifrit / Garuda egi priority.
-                // Baseline (flag off): Garuda first, then Ifrit.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (Gauge.IsIfritReady)
-                        return OriginalHook(SummonRuby);
+                // Experimental: Ifrit, Garuda. Baseline (flag off): Garuda, Ifrit.
+                var ifritFirst = ParseLord5Experiments.JobRotationExperiments;
+                if (ifritFirst && Gauge.IsIfritReady)
+                    return OriginalHook(SummonRuby);
 
-                    if (Gauge.IsGarudaReady)
-                        return OriginalHook(SummonEmerald);
-                }
-                else
-                {
-                    if (Gauge.IsGarudaReady)
-                        return OriginalHook(SummonEmerald);
+                if (Gauge.IsGarudaReady)
+                    return OriginalHook(SummonEmerald);
 
-                    if (Gauge.IsIfritReady)
-                        return OriginalHook(SummonRuby);
-                }
+                if (!ifritFirst && Gauge.IsIfritReady)
+                    return OriginalHook(SummonRuby);
             }
             #endregion
 
@@ -119,22 +112,16 @@ internal partial class SMN : Caster
                     return OriginalHook(SummonTopaz);
 
                 // ParseLord5 experiment (AoE): swap Ifrit / Garuda egi priority.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (Gauge.IsIfritReady)
-                        return OriginalHook(SummonRuby);
+                // Experimental: Ifrit, Garuda. Baseline (flag off): Garuda, Ifrit.
+                var ifritFirst = ParseLord5Experiments.JobRotationExperiments;
+                if (ifritFirst && Gauge.IsIfritReady)
+                    return OriginalHook(SummonRuby);
 
-                    if (Gauge.IsGarudaReady)
-                        return OriginalHook(SummonEmerald);
-                }
-                else
-                {
-                    if (Gauge.IsGarudaReady)
-                        return OriginalHook(SummonEmerald);
+                if (Gauge.IsGarudaReady)
+                    return OriginalHook(SummonEmerald);
 
-                    if (Gauge.IsIfritReady)
-                        return OriginalHook(SummonRuby);
-                }
+                if (!ifritFirst && Gauge.IsIfritReady)
+                    return OriginalHook(SummonRuby);
             }
             #endregion
 

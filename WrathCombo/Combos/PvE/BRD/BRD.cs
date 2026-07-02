@@ -33,22 +33,17 @@ internal partial class BRD : PhysicalRanged
                     return EmpyrealArrow;
 
                 // ParseLord5 experiment (AoE): swap Wanderer's Minuet / Mage's Ballad.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (MagesSong())
-                        return MagesBallad;
+                // Baseline (flag off): Wanderer's first, then Mage's.
+                var magesBalladFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (WandererSong())
-                        return WanderersMinuet;
-                }
-                else
-                {
-                    if (WandererSong())
-                        return WanderersMinuet;
+                if (magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
-                    if (MagesSong())
-                        return MagesBallad;
-                }
+                if (WandererSong())
+                    return WanderersMinuet;
+
+                if (!magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
                 if (ArmySong())
                     return ArmysPaeon;
@@ -215,22 +210,16 @@ internal partial class BRD : PhysicalRanged
 
                 // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
                 // Baseline (flag off): Wanderer's first, then Mage's.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (MagesSong())
-                        return MagesBallad;
+                var magesBalladFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (WandererSong())
-                        return WanderersMinuet;
-                }
-                else
-                {
-                    if (WandererSong())
-                        return WanderersMinuet;
+                if (magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
-                    if (MagesSong())
-                        return MagesBallad;
-                }
+                if (WandererSong())
+                    return WanderersMinuet;
+
+                if (!magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
                 if (ArmySong())
                     return ArmysPaeon;
@@ -408,22 +397,18 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (MagesSong())
-                        return MagesBallad;
+                // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
+                // Baseline (flag off): Wanderer's first, then Mage's.
+                var magesBalladFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (WandererSong())
-                        return WanderersMinuet;
-                }
-                else
-                {
-                    if (WandererSong())
-                        return WanderersMinuet;
+                if (magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
-                    if (MagesSong())
-                        return MagesBallad;
-                }
+                if (WandererSong())
+                    return WanderersMinuet;
+
+                if (!magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
                 if (ArmySong())
                     return ArmysPaeon;
@@ -620,22 +605,18 @@ internal partial class BRD : PhysicalRanged
                 if (SongChangeEmpyreal())
                     return EmpyrealArrow;
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (MagesSong())
-                        return MagesBallad;
+                // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
+                // Baseline (flag off): Wanderer's first, then Mage's.
+                var magesBalladFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (WandererSong())
-                        return WanderersMinuet;
-                }
-                else
-                {
-                    if (WandererSong())
-                        return WanderersMinuet;
+                if (magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
-                    if (MagesSong())
-                        return MagesBallad;
-                }
+                if (WandererSong())
+                    return WanderersMinuet;
+
+                if (!magesBalladFirst && MagesSong())
+                    return MagesBallad;
 
                 if (ArmySong())
                     return ArmysPaeon;

@@ -114,22 +114,17 @@ internal partial class PLD : Tank
                     // Baseline (flag off): Circle of Scorn first, then Spirits Within.
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (ParseLord5Experiments.JobRotationExperiments)
-                        {
-                            if (ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
+                        var spiritsWithinFirst = ParseLord5Experiments.JobRotationExperiments;
+                        var canSpiritsWithin = ActionReady(OriginalHook(SpiritsWithin));
 
-                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
-                        }
-                        else
-                        {
-                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
+                        if (spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
 
-                            if (ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
-                        }
+                        if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                            return CircleOfScorn;
+
+                        if (!spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
                     }
                 }
 
@@ -266,22 +261,17 @@ internal partial class PLD : Tank
                     // ParseLord5 experiment (AoE): swap Circle of Scorn / Spirits Within priority.
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (ParseLord5Experiments.JobRotationExperiments)
-                        {
-                            if (ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
+                        var spiritsWithinFirst = ParseLord5Experiments.JobRotationExperiments;
+                        var canSpiritsWithin = ActionReady(OriginalHook(SpiritsWithin));
 
-                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
-                        }
-                        else
-                        {
-                            if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
+                        if (spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
 
-                            if (ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
-                        }
+                        if (ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                            return CircleOfScorn;
+
+                        if (!spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
                     }
                 }
 
@@ -392,24 +382,20 @@ internal partial class PLD : Tank
                             return OriginalHook(FightOrFlight);
                     }
 
+                    // ParseLord5 experiment (ST Advanced): swap Circle of Scorn / Spirits Within priority.
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (ParseLord5Experiments.JobRotationExperiments)
-                        {
-                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
+                        var spiritsWithinFirst = ParseLord5Experiments.JobRotationExperiments;
+                        var canSpiritsWithin = IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin));
 
-                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
-                        }
-                        else
-                        {
-                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
+                        if (spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
 
-                            if (IsEnabled(Preset.PLD_ST_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
-                        }
+                        if (IsEnabled(Preset.PLD_ST_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                            return CircleOfScorn;
+
+                        if (!spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
                     }
                 }
 
@@ -563,22 +549,17 @@ internal partial class PLD : Tank
                     // Circle of Scorn / Spirits Within
                     if (CooldownFightOrFlight > 15)
                     {
-                        if (ParseLord5Experiments.JobRotationExperiments)
-                        {
-                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
+                        var spiritsWithinFirst = ParseLord5Experiments.JobRotationExperiments;
+                        var canSpiritsWithin = IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin));
 
-                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
-                        }
-                        else
-                        {
-                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
-                                return CircleOfScorn;
+                        if (spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
 
-                            if (IsEnabled(Preset.PLD_AoE_AdvancedMode_SpiritsWithin) && ActionReady(OriginalHook(SpiritsWithin)))
-                                return OriginalHook(SpiritsWithin);
-                        }
+                        if (IsEnabled(Preset.PLD_AoE_AdvancedMode_CircleOfScorn) && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0)
+                            return CircleOfScorn;
+
+                        if (!spiritsWithinFirst && canSpiritsWithin)
+                            return OriginalHook(SpiritsWithin);
                     }
                 }
 

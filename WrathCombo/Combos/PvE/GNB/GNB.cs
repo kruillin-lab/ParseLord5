@@ -52,22 +52,16 @@ internal partial class GNB : Tank
 
             // ParseLord5 experiment: swap No Mercy / Bloodfest priority.
             // Baseline (flag off): No Mercy first, then Bloodfest.
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
-                    return Bloodfest;
+            var bloodfestFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
-                    return NoMercy;
-            }
-            else
-            {
-                if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
-                    return NoMercy;
+            if (bloodfestFirst && ShouldUseBloodfest(Preset.GNB_ST_Simple))
+                return Bloodfest;
 
-                if (ShouldUseBloodfest(Preset.GNB_ST_Simple))
-                    return Bloodfest;
-            }
+            if (ShouldUseNoMercy(Preset.GNB_ST_Simple, 0))
+                return NoMercy;
+
+            if (!bloodfestFirst && ShouldUseBloodfest(Preset.GNB_ST_Simple))
+                return Bloodfest;
 
             //Continuation (HIGH PRIORITY): within late weave window, just send now
             if (ShouldContinue(Preset.GNB_ST_Simple, CanContinue || CanHV, CanDelayedWeave()))
@@ -174,22 +168,18 @@ internal partial class GNB : Tank
             if (ShouldContinue(Preset.GNB_ST_Continuation, CanContinue || CanHV, RemainingGCD < 0.6f))
                 return OriginalHook(Continuation);
 
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
-                    return Bloodfest;
+            // ParseLord5 experiment: swap No Mercy / Bloodfest priority.
+            // Baseline (flag off): No Mercy first, then Bloodfest.
+            var bloodfestFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
-                    return NoMercy;
-            }
-            else
-            {
-                if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
-                    return NoMercy;
+            if (bloodfestFirst && ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
+                return Bloodfest;
 
-                if (ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
-                    return Bloodfest;
-            }
+            if (ShouldUseNoMercy(Preset.GNB_ST_NoMercy, HPThresholdNM))
+                return NoMercy;
+
+            if (!bloodfestFirst && ShouldUseBloodfest(Preset.GNB_ST_Bloodfest))
+                return Bloodfest;
 
             //Continuation (HIGH PRIORITY): within late weave window, send now
             if (ShouldContinue(Preset.GNB_ST_Continuation, CanContinue || CanHV, CanDelayedWeave()))
@@ -291,22 +281,17 @@ internal partial class GNB : Tank
                     return OriginalHook(Continuation);
 
                 // ParseLord5 experiment (AoE): swap No Mercy / Bloodfest priority.
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
-                        return Bloodfest;
+                // Baseline (flag off): No Mercy first, then Bloodfest.
+                var bloodfestFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
-                        return NoMercy;
-                }
-                else
-                {
-                    if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
-                        return NoMercy;
+                if (bloodfestFirst && ShouldUseBloodfest(Preset.GNB_AoE_Simple))
+                    return Bloodfest;
 
-                    if (ShouldUseBloodfest(Preset.GNB_AoE_Simple))
-                        return Bloodfest;
-                }
+                if (ShouldUseNoMercy(Preset.GNB_AoE_Simple, 10))
+                    return NoMercy;
+
+                if (!bloodfestFirst && ShouldUseBloodfest(Preset.GNB_AoE_Simple))
+                    return Bloodfest;
 
                 if (ShouldContinue(Preset.GNB_AoE_Simple, CanFB, CanDelayedWeave()))
                     return OriginalHook(Continuation);
@@ -378,22 +363,18 @@ internal partial class GNB : Tank
                 if (ShouldContinue(Preset.GNB_AoE_FatedBrand, CanFB, RemainingGCD < 0.6f))
                     return OriginalHook(Continuation);
 
-                if (ParseLord5Experiments.JobRotationExperiments)
-                {
-                    if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
-                        return Bloodfest;
+                // ParseLord5 experiment: swap No Mercy / Bloodfest priority.
+                // Baseline (flag off): No Mercy first, then Bloodfest.
+                var bloodfestFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                    if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
-                        return NoMercy;
-                }
-                else
-                {
-                    if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
-                        return NoMercy;
+                if (bloodfestFirst && ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
+                    return Bloodfest;
 
-                    if (ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
-                        return Bloodfest;
-                }
+                if (ShouldUseNoMercy(Preset.GNB_AoE_NoMercy, GNB_AoE_NoMercyStop))
+                    return NoMercy;
+
+                if (!bloodfestFirst && ShouldUseBloodfest(Preset.GNB_AoE_Bloodfest))
+                    return Bloodfest;
 
                 if (ShouldContinue(Preset.GNB_AoE_FatedBrand, CanFB, CanDelayedWeave()))
                     return OriginalHook(Continuation);
