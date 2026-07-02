@@ -1,0 +1,19 @@
+WrathCombo/Services/TankCooldownHelperIPC/TankCooldownHelperIpcClient.cs
+  s_7e502254bd8531::t_192f53a6fcec75 1-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "68558e739ca7fad49339c41eee50f42fc518b402",
+  "prompts": {},
+  "sessions": {
+    "s_7e502254bd8531": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0e25a427cffe334tgK64TvPbjM",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
