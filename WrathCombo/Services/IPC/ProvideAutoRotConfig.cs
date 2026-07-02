@@ -78,6 +78,13 @@ public partial class Provider
                 arcOption.HealerAlwaysHardTarget  => arcH.HealerAlwaysHardTarget ,
                 arcOption.BypassQuest => arc.BypassQuest,
                 arcOption.BypassFATE => arc.BypassFATE,
+                arcOption.IgnoreRangeInBoss => arcD.IgnoreRangeInBoss,
+                // NOTE: ParseLord5's UnTargetAndDisableForPenalty setting (see
+                // AutoRotationController.cs) has no corresponding member in the
+                // WrathCombo.API submodule's AutoRotationConfigOption enum (pinned
+                // at v0.5.4). It cannot be exposed via this IPC surface until the
+                // submodule is updated upstream to add the member. Judgment call:
+                // omitted here rather than editing the submodule.
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(passedOption), passedOption, null),
             };

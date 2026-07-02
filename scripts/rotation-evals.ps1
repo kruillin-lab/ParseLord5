@@ -105,9 +105,12 @@ $passCount++
 Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
 $samContent = Get-Content -LiteralPath $SAMFile -Raw
 $vprContent = Get-Content -LiteralPath $VPRFile -Raw
+$vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
 
 $samExpCount = ([regex]::Matches($samContent, 'ParseLord5Experiments\.')).Count
-$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count
+# VPR's venom priority-swap ladders live in VPR_Helper.cs (UseViceTwinWeaves), not VPR.cs itself.
+$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count +
+    ([regex]::Matches($vprHelperContent, 'ParseLord5Experiments\.')).Count
 
 if ($samExpCount -ge 2) {
     Write-Host "PASS parselord5-experimental-mode-in-sam: found $samExpCount occurrences in SAM.cs (ST+AoE branches)"
@@ -244,9 +247,12 @@ if ($whmInterceptionFailures.Count -eq 0 -and $hasPressableHealGate) {
 # ---- FIXTURE 9: MNK ST Perfect Balance spends a charge before overcapping ----
 Write-Host "--- Fixture: mnk-st-perfect-balance-charge-failsafe ---"
 $mnkHelperContent = Get-Content -LiteralPath $MNKHelperFile -Raw
+# CanPerfectBalance's ST path (onAoE == false) delegates to ShouldUsePreRoFPerfectBalance;
+# the charge-overcap failsafe lives at the top of that method, not inline in a switch anymore
+# (upstream restructured CanPerfectBalance from a switch-expression into if/else + helper calls).
 $mnkPerfectBalanceStBlock = [regex]::Match(
     $mnkHelperContent,
-    'private static bool CanPerfectBalance\(bool onAoE = false\).*?case false when(?<body>.*?)case true when',
+    'private static bool ShouldUsePreRoFPerfectBalance\(bool useOpenerBalance\)(?<body>.*?)\n    \}',
     'Singleline'
 ).Groups['body'].Value
 

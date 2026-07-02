@@ -29,6 +29,8 @@ using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
 using WrathCombo.Data.Conflicts;
+using WrathCombo.Extensions;
+using WrathCombo.Native;
 using WrathCombo.Resources.Localization.UI.MainWindow;
 using WrathCombo.Combos.PvE;
 using WrathCombo.Services;
@@ -38,6 +40,7 @@ using WrathCombo.Services.IPC_Subscriber;
 using WrathCombo.Services.TankCooldownHelperIPC;
 using WrathCombo.Services.SmartMitigation;
 using WrathCombo.Window;
+using WrathCombo.Window.Functions;
 using WrathCombo.Window.Tabs;
 using GenericHelpers = ECommons.GenericHelpers;
 
@@ -57,7 +60,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         AutomaticDecompression = DecompressionMethods.All,
         ConnectCallback = new HappyEyeballsCallback().ConnectCallback,
     };
-    private readonly HttpClient httpClient = new(httpHandler) { Timeout = TimeSpan.FromSeconds(5) };
+    internal readonly HttpClient HTTPClient = new(httpHandler) { Timeout = TimeSpan.FromSeconds(5) };
     private readonly IDtrBarEntry DtrBarEntry;
     public readonly IDtrBarEntry OpenerDtr;
     internal Provider IPC;
@@ -65,6 +68,8 @@ public sealed partial class WrathCombo : IDalamudPlugin
     internal UIHelper UIHelper = null!;
     internal ActionRetargeting ActionRetargeting = null!;
     internal MovementHook MoveHook;
+    internal CustomActionSetup CustomActions;
+    //private readonly CustomActionListAddon _listAddon;
 
     internal static bool IsAprilFools => DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 4;
 
@@ -187,7 +192,9 @@ public sealed partial class WrathCombo : IDalamudPlugin
         Service.Address = new AddressResolver();
         Service.Address.Setup(Svc.SigScanner);
         MoveHook = new();
+        CustomActions = new();
         PresetStorage.RemoveRedundantPresets();
+        OpCodeConfigHelper.UpdateOpCodes();
 
         Service.ComboCache = new CustomComboCache();
         Service.ActionReplacer = new ActionReplacer();
@@ -238,6 +245,19 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
         OpenerDtr ??= Svc.DtrBar.Get("ParseLord5 Opener");
 
+        OpenerDtr.OnClick += (_) =>
+        {
+            var preset = WrathOpener.CurrentOpener?.Preset;
+            if (preset is not { } pre)
+                return;
+
+            PresetStorage.TogglePreset(pre);
+        };
+
+        OpenerDtr.Tooltip = new SeString(
+        new TextPayload("Click to toggle Opener Preset.\n"),
+        new TextPayload("Disable this icon in /xlsettings -> Server Info Bar"));
+
         Svc.ClientState.Login += PrintLoginMessage;
         if (Svc.ClientState.IsLoggedIn) ResetFeatures();
 
@@ -254,7 +274,6 @@ public sealed partial class WrathCombo : IDalamudPlugin
 #if DEBUG
         VfxManager.Logging = true;
         ConfigWindow.IsOpen = true;
-        VfxManager.Logging = true;
         Svc.Framework.RunOnTick(() =>
         {
             if (Service.Configuration.OpenToCurrentJob && Player.Available)
@@ -358,29 +377,25 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
             #endregion
 
-            // Skip the IPC checking if hidden
-            if (!DtrBarEntry.UserHidden)
-            {
-                #region DTR Bar Updating
+            #region DTR Bar Updating
 
-                var autoOn = IPC.GetAutoRotationState();
-                var icon = new IconPayload(autoOn
-                    ? BitmapFontIcon.SwordUnsheathed
-                    : BitmapFontIcon.SwordSheathed);
+            var autoOn = IPC.GetAutoRotationState();
+            var icon = new IconPayload(autoOn
+                ? BitmapFontIcon.SwordUnsheathed
+                : BitmapFontIcon.SwordSheathed);
 
-                var text = autoOn ? ": On" : ": Off";
-                if (!Service.Configuration.ShortDTRText && autoOn)
-                    text += $" ({P.IPCSearch.ActiveJobPresets} active)";
-                var ipcControlledText =
-                    P.UIHelper.AutoRotationStateControlled() is not null
-                        ? " (Locked)"
-                        : "";
+            var text = autoOn ? ": On" : ": Off";
+            if (!Service.Configuration.ShortDTRText && autoOn)
+                text += $" ({P.IPCSearch.ActiveJobPresets} active)";
+            var ipcControlledText =
+                P.UIHelper.AutoRotationStateControlled() is not null
+                    ? " (Locked)"
+                    : "";
 
-                var payloadText = new TextPayload(text + ipcControlledText);
-                DtrBarEntry.Text = new SeString(icon, payloadText);
+            var payloadText = new TextPayload(text + ipcControlledText);
+            DtrBarEntry.Text = new SeString(icon, payloadText);
 
-                #endregion
-            }
+            #endregion
 
             if (Service.Configuration.ShowOpenerDtr)
             {
@@ -396,6 +411,8 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
             if (Service.Configuration.AoEDamageTTS || Service.Configuration.AoEDamageToast)
                 CustomComboFunctions.PlayGroupwideAlert();
+
+            SimpleTargetState.ManageStateList();
         }
         catch (Exception ex)
         {
@@ -434,7 +451,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
             var basicMessage = $"Welcome to ParseLord5 v{GetType().Assembly
                 .GetName().Version}!";
             using var motd =
-                httpClient.GetAsync("https://raw.githubusercontent.com/PunishXIV/WrathCombo/main/res/motd.txt").Result;
+                HTTPClient.GetAsync("https://raw.githubusercontent.com/PunishXIV/WrathCombo/main/res/motd.txt").Result;
             motd.EnsureSuccessStatusCode();
             var data = motd.Content.ReadAsStringAsync().Result;
             List<Payload> payloads =
@@ -493,6 +510,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         CustomComboFunctions.TimerDispose();
         IPC.Dispose();
         MoveHook.Dispose();
+        CustomActions.Dispose();
 
         ConflictingPluginsChecks.Dispose();
         AllStaticIPCSubscriptions.Dispose();

@@ -5,6 +5,7 @@ using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Native;
 using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.DRK.Config;
 
@@ -65,7 +66,7 @@ internal partial class DRK : Tank
         protected override uint Invoke(uint actionID)
         {
             // Bail if not looking at the replaced action
-            if (actionID is not HardSlash) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.SingleTargetDPS, HardSlash)) return actionID;
 
             const Combo comboFlags = Combo.ST | Combo.Adv;
             var newAction = HardSlash;
@@ -166,7 +167,7 @@ internal partial class DRK : Tank
         protected override uint Invoke(uint actionID)
         {
             // Bail if not looking at the replaced action
-            if (actionID is not HardSlash) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.SingleTargetDPS, HardSlash)) return actionID;
 
             const Combo comboFlags = Combo.ST | Combo.Simple;
             var newAction = HardSlash;
@@ -224,7 +225,7 @@ internal partial class DRK : Tank
         protected override uint Invoke(uint actionID)
         {
             // Bail if not looking at the replaced action
-            if (actionID is not Unleash) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.AoEDPS, Unleash)) return actionID;
 
             const Combo comboFlags = Combo.AoE | Combo.Adv;
             var newAction = Unleash;
@@ -276,7 +277,7 @@ internal partial class DRK : Tank
         protected override uint Invoke(uint actionID)
         {
             // Bail if not looking at the replaced action
-            if (actionID is not Unleash) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.AoEDPS, Unleash)) return actionID;
 
             const Combo comboFlags = Combo.AoE | Combo.Simple;
             var newAction = Unleash;

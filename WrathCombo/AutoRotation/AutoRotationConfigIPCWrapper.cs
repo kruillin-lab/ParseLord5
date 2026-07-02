@@ -101,6 +101,8 @@ public class AutoRotationConfigIPCWrapper(AutoRotationConfig? config)
 
     public float QueueWindow => config.QueueWindow;
 
+    public bool PauseWhenNoTarget => config.PauseWhenNoTarget;
+
     #endregion
 }
 
@@ -152,6 +154,7 @@ public class DPSSettingsIPCWrapper(DPSSettings settings)
         }
     }
 
+
     public bool DPSAlwaysHardTarget
     {
         get
@@ -162,6 +165,16 @@ public class DPSSettingsIPCWrapper(DPSSettings settings)
                 ? checkControlled.Value.state == 1
                 : settings.DPSAlwaysHardTarget;
         }
+    }
+
+    public bool UnTargetAndDisableForPenalty
+    {
+        // NOTE: ParseLord5's UnTargetAndDisableForPenalty setting has no
+        // AutoRotationConfigOption enum member yet (upstream WrathCombo.API
+        // submodule doesn't define it), so external IPC control isn't wired for
+        // it. Reading the local setting directly avoids AutoRotationConfigControlled's
+        // Enum.Parse throwing every frame on the missing name.
+        get => settings.UnTargetAndDisableForPenalty;
     }
 
     public bool IgnoreRangeInBoss
@@ -183,8 +196,6 @@ public class DPSSettingsIPCWrapper(DPSSettings settings)
     public float MaxDistance => settings.MaxDistance;
 
     public bool AoEIgnoreManual => settings.AoEIgnoreManual;
-    
-    public bool UnTargetAndDisableForPenalty => settings.UnTargetAndDisableForPenalty;
 
     public DPSRotationMode DPSManualFallbackMode => settings.DPSManualFallbackMode;
 
@@ -204,7 +215,7 @@ public class HealerSettingsIPCWrapper(HealerSettings settings)
     public int SingleTargetExcogHPP =>
         P.UIHelper.AutoRotationConfigControlled("SingleTargetExcogHPP")?.state
         ?? settings.SingleTargetExcogHPP;
-    
+
     public int SingleTargetRegenHPP =>
         P.UIHelper.AutoRotationConfigControlled("SingleTargetRegenHPP")?.state
         ?? settings.SingleTargetRegenHPP;
@@ -304,11 +315,13 @@ public class HealerSettingsIPCWrapper(HealerSettings settings)
     public bool KardiaTanksOnly => settings.KardiaTanksOnly;
 
     public bool PreEmptiveHoT => settings.PreEmptiveHoT;
-    
+
     public bool AutoRezDPSJobsHealersOnly => settings.AutoRezDPSJobsHealersOnly;
 
     public bool HandleRaidwides => settings.HandleRaidwides;
 
     public bool HandleTankbusters => settings.HandleTankbusters;
+
+    public bool IncludeShields => settings.IncludeShields;
     #endregion
 }

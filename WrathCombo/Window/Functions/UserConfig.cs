@@ -3,6 +3,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
+using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using System;
 using System.Linq;
@@ -34,7 +35,10 @@ public static class UserConfig
         ImGui.Indent();
         int output = Configuration.GetCustomIntValue(config, minValue);
         if (output < minValue)
-            output = Configuration.SetCustomIntValue(config, output);
+        {
+            Svc.Log.Warning($"{config} has a value {output} less than {minValue}");
+            output = Configuration.SetCustomIntValue(config, minValue);
+        }
 
         float contentRegionMin = ImGui.GetItemRectMax().Y - ImGui.GetItemRectMin().Y;
         float wrapPos = ImGui.GetContentRegionMax().X - 35f;
@@ -95,9 +99,10 @@ public static class UserConfig
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(currentPos.X);
                 ImGui.PushItemWidth(itemWidth);
-                inputChanged |= ImGui.SliderInt($"{newLines}###{config}", ref output, minValue, maxValue);
+                if (ImGui.SliderInt($"{newLines}###{config}", ref output, minValue, maxValue))
+                    Configuration.CustomIntValues[config] = output;
 
-                if (inputChanged)
+                if (ImGui.IsItemDeactivatedAfterEdit())
                 {
                     if (output % sliderIncrement != 0)
                     {
@@ -107,9 +112,10 @@ public static class UserConfig
                     }
 
                     Configuration.SetCustomIntValue(config, output);
+                    return true;
                 }
 
-                return inputChanged;
+                return false;
             }
         };
 
@@ -149,7 +155,10 @@ public static class UserConfig
     {
         float output = Configuration.GetCustomFloatValue(config, minValue);
         if (output < minValue)
-            output = Configuration.SetCustomFloatValue(config, output);
+        {
+            Svc.Log.Warning($"{config} has a value {output} less than {minValue}");
+            output = Configuration.SetCustomFloatValue(config, minValue);
+        }
 
         float contentRegionMin = ImGui.GetItemRectMax().Y - ImGui.GetItemRectMin().Y;
         float wrapPos = ImGui.GetContentRegionMax().X - 35f;
@@ -165,7 +174,6 @@ public static class UserConfig
             IsSubBox = true,
             ContentsAction = () =>
             {
-                bool inputChanged = false;
                 Vector2 currentPos = ImGui.GetCursorPos();
                 ImGui.SetCursorPosX(currentPos.X + itemWidth);
                 ImGui.PushTextWrapPos(wrapPos);
@@ -210,9 +218,10 @@ public static class UserConfig
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(currentPos.X);
                 ImGui.PushItemWidth(itemWidth);
-                inputChanged |= ImGui.SliderFloat($"{newLines}###{config}", ref output, minValue, maxValue, format);
+                if (ImGui.SliderFloat($"{newLines}###{config}", ref output, minValue, maxValue, format))
+                    Configuration.CustomFloatValues[config] = output;
 
-                if (inputChanged)
+                if (ImGui.IsItemDeactivatedAfterEdit())
                     Configuration.SetCustomFloatValue(config, output);
             }
         };

@@ -762,9 +762,6 @@ internal partial class GNB : Tank
         ;
     private static uint STCombo(int overcap)
     {
-        if (!InActionRange(KeenEdge))
-            return 0;
-
         if (ComboTimer > 0) //in combo
         {
             if (ComboAction == KeenEdge && //just used 1
@@ -786,9 +783,6 @@ internal partial class GNB : Tank
     }
     private static uint AOECombo(int overcap, int bsChoice)
     {
-        if (!InActionRange(DemonSlice))
-            return 0;
-
         if (ComboTimer > 0) //in combo
         {
             if (ComboAction == DemonSlice && //just used 1

@@ -5,7 +5,7 @@
     <PropertyGroup>
         <Authors>Team Wrath</Authors>
         <Company>-</Company>
-        <Version>1.0.4.6</Version>
+        <Version>1.0.4.13</Version>
         <!-- This is the version that will be used when pushing to the repo.-->
         <Description>ParseLord5 is a WrathCombo-based fork and iteration.</Description>
         <Copyright>Copyleft attick 2021 thanks attick UwU</Copyright>
@@ -30,6 +30,11 @@
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
+    <ItemGroup>
+      <Compile Remove="Native\Icons\**" />
+      <EmbeddedResource Remove="Native\Icons\**" />
+      <None Remove="Native\Icons\**" />
+    </ItemGroup>
     <!-- Styling Rules -->
     <ItemGroup>
         <None Include="..\.editorconfig" Link=".editorconfig" />
@@ -66,7 +71,7 @@
 
     <!-- Dalamud Packaging -->
     <ItemGroup>
-        <PackageReference Include="DalamudPackager" Version="14.0.1" />
+        <PackageReference Include="DalamudPackager" Version="15.0.0" />
         <PackageReference Include="System.Speech" Version="10.0.5" />
     </ItemGroup>
 
@@ -421,6 +426,18 @@
 
     <!-- Release Manifest -->
     <ItemGroup>
+        <None Update="Resources\AoEDPS.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\AoEHeals.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\SingleTargetDPS.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\SingleTargetHeals.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
         <None Update="ParseLord5.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>

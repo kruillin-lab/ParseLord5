@@ -19,6 +19,7 @@ public class AutoRotationConfig
     public int Throttler = 50;
     public bool OrbwalkerIntegration;
     public float QueueWindow = 0.3f;
+    public bool PauseWhenNoTarget;
 }
 
 public class DPSSettings
@@ -42,6 +43,7 @@ public class HealerSettings
     public int AoETargetHPP = 80;
     public int SingleTargetRegenHPP = 60;
     public int SingleTargetExcogHPP = 50;
+    public bool IncludeShields = false;
     public int? AoEHealTargetCount = 2;
     public int HealDelay = 1;
     public bool ManageKardia = false;

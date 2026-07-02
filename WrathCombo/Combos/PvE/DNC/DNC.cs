@@ -4,6 +4,7 @@ using WrathCombo.Combos.PvE.Enums;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
+using WrathCombo.Native;
 using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.DNC.Config;
 
@@ -25,7 +26,7 @@ internal partial class DNC : PhysicalRanged
 
         protected override uint Invoke(uint actionID)
         {
-            if (actionID is not Cascade) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.SingleTargetDPS, Cascade)) return actionID;
 
             #region Variables
 
@@ -107,7 +108,7 @@ internal partial class DNC : PhysicalRanged
                 (IsInParty() || HasCompanionPresent()))
                 if (InAutoMode(true, false) ||
                     IsEnabled(Preset.DNC_ST_Adv_PartnerAuto))
-                    return ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    return ClosedPosition.Retarget(actionID, DancePartnerResolver);
                 else
                     return ClosedPosition;
 
@@ -269,7 +270,7 @@ internal partial class DNC : PhysicalRanged
                 CurrentPartnerNonOptimal)
                 return HasStatusEffect(Buffs.ClosedPosition)
                     ? Ending
-                    : ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    : ClosedPosition.Retarget(actionID, DancePartnerResolver);
 
             // ST Interrupt
             if (Role.CanHeadGraze(Preset.DNC_ST_Adv_Interrupt, WeaveTypes.Weave) &&
@@ -343,7 +344,7 @@ internal partial class DNC : PhysicalRanged
                     ActionReady(Improvisation) &&
                     !HasStatusEffect(Buffs.TechnicalFinish) &&
                     InCombat() &&
-                    EnemyIn8Yalms)
+                    AlliesIn8Yalms)
                     return Improvisation;
             }
 
@@ -457,7 +458,7 @@ internal partial class DNC : PhysicalRanged
 
             #endregion
 
-            return actionID;
+            return OriginalHook(Cascade);
         }
     }
 
@@ -468,7 +469,7 @@ internal partial class DNC : PhysicalRanged
 
         protected override uint Invoke(uint actionID)
         {
-            if (actionID is not Cascade) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.SingleTargetDPS, Cascade)) return actionID;
 
             #region Variables
 
@@ -523,7 +524,7 @@ internal partial class DNC : PhysicalRanged
                 if (ActionReady(ClosedPosition) &&
                     !HasStatusEffect(Buffs.ClosedPosition) &&
                     (GetPartyMembers().Count > 1 || HasCompanionPresent()))
-                    return ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    return ClosedPosition.Retarget(actionID, DancePartnerResolver);
 
                 if (HasBattleTarget())
                 {
@@ -644,7 +645,7 @@ internal partial class DNC : PhysicalRanged
                 CurrentPartnerNonOptimal)
                 return HasStatusEffect(Buffs.ClosedPosition)
                     ? Ending
-                    : ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    : ClosedPosition.Retarget(actionID, DancePartnerResolver);
 
             // ST Interrupt
             if (Role.CanHeadGraze(Preset.DNC_ST_SimpleMode, WeaveTypes.Weave) &&
@@ -792,7 +793,7 @@ internal partial class DNC : PhysicalRanged
 
             #endregion
 
-            return actionID;
+            return OriginalHook(Cascade);
         }
     }
 
@@ -803,7 +804,7 @@ internal partial class DNC : PhysicalRanged
 
         protected override uint Invoke(uint actionID)
         {
-            if (actionID is not Windmill) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.AoEDPS, Windmill)) return actionID;
 
             #region Variables
 
@@ -851,7 +852,7 @@ internal partial class DNC : PhysicalRanged
                 (GetPartyMembers().Count > 1 || HasCompanionPresent()))
                 if (InAutoMode(false, false) ||
                     IsEnabled(Preset.DNC_DesirablePartner))
-                    return ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    return ClosedPosition.Retarget(actionID, DancePartnerResolver);
                 else
                     return ClosedPosition;
 
@@ -1103,7 +1104,7 @@ internal partial class DNC : PhysicalRanged
 
             #endregion
 
-            return actionID;
+            return OriginalHook(Windmill);
         }
     }
 
@@ -1114,7 +1115,7 @@ internal partial class DNC : PhysicalRanged
 
         protected override uint Invoke(uint actionID)
         {
-            if (actionID is not Windmill) return actionID;
+            if (!CustomActionHelper.OneButtonRotationChecker(actionID, CustomActionType.AoEDPS, Windmill)) return actionID;
 
             #region Variables
 
@@ -1161,7 +1162,7 @@ internal partial class DNC : PhysicalRanged
                 (GetPartyMembers().Count > 1 || HasCompanionPresent()))
                 if (InAutoMode(false, true) ||
                     IsEnabled(Preset.DNC_DesirablePartner))
-                    return ClosedPosition.Retarget(Cascade, DancePartnerResolver);
+                    return ClosedPosition.Retarget(actionID, DancePartnerResolver);
                 else
                     return ClosedPosition;
 
@@ -1361,7 +1362,7 @@ internal partial class DNC : PhysicalRanged
 
             #endregion
 
-            return actionID;
+            return OriginalHook(Windmill);
         }
     }
 

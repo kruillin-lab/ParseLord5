@@ -3,7 +3,6 @@
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons;
 using ECommons.DalamudServices;
-using ECommons.DalamudServices.Legacy;
 using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
@@ -20,7 +19,9 @@ using WrathCombo.Combos.PvE.Enums;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
+using WrathCombo.Data;
 using WrathCombo.Extensions;
+using WrathCombo.Native;
 using WrathCombo.Services;
 using WrathCombo.Services.IPC_Subscriber;
 using WrathCombo.Window.Functions;
@@ -323,6 +324,9 @@ internal unsafe class AutoRotationController
     {
         cfg ??= new AutoRotationConfigIPCWrapper(Service.Configuration.RotationConfig);
 
+        if (!cfg.Enabled)
+            OverrideTarget = null;
+
         // Early exit for all conditions that should prevent autorotation
         if (ShouldSkipAutorotation())
             return;
@@ -349,6 +353,10 @@ internal unsafe class AutoRotationController
 
         // Only run in combat if required
         if (cfg.InCombatOnly && NotInCombat && !CombatBypass)
+            return;
+
+        // Check for Pyretic / Reasons to stop
+        if (cfg.DPSSettings.UnTargetAndDisableForPenalty && PlayerHasActionPenalty())
             return;
 
         // Healer logic
@@ -567,7 +575,14 @@ internal unsafe class AutoRotationController
             if (spell.ActionAttackType() is ActionAttackType.Ability && UsedRaidwideAbilityThisGcd())
                 return;
 
-            if (AutorotRaidwides >= 2)
+            int numberOfCasts = GetPartyAvgHPPercent() switch
+            {
+                <= 30 => 3,
+                <= 60 => 2,
+                _ => 1
+            };
+
+            if (AutorotRaidwides >= numberOfCasts)
                 return;
 
             if (!multihit && multihitter)
@@ -1012,6 +1027,11 @@ internal unsafe class AutoRotationController
             if (LocalPlayer is not { } player)
                 return false;
 
+            var target = !cfg.DPSSettings.AoEIgnoreManual && cfg.DPSRotationMode == DPSRotationMode.Manual ?
+    Svc.Targets.Target : DPSTargeting.BaseSelection.MaxBy(x => NumberOfEnemiesInRange(OriginalHook(gameAct), x, true));
+
+            if (target is null && cfg.PauseWhenNoTarget) return true;
+
             if (attributes.AutoAction!.IsHeal)
             {
                 LockedAoE = false;
@@ -1039,9 +1059,6 @@ internal unsafe class AutoRotationController
             }
             else
             {
-                var target = !cfg.DPSSettings.AoEIgnoreManual && cfg.DPSRotationMode == DPSRotationMode.Manual ?
-                    Svc.Targets.Target : DPSTargeting.BaseSelection.MaxBy(x => NumberOfEnemiesInRange(OriginalHook(gameAct), x, true));
-
                 if (!NIN.InMudra)
                 {
                     var st = GetSingleTarget(mode);
@@ -1062,47 +1079,47 @@ internal unsafe class AutoRotationController
                         LockedST = false;
                     }
                 }
-                OverrideTarget = target;
-                uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
+
+                OverrideTarget = target ?? OverrideTarget;
+                uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, OverrideTarget));
                 if (outAct is All.SavageBlade) return true;
                 if (!CanQueue(outAct))
                 {
                     OverrideTarget = null;
                     return false;
                 }
+
                 var sheet = ActionSheet[outAct];
                 var targetsHostile = sheet.CanTargetHostile;
 
                 bool switched = SwitchOnDChole(attributes, outAct, ref target);
                 var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
                 bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
-                if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
-                {
-                    OverrideTarget = null;
-                    return false;
-                }
 
-                if (cfg.DPSSettings.DPSAlwaysHardTarget)
-                    Svc.Targets.Target = target;
+                if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
+                    return false;
+
+                if (cfg.DPSSettings.DPSAlwaysHardTarget && OverrideTarget is not null)
+                    Svc.Targets.Target = OverrideTarget;
 
                 var canUseSelf = sheet.CanTargetSelf;
                 var areaTargeted = ActionSheet[outAct].TargetArea;
-                var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), target is null ? player.GameObject() : target.Struct());
+                var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), OverrideTarget is null ? player.GameObject() : OverrideTarget.Struct());
                 var inRange = acRangeCheck is 0 or 565 || canUseSelf || areaTargeted;
 
-                if (targetsHostile && target is not null)
+                if (targetsHostile && OverrideTarget is not null)
                 {
                     Svc.GameConfig.TryGet(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, out uint original);
                     Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, 1);
                     Vector3 pos = new(Player.Object.Position.X, Player.Object.Position.Y, Player.Object.Position.Z);
-                    ActionManager.Instance()->AutoFaceTargetPosition(&pos, target.GameObjectId);
+                    ActionManager.Instance()->AutoFaceTargetPosition(&pos, OverrideTarget.GameObjectId);
                     Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, original);
                 }
 
                 if (inRange && AutoRotCanPressAction(outAct))
                 {
                     //Chance target of target.GameObjectID can be null
-                    var targetId = (targetsHostile && target != null) || switched ? target.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
+                    var targetId = (targetsHostile && OverrideTarget != null) || switched ? OverrideTarget.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
                     var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
                     WouldLikeToGroundTarget = areaTargeted;
                     var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
@@ -1130,9 +1147,12 @@ internal unsafe class AutoRotationController
                 return false;
 
             var target = GetSingleTarget(mode);
-            OverrideTarget = target;
+
+            if (target is null && cfg.PauseWhenNoTarget) return true;
+
+            OverrideTarget = target ?? OverrideTarget;
             var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
-            if (!CanQueue(outAct))
+            if (!ActionReady(outAct))
             {
                 OverrideTarget = null;
                 return false;
@@ -1149,16 +1169,10 @@ internal unsafe class AutoRotationController
             var blockedSelfBuffs = GetCooldown(outAct).CooldownTotal >= 5;
 
             if (cfg.InCombatOnly && NotInCombat && !CombatBypass && !(canUseSelf && cfg.BypassBuffs && !blockedSelfBuffs))
-            {
-                OverrideTarget = null;
                 return false;
-            }
 
             if (target is null && !canUseSelf)
-            {
-                OverrideTarget = null;
                 return false;
-            }
 
             var areaTargeted = ActionSheet[outAct].TargetArea;
             var canUseTarget = target is not null && ActionManager.CanUseActionOnTarget(outAct, target.Struct());
@@ -1169,16 +1183,16 @@ internal unsafe class AutoRotationController
             var canUse = (canUseSelf || canUseTarget || areaTargeted) && AutoRotCanPressAction(outAct);
             var isHeal = attributes.AutoAction!.IsHeal;
 
-            if ((!isHeal && cfg.DPSSettings.DPSAlwaysHardTarget && mode is not DPSRotationMode.Manual) || (isHeal && cfg.HealerSettings.HealerAlwaysHardTarget && mode is not HealerRotationMode.Manual))
-                Svc.Targets.Target = target;
+            if (target is not null)
+            {
+                if ((!isHeal && cfg.DPSSettings.DPSAlwaysHardTarget && mode is not DPSRotationMode.Manual) || (isHeal && cfg.HealerSettings.HealerAlwaysHardTarget && mode is not HealerRotationMode.Manual))
+                    Svc.Targets.Target = target;
+            }
 
             var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
             bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
             if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
-            {
-                OverrideTarget = null;
                 return false;
-            }
 
             if (canUse && (inRange || areaTargeted))
             {
@@ -1231,9 +1245,13 @@ internal unsafe class AutoRotationController
         {
             if (attributes.ReplaceSkill is null) return originalAct;
             var outAct = attributes.ReplaceSkill.ActionIDs.FirstOrDefault();
-            foreach (var actToCheck in attributes.ReplaceSkill.ActionIDs)
+            var customReplaceType = CustomActionHelper.GetTypeByAttribute(attributes.AutoAction!);
+            var customReplaced = CustomActionHelper.CustomActionEnabled(customReplaceType);
+            var customCombo = Service.ActionReplacer.CustomCombos.FirstOrDefault(x => x.Preset == preset);
+            foreach (var act in attributes.ReplaceSkill.ActionIDs)
             {
-                var customCombo = Service.ActionReplacer.CustomCombos.FirstOrDefault(x => x.Preset == preset);
+                var actToCheck = customReplaced ? CustomActionHelper.GetActionId(customReplaceType) : act;
+
                 if (customCombo != null)
                 {
                     if (customCombo.TryInvoke(actToCheck, out var changedAct, optionalTarget))
@@ -1255,6 +1273,7 @@ internal unsafe class AutoRotationController
         private static bool Query(IGameObject x) =>
             x is IBattleChara chara &&
             !chara.IsDead &&
+            GetTargetCurrentHP(chara, true) > 0 &&
             chara.IsTargetable &&
             chara.IsHostile() &&
             IsInRange(chara, InBossEncounter() && cfg.DPSSettings.IgnoreRangeInBoss ? 50f : cfg.DPSSettings.MaxDistance) &&
@@ -1339,6 +1358,7 @@ internal unsafe class AutoRotationController
                 .OrderByDescending(x => IsCombatPriority(x))
                 .ThenBy(x => GetTargetMaxHP(x))
                 .ThenBy(x => GetTargetHPPercent(x))
+                .ThenBy(x => GetTargetDistance(x))
                 .FirstOrDefault();
         }
 
@@ -1348,6 +1368,7 @@ internal unsafe class AutoRotationController
                 .OrderByDescending(x => IsCombatPriority(x))
                 .ThenByDescending(x => GetTargetMaxHP(x))
                 .ThenBy(x => GetTargetHPPercent(x))
+                .ThenBy(x => GetTargetDistance(x))
                 .FirstOrDefault();
         }
     }
@@ -1373,39 +1394,30 @@ internal unsafe class AutoRotationController
         internal static IGameObject? GetHighestCurrent()
         {
             if (GetPartyMembers().Count == 0) return Player.Object;
-            var target = GetPartyMembers()
-                .Where(x => !x.BattleChara.IsDead &&
-                            x.BattleChara.IsTargetable &&
-                            GetTargetDistance(x.BattleChara) <= QueryRange &&
-                            !TargetHasImmortality(x.BattleChara) &&
-                            GetTargetHPPercent(x.BattleChara) <=
-                            (TargetHasExcog(x.BattleChara) ? cfg.HealerSettings.SingleTargetExcogHPP :
-                                TargetHasRegen(x.BattleChara) ? cfg.HealerSettings.SingleTargetRegenHPP :
-                                cfg.HealerSettings.SingleTargetHPP) &&
-                            IsInLineOfSight(x.BattleChara))
-                .OrderBy(x => TargetHasTrueInvuln(x.BattleChara))
-                .ThenByDescending(x => GetTargetHPPercent(x.BattleChara))
-                .FirstOrDefault();
-            return target?.BattleChara;
+            return HealTargets().ThenByDescending(x => GetTargetHPPercent(x)).FirstOrDefault();
         }
 
         internal static IGameObject? GetLowestCurrent()
         {
             if (GetPartyMembers().Count == 0) return Player.Object;
-            var target = GetPartyMembers()
+            return HealTargets().ThenBy(x => GetTargetHPPercent(x)).FirstOrDefault();
+        }
+
+        internal static IOrderedEnumerable<IGameObject?> HealTargets()
+        {
+            return GetPartyMembers()
                 .Where(x => !x.BattleChara.IsDead &&
                             x.BattleChara.IsTargetable &&
                             GetTargetDistance(x.BattleChara) <= QueryRange &&
                             !TargetHasImmortality(x.BattleChara) &&
-                            GetTargetHPPercent(x.BattleChara) <=
+                            !x.BattleChara.StatusList.Any(x => StatusCache.DoNotHealStatuses.Contains(x.StatusId)) &&
+                            GetTargetHPPercent(x.BattleChara, cfg.HealerSettings.IncludeShields) <=
                             (TargetHasExcog(x.BattleChara) ? cfg.HealerSettings.SingleTargetExcogHPP :
                                 TargetHasRegen(x.BattleChara) ? cfg.HealerSettings.SingleTargetRegenHPP :
                                 cfg.HealerSettings.SingleTargetHPP) &&
                             IsInLineOfSight(x.BattleChara))
-                .OrderBy(x => TargetHasTrueInvuln(x.BattleChara))
-                .ThenBy(x => GetTargetHPPercent(x.BattleChara))
-                .FirstOrDefault();
-            return target?.BattleChara;
+                .Select(x => x.BattleChara)
+                .OrderBy(x => TargetHasTrueInvuln(x));
         }
 
         internal static bool CanAoEHeal(uint outAct = 0)
@@ -1418,10 +1430,11 @@ internal unsafe class AutoRotationController
                                 !x.BattleChara.IsDead &&
                                 x.BattleChara.IsTargetable &&
                                 !x.IsOutOfPartyNPC &&
+                                !x.BattleChara.StatusList.Any(x => StatusCache.DoNotHealStatuses.Contains(x.StatusId)) &&
                                 (outAct == 0
                                     ? GetTargetDistance(x.BattleChara) <= 20f
                                     : InActionRange(outAct, x.BattleChara)) &&
-                                GetTargetHPPercent(x.BattleChara) <= cfg.HealerSettings.AoETargetHPP);
+                                GetTargetHPPercent(x.BattleChara, cfg.HealerSettings.IncludeShields) <= cfg.HealerSettings.AoETargetHPP);
                 memberCount = members.Count();
             }
             catch { memberCount = 0; }

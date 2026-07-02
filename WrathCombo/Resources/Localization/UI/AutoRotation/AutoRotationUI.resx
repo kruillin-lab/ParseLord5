@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Checkbox_BypassFATETargets" xml:space="preserve">
-    <value>Bypass Only in Combat for FATE Targets</value>
+    <value>Bypass for FATE Targets</value>
   </data>
   <data name="Checkbox_BypassQuestTargets" xml:space="preserve">
-    <value>Bypass Only in Combat for Quest Targets</value>
+    <value>Bypass for Quest Targets</value>
   </data>
   <data name="Checkbox_BypassSelfUse" xml:space="preserve">
     <value>Bypass When Combo Suggests Self-Use Action</value>
@@ -139,7 +139,7 @@
     <value>Enforce Best AoE Target Selection</value>
   </data>
   <data name="Checkbox_OnlyInCombat" xml:space="preserve">
-    <value>Only in Combat</value>
+    <value>Restrict to Combat Only</value>
   </data>
   <data name="Label_DamageSettings" xml:space="preserve">
     <value>Damage Settings</value>
@@ -213,7 +213,7 @@ Features marked with an 'Auto-Mode' checkbox are able to be used with Auto-Rotat
     <value>Only Attack Targets Already In Combat</value>
   </data>
   <data name="Checkbox_UnTargetAndDisableForPenalty" xml:space="preserve">
-    <value>Un-Target and Stop Actions for Pyretics</value>
+    <value>Pause for Action Penalty Mechanics</value>
   </data>
   <data name="Checkbox_DPSAlwaysHardTarget" xml:space="preserve">
     <value>Always Set Hard Target</value>
@@ -222,7 +222,7 @@ Features marked with an 'Auto-Mode' checkbox are able to be used with Auto-Rotat
     <value>Ignored NPCs</value>
   </data>
   <data name="HelpText_UnTargetAndDisableForPenalty" xml:space="preserve">
-    <value>This will un-set any current target and disable Auto-Rotation actions if there is a current detected Pyretic (or similar, like Acceleration Bomb) mechanic affecting the player, that would harm them if they took any action.</value>
+    <value>This will un-set any current target and disable Auto-Rotation actions if there is a current detected action penalty, such as Pyretics (or similar, like Acceleration Bomb) affecting the player, that would harm them if they took any action.</value>
   </data>
   <data name="HelpText_DPSAlwaysHardTarget" xml:space="preserve">
     <value>Auto-rotation does not need to target enemies to work, however with this setting enabled it will always set your hard target when it executes an attack.</value>
@@ -324,7 +324,7 @@ Applies to {0}, {1}, {2}, {3}, {4}, and {5} {6} {7}</value>
     <value>[{0}/{1}/{2}/{3}] Pre-emptively apply Heal Over Time/Shields on focus target</value>
   </data>
   <data name="HelpText_PreEmptiveHoT" xml:space="preserve">
-    <value>Applies {0}/{1}/{2}/{3} to your focus target when out of combat and they are 30y or less away from an enemy. (Bypasses "Only in Combat" setting)</value>
+    <value>Applies {0}/{1}/{2}/{3} to your focus target when out of combat and they are 30y or less away from an enemy. (Bypasses "Restrict to Combat Only" setting)</value>
   </data>
   <data name="Checkbox_IncludeNPCs" xml:space="preserve">
     <value>Heal Friendly NPCs</value>
@@ -357,12 +357,18 @@ Applies to {0}, {1}, {2}, {3}, {4}, and {5} {6} {7}</value>
     <value>Handle Detected Raidwides</value>
   </data>
   <data name="HelpText_HandleRaidwides" xml:space="preserve">
-    <value>Will try to use actions before detected raidwides or group damage to either mitigate or top-off party members. Max 2 actions (excluding {0} for setup)</value>
+    <value>Will try to use actions before detected raidwides or group damage to either mitigate or top-off party members. Max 3 actions (excluding {0} for setup)</value>
   </data>
   <data name="Checkbox_HandleTankbusters" xml:space="preserve">
     <value>Handle Detected Tankbusters</value>
   </data>
   <data name="HelpText_HandleTankbusters" xml:space="preserve">
     <value>Will try to use actions before detected tankbusters to mitigate damage on targeted member. Max 1 action (excluding {0} for setup)</value>
+  </data>
+  <data name="Include_Shields" xml:space="preserve">
+    <value>Include Shields</value>
+  </data>
+  <data name="Include_Shields_Helptext" xml:space="preserve">
+    <value>Includes shield% in all HP checks.</value>
   </data>
 </root>

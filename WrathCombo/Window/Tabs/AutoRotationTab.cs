@@ -9,12 +9,12 @@ using ECommons.ImGuiMethods;
 using Lumina.Excel.Sheets;
 using System;
 using System.Linq;
+using WrathCombo.API.Enum;
 using WrathCombo.Combos.PvE;
 using WrathCombo.Extensions;
+using WrathCombo.Resources.Localization.UI.AutoRotation;
 using WrathCombo.Services;
 using WrathCombo.Services.IPC_Subscriber;
-using WrathCombo.API.Enum;
-using WrathCombo.Resources.Localization.UI.AutoRotation;
 using static WrathCombo.Window.Text.Misc.Strings;
 
 #endregion
@@ -37,44 +37,40 @@ internal class AutoRotationTab : ConfigWindow
                 AutoRotationUI.Checkbox_EnableAutoRotation, ref cfg.Enabled);
         else
             changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_EnableAutoRotation, ref cfg.Enabled);
-        if (P.IPC.GetAutoRotationState())
+
+        ImGuiEx.TextUnderlined("Combat Settings");
+
+        var inCombatOnly = (bool)P.IPC.GetAutoRotationConfigState(
+            Enum.Parse<AutoRotationConfigOption>("InCombatOnly"))!;
+        changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
+            AutoRotationUI.Checkbox_OnlyInCombat, ref cfg.InCombatOnly, "InCombatOnly");
+
+        if (inCombatOnly)
         {
-            var inCombatOnly = (bool)P.IPC.GetAutoRotationConfigState(
-                Enum.Parse<AutoRotationConfigOption>("InCombatOnly"))!;
-            ImGuiExtensions.Prefix(!inCombatOnly);
-            changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
-                AutoRotationUI.Checkbox_OnlyInCombat, ref cfg.InCombatOnly, "InCombatOnly");
+            ImGuiExtensions.Prefix(false);
+            changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_BypassSelfUse, ref cfg.BypassBuffs);
+            ImGuiComponents.HelpMarker(
+                Text.FormatAndCache(
+                    AutoRotationUI.HelpText_BypassSelfUse,
+                    RPR.Soulsow.ActionName(),
+                    MNK.ForbiddenMeditation.ActionName())
+            );
 
-            if (inCombatOnly)
-            {
-                ImGuiExtensions.Prefix(false);
-                changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_BypassSelfUse, ref cfg.BypassBuffs);
-                ImGuiComponents.HelpMarker(
-                    Text.FormatAndCache(
-                        AutoRotationUI.HelpText_BypassSelfUse,
-                        RPR.Soulsow.ActionName(),
-                        MNK.ForbiddenMeditation.ActionName())
-                );
+            ImGuiExtensions.Prefix(false);
+            changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(AutoRotationUI.Checkbox_BypassQuestTargets, ref cfg.BypassQuest, "BypassQuest");
+            ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_BypassQuestTargets);
 
-                ImGuiExtensions.Prefix(false);
-                changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(AutoRotationUI.Checkbox_BypassQuestTargets, ref cfg.BypassQuest, "BypassQuest");
-                ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_BypassQuestTargets);
+            ImGuiExtensions.Prefix(false);
+            changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(AutoRotationUI.Checkbox_BypassFATETargets, ref cfg.BypassFATE, "BypassFATE");
+            ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_BypassFATETargets);
 
-                ImGuiExtensions.Prefix(false);
-                changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(AutoRotationUI.Checkbox_BypassFATETargets, ref cfg.BypassFATE, "BypassFATE");
-                ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_BypassFATETargets);
+            ImGuiExtensions.Prefix(true);
+            ImGuiEx.SetNextItemWidthScaled(100);
+            changed |= ImGui.InputInt(AutoRotationUI.Input_AutoRotationDelay, ref cfg.CombatDelay);
 
-                ImGuiExtensions.Prefix(true);
-                ImGuiEx.SetNextItemWidthScaled(100);
-                changed |= ImGui.InputInt(AutoRotationUI.Input_AutoRotationDelay, ref cfg.CombatDelay);
-
-                if (cfg.CombatDelay < 0)
-                    cfg.CombatDelay = 0;
-            }
+            if (cfg.CombatDelay < 0)
+                cfg.CombatDelay = 0;
         }
-
-        changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_EnableInstancedEnter, ref cfg.EnableInInstance);
-        changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_DisableInstanceExit, ref cfg.DisableAfterInstance);
 
         ImGuiEx.SetNextItemWidthScaled(100);
         changed |= ImGuiEx.SliderFloat(AutoRotationUI.Input_QueueWindow, ref cfg.QueueWindow, 0f, 0.5f, $"{cfg.QueueWindow:N1}");
@@ -84,6 +80,22 @@ internal class AutoRotationTab : ConfigWindow
             cfg.QueueWindow = 0.5f;
         if (cfg.QueueWindow < 0)
             cfg.QueueWindow = 0;
+
+        changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
+    AutoRotationUI.Checkbox_UnTargetAndDisableForPenalty, ref cfg.DPSSettings.UnTargetAndDisableForPenalty,
+    "UnTargetAndDisableForPenalty");
+
+        ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_UnTargetAndDisableForPenalty);
+
+        changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
+            "Pause Actions from Combos When No Target Selected", ref cfg.PauseWhenNoTarget);
+
+        ImGuiComponents.HelpMarker($"Pauses all actions that would come from combos if there is no target selected with the selected targeting mode. Ideal for blocking self-use actions if no target is available.");
+
+        ImGuiEx.TextUnderlined("Automatic Activation Settings");
+
+        changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_EnableInstancedEnter, ref cfg.EnableInInstance);
+        changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_DisableInstanceExit, ref cfg.DisableAfterInstance);
 
         if (ImGui.CollapsingHeader(AutoRotationUI.Label_DamageSettings))
         {
@@ -154,10 +166,6 @@ internal class AutoRotationTab : ConfigWindow
             if (cfg.DPSSettings.OnlyAttackInCombat && changed)
                 cfg.DPSSettings.PreferNonCombat = false;
 
-            changed |= ImGui.Checkbox(AutoRotationUI.Checkbox_UnTargetAndDisableForPenalty, ref cfg.DPSSettings.UnTargetAndDisableForPenalty);
-
-            ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_UnTargetAndDisableForPenalty);
-
             changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(AutoRotationUI.Checkbox_DPSAlwaysHardTarget, ref cfg.DPSSettings.DPSAlwaysHardTarget, "DPSAlwaysHardTarget");
 
             ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_DPSAlwaysHardTarget);
@@ -227,6 +235,11 @@ internal class AutoRotationTab : ConfigWindow
             P.UIHelper.ShowIPCControlledIndicatorIfNeeded("AoETargetHPP");
             changed |= P.UIHelper.ShowIPCControlledSliderIfNeeded(
                 AutoRotationUI.Slider_AoETargetHPP, ref cfg.HealerSettings.AoETargetHPP, "AoETargetHPP");
+
+            changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
+                AutoRotationUI.Include_Shields, ref cfg.HealerSettings.IncludeShields, "IncludeShields");
+
+            ImGuiComponents.HelpMarker(AutoRotationUI.Include_Shields_Helptext);
 
             var input = ImGuiEx.InputInt(100f.Scale(), AutoRotationUI.Input_AoEHealTargetCount, ref cfg.HealerSettings.AoEHealTargetCount);
             if (input)
@@ -320,7 +333,7 @@ internal class AutoRotationTab : ConfigWindow
 
             P.UIHelper.ShowIPCControlledIndicatorIfNeeded("AutoCleanse");
             changed |= P.UIHelper.ShowIPCControlledCheckboxIfNeeded(
-            	Text.FormatAndCache(
+                Text.FormatAndCache(
                     AutoRotationUI.Checkbox_AutoCleanse,
                     RoleActions.Healer.Esuna.ActionName()),
                 ref cfg.HealerSettings.AutoCleanse, "AutoCleanse");
