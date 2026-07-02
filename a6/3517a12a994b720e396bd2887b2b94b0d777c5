@@ -1,0 +1,22 @@
+WrathCombo/Combos/PvE/MCH/MCH.cs
+  s_163b504a5a5408::t_df74cb9963c96b 189-207
+  s_163b504a5a5408::t_edea47ee08c848 338-368
+  s_163b504a5a5408::t_91daea1ae71e13 501-525
+  s_163b504a5a5408::t_e7ee2b0538602a 71,73-74,76-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "a63517a12a994b720e396bd2887b2b94b0d777c5",
+  "prompts": {},
+  "sessions": {
+    "s_163b504a5a5408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85c8f042-2d4e-43a5-b97a-56ac041f5f29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
