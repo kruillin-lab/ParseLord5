@@ -129,28 +129,28 @@ internal partial class DRK : Tank
             var cdBossRequirementMet = !cdBossRequirement ||
                                        (cdBossRequirement && InBossEncounter());
 
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (IsEnabled(Preset.DRK_ST_CDs) &&
-                    cdBossRequirementMet &&
-                    TryGetAction<Cooldown>(comboFlags, ref newAction))
-                    return newAction;
+            // ParseLord5 experiment: swap CDs / Spenders priority.
+            // Baseline (flag off): Spenders first, then CDs.
+            // Lazy ladder: TryGetAction<Cooldown> mutates static cooldown-tracking state
+            // (e.g. DRK's ShouldDeliriumNext), so each call must stay inline and only fire
+            // in branch order — never hoisted into an unconditionally-evaluated bool.
+            var cdsFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (IsEnabled(Preset.DRK_ST_Spenders) &&
-                    TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-            }
-            else
-            {
-                if (IsEnabled(Preset.DRK_ST_Spenders) &&
-                    TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
+            if (cdsFirst &&
+                IsEnabled(Preset.DRK_ST_CDs) &&
+                cdBossRequirementMet &&
+                TryGetAction<Cooldown>(comboFlags, ref newAction))
+                return newAction;
 
-                if (IsEnabled(Preset.DRK_ST_CDs) &&
-                    cdBossRequirementMet &&
-                    TryGetAction<Cooldown>(comboFlags, ref newAction))
-                    return newAction;
-            }
+            if (IsEnabled(Preset.DRK_ST_Spenders) &&
+                TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
+
+            if (!cdsFirst &&
+                IsEnabled(Preset.DRK_ST_CDs) &&
+                cdBossRequirementMet &&
+                TryGetAction<Cooldown>(comboFlags, ref newAction))
+                return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
@@ -195,22 +195,20 @@ internal partial class DRK : Tank
             if (TryGetAction<Cooldown>(comboFlags, ref newAction, true))
                 return newAction;
 
-            // ParseLord5 experiment: swap Spender / Cooldown_2 priority.
-            // Baseline (flag off): Spender first, then Cooldown second.
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (TryGetAction<Cooldown>(comboFlags, ref newAction))
-                    return newAction;
-                if (TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-            }
-            else
-            {
-                if (TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-                if (TryGetAction<Cooldown>(comboFlags, ref newAction))
-                    return newAction;
-            }
+            // ParseLord5 experiment: swap Spender / Cooldown priority.
+            // Baseline (flag off): Spender first, then Cooldown.
+            // Lazy ladder: see ST_Advanced above — TryGetAction<Cooldown> has cooldown-tracking
+            // side effects, so it must only run in branch order, never unconditionally.
+            var cooldownFirst = ParseLord5Experiments.JobRotationExperiments;
+
+            if (cooldownFirst && TryGetAction<Cooldown>(comboFlags, ref newAction))
+                return newAction;
+
+            if (TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
+
+            if (!cooldownFirst && TryGetAction<Cooldown>(comboFlags, ref newAction))
+                return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
@@ -246,24 +244,23 @@ internal partial class DRK : Tank
                 TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
             
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (IsEnabled(Preset.DRK_AoE_Spenders) &&
-                    TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
+            // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
+            // Baseline (flag off): Mitigation first, then Spender.
+            // Lazy ladder: see ST_Advanced above.
+            var spenderFirst = ParseLord5Experiments.JobRotationExperiments;
 
-                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                    return newAction;
-            }
-            else
-            {
-                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                    return newAction;
+            if (spenderFirst &&
+                IsEnabled(Preset.DRK_AoE_Spenders) &&
+                TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
 
-                if (IsEnabled(Preset.DRK_AoE_Spenders) &&
-                    TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-            }
+            if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                return newAction;
+
+            if (!spenderFirst &&
+                IsEnabled(Preset.DRK_AoE_Spenders) &&
+                TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
@@ -300,20 +297,17 @@ internal partial class DRK : Tank
 
             // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
             // Baseline (flag off): Mitigation first, then Spender.
-            if (ParseLord5Experiments.JobRotationExperiments)
-            {
-                if (TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                    return newAction;
-            }
-            else
-            {
-                if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                    return newAction;
-                if (TryGetAction<Spender>(comboFlags, ref newAction))
-                    return newAction;
-            }
+            // Lazy ladder: see ST_Advanced above.
+            var spenderFirst = ParseLord5Experiments.JobRotationExperiments;
+
+            if (spenderFirst && TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
+
+            if (TryGetAction<Mitigation>(comboFlags, ref newAction))
+                return newAction;
+
+            if (!spenderFirst && TryGetAction<Spender>(comboFlags, ref newAction))
+                return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
                 return newAction;
