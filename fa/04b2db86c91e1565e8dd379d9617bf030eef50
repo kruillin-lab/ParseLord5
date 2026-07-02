@@ -1,0 +1,19 @@
+WrathCombo/Combos/PvE/DRK/DRK.cs
+  s_8142d970b6bf28::t_2708317d81f998 132-143,145-147,149-153,198-211,247-250,252-255,257-263,300-310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "fa04b2db86c91e1565e8dd379d9617bf030eef50",
+  "prompts": {},
+  "sessions": {
+    "s_8142d970b6bf28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22fc6be5-f829-4bef-8e3e-9e57d8739ec6",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
