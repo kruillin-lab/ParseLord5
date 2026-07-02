@@ -1,0 +1,257 @@
+WrathCombo/Combos/PvE/AST/AST.cs
+  s_24ad5ad250f993::t_954ba994efce90 319-347
+  s_24ad5ad250f993::t_00184590e01d95 164-185
+  s_24ad5ad250f993::t_0b0406f1ad3be8 75-97
+  s_24ad5ad250f993::t_f38b6975b7ad8e 477-506
+WrathCombo/Combos/PvE/GNB/GNB.cs
+  s_251d1a90a35797::t_ddc5d216ba1e5b 171-173,175-176,178-182
+  s_251d1a90a35797::t_33e67e10329b59 366-377
+  s_251d1a90a35797::t_64bd24a3095cac 55,57-58,60-64
+  s_251d1a90a35797::t_92dcb5934cf562 284-294
+WrathCombo/Combos/PvE/WAR/WAR_Helper.cs
+  s_21044e585d61fd::t_60b3ab50052c2f 211,213,215-216,218-222
+WrathCombo/Combos/PvE/SAM/SAM.cs
+  s_e0a9943eabbbf5::t_2067650b485456 31-32,34-36,38-43
+  s_e0a9943eabbbf5::t_0d97e0cb53598e 259-261,263-264,266-279
+  s_e0a9943eabbbf5::t_2e34ff7748278a 136-144,146,148-149,151-152,155-160,162-163,165-166
+  s_e0a9943eabbbf5::t_0e62b11c74f7af 406-419,421,423-427,429-433,435,437-441
+  s_163b504a5a5408::t_71eda10144a6bf 262,265
+WrathCombo/Combos/PvE/DRG/DRG.cs
+  s_421027758658a4::t_e209e28e0ebe22 133-134,136-138,140-144
+  s_421027758658a4::t_dfd73e3f3990f3 250-271
+  s_421027758658a4::t_7c2c463c57e85b 399-419
+  s_421027758658a4::t_0c579a5d4397e7 26,28-30,32-36
+WrathCombo/Combos/PvE/VPR/VPR.cs
+  s_00c71584dc6f25::t_21c0ff5245abd5 378-393
+  s_00c71584dc6f25::t_53375220ad8dcc 143-151,153-154,156-157
+  s_00c71584dc6f25::t_ea68329050f5ad 44-46,48-49,51-52
+  s_00c71584dc6f25::t_2bf356d88b6aa8 255-259,261-262,264-265
+WrathCombo/Combos/PvE/SCH/SCH.cs
+  s_e5f1f15a4f01ca::t_248f6eb1d83958 50-53,55-56,58-62
+  s_e5f1f15a4f01ca::t_8f7ed602f670b1 112,115,117-118,120-124
+  s_e5f1f15a4f01ca::t_301f194d7183d7 350-370
+  s_e5f1f15a4f01ca::t_96492a5afaae33 442-463
+WrathCombo/Combos/PvE/SMN/SMN.cs
+  s_bbd5a89b7a8d89::t_2c6c83f390332a 57-66
+  s_bbd5a89b7a8d89::t_b6c247e124fb07 115-124
+WrathCombo/Combos/PvE/WHM/WHM.cs
+  s_9d90c1ac961bb9::t_2a99708b7f5868 236-254,375,377,379-380,383,386,389
+  s_9d90c1ac961bb9::t_18e5c196ddb9f4 130-144,373,376,382,385,388
+  s_9d90c1ac961bb9::t_2ba081f1690283 55-69
+  s_251d1a90a35797::t_0dfac8a36fecda 371-372,374,378,381,384,387
+WrathCombo/Combos/PvE/RDM/RDM.cs
+  s_9fd1f8189ad0b6::t_8885af0eac7891 151-152,154-155,157-161
+  s_9fd1f8189ad0b6::t_3ebeb5a7312a0f 265-269,271-272,274-278,280
+  s_9fd1f8189ad0b6::t_3deaeb4498c6a8 40,42-43,45-49
+  s_9fd1f8189ad0b6::t_251c4289000c1f 418-422,424-425,427-431,433
+WrathCombo/Combos/PvE/BRD/BRD.cs
+  s_27611e1ca5df38::t_b9a2b2caa00791 36-37,39-40,42-46
+  s_27611e1ca5df38::t_5feacddb96849d 213,215-216,218-222
+  s_27611e1ca5df38::t_bce97c6d1b0bb6 400-402,404-405,407-408,410-411,608-610,612-613,615-619
+  s_27611e1ca5df38::t_c736909c144522 409
+WrathCombo/Combos/PvE/NIN/NIN.cs
+  s_42052937a844ea::t_bd849787b8c5cb 71,73-74,76-80
+  s_42052937a844ea::t_10d7d5a4d11587 496-515
+  s_42052937a844ea::t_e79a5da89aa769 335-353
+  s_42052937a844ea::t_54f8d980dbcccf 201-202,204-205,207-211
+WrathCombo/Combos/PvE/BLM/BLM.cs
+  s_f6e52e167dccb3::t_f920135937bb48 349-369
+  s_f6e52e167dccb3::t_24154fde5dc9e3 27-31,33-34,36-40
+  s_f6e52e167dccb3::t_9ef15c7b53c57a 251-255,257-258,260-264
+  s_f6e52e167dccb3::t_c3b3d1ab386916 588-608
+WrathCombo/Combos/PvE/MNK/MNK.cs
+  s_3e7ec02dbc879c::t_a22d8e9e7d1763 107-108,110-111,113-117
+  s_3e7ec02dbc879c::t_ac881b8436e830 322-335
+  s_3e7ec02dbc879c::t_8844e7a4aee4a7 32,34-35,37-41
+  s_3e7ec02dbc879c::t_9536eb31eafbea 207-226
+WrathCombo/Combos/PvE/RPR/RPR.cs
+  s_40267b56ea47b8::t_d6e5c68ed80318 52-69
+  s_40267b56ea47b8::t_bfe35580d456da 528-551
+  s_40267b56ea47b8::t_367cd612649731 330-357
+  s_40267b56ea47b8::t_73a22d8b90a5b2 196-216
+WrathCombo/Combos/PvE/PCT/PCT_Helper.cs
+  s_a1910ac01774b9::t_1e50c36a2d008f 151,153-170,172-175,177-178,180-182,184-187
+WrathCombo/Combos/PvE/SGE/SGE.cs
+  s_2b2afefbc7036a::t_9a4ba2eed09e02 51,53-54,56-60
+  s_2b2afefbc7036a::t_029f4436e3c833 382-407
+  s_2b2afefbc7036a::t_70dcc16d1e8c9b 256-280
+  s_2b2afefbc7036a::t_bf59ac25630b11 140-143,145-146,148-152
+WrathCombo/Combos/PvE/PLD/PLD.cs
+  s_4d47c3b99e7c75::t_e6d5908a05e8e3 552-553,555-556,558-562
+  s_4d47c3b99e7c75::t_8aa965ba9a7ea2 117-118,120-121,123-127
+  s_4d47c3b99e7c75::t_a5892649a35b6f 264-265,267-268,270-274
+  s_4d47c3b99e7c75::t_c002829461083b 385,388-389,391-392,394-398
+scripts/rotation-evals.ps1
+  s_8142d970b6bf28::t_cc09b33bd5f86f 162-164,166
+  s_8142d970b6bf28::t_2ecc25e58c4f26 103-104,109-110
+  s_8142d970b6bf28::t_b28daeb6f99ee9 179
+  s_8142d970b6bf28::t_16dd6594eca36a 183,186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "2117f9cb2a75624d0be89005a8601f18ab359062",
+  "prompts": {},
+  "sessions": {
+    "s_00c71584dc6f25": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b490226-f334-4d58-a924-f2818df62fb5",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_163b504a5a5408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85c8f042-2d4e-43a5-b97a-56ac041f5f29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_21044e585d61fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "840be936-30c4-4061-b512-ad1fc1f161eb",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_24ad5ad250f993": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a935119-adac-4ea2-8198-f74f0f008c2a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_251d1a90a35797": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a905de6-290f-40b2-9e59-58766186f12a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_27611e1ca5df38": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "825cca1f-a81f-4e37-803a-49cac1d038de",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_2b2afefbc7036a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ca0e802-56ef-4e78-b7e6-0fa92e00086c",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_3e7ec02dbc879c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb41cb7d-88ac-473c-86bc-883630690781",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_40267b56ea47b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70c536bf-440d-4cde-bb48-7b176b7ef33c",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_42052937a844ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6acf6820-1009-4791-8d1f-06de84ccad9e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_421027758658a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f6e95b7-17d6-49fa-8e72-0dc3796c23a3",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_4d47c3b99e7c75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6ce87d3-a801-4103-a75a-5e0aad74bb9a",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_8142d970b6bf28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22fc6be5-f829-4bef-8e3e-9e57d8739ec6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_9d90c1ac961bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "676b6755-4695-45e8-8f2b-fb7e36bab72b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_9fd1f8189ad0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2914d3f-027a-424f-b2df-d69fafa9d524",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_a1910ac01774b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41cad6e0-d439-412a-a5ba-41395d1fa3a1",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_bbd5a89b7a8d89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a75fc61-e3af-40a3-a4de-7a3b87aab64d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_e0a9943eabbbf5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "995caf7b-192e-4eef-988c-61b7364cdf9e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_e5f1f15a4f01ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53db66c7-a905-4420-a5a6-900663ef03e7",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_f6e52e167dccb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "280585f1-27bc-4bb4-9a6a-af85e2c9b739",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
