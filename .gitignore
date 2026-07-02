@@ -1,6 +1,8 @@
 # Build Artifacts
 WrathCombo/obj/
 WrathCombo/bin/
+WrathCombo.Tests/obj/
+WrathCombo.Tests/bin/
 
 # IDE-specific files
 .idea/
