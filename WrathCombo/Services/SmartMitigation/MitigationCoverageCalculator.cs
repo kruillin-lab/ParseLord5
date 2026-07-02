@@ -81,8 +81,12 @@ internal static class MitigationCoverageCalculator
 
             if (projectedReduction + 0.01f >= requiredReduction || projectedHp >= hpTarget)
             {
-                // Score = tier * 100 + inefficiency (lower = better)
-                var score = (int)option.Tier * 100f + (option.CooldownSeconds > 0 ? option.CooldownSeconds / option.DamageReduction : 0f);
+                // Default: minimum tier. PreferHeavyMitigation: prefer Large (Damnation) when caller gated TB / Emergency+low HP.
+                var tierRank = request.PreferHeavyMitigation
+                    ? (int)MitigationTier.Large - (int)option.Tier
+                    : (int)option.Tier;
+                var score = tierRank * 100f +
+                    (option.CooldownSeconds > 0 ? option.CooldownSeconds / Math.Max(option.DamageReduction, 0.01f) : 0f);
                 if (score < bestScore)
                 {
                     bestScore = score;

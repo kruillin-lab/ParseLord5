@@ -1,4 +1,6 @@
-﻿namespace WrathCombo.Services.IPC_Subscriber;
+﻿using WrathCombo.Services.TankCooldownHelperIPC;
+
+namespace WrathCombo.Services.IPC_Subscriber;
 
 public static class AllStaticIPCSubscriptions
 {
@@ -6,5 +8,6 @@ public static class AllStaticIPCSubscriptions
     {
         OrbwalkerIPC.Dispose();
         PingPluginIPC.Dispose();
+        TankCooldownHelperIpcClient.Dispose();
     }
 }

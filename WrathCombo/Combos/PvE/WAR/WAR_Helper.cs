@@ -192,7 +192,7 @@ internal partial class WAR : Tank
             flags.HasFlag(Combo.Simple) ? 2 : 
             flags.HasFlag(Combo.ST) ? WAR_ST_Onslaught_TimeStill : WAR_AoE_Onslaught_TimeStill;
         #endregion
-        
+
         if (InCombat() && HasBattleTarget() && InWarOgcdWindow)
         {
             if (interruptEnabled && Role.CanInterject())

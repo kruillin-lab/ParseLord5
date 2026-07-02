@@ -1,4 +1,5 @@
 using Dalamud.Game.ClientState.Objects.Types;
+using ECommons.DalamudServices;
 using System;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
@@ -6,11 +7,39 @@ using WrathCombo.Data;
 using WrathCombo.Extensions;
 using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.PLD.Config;
+using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 
 namespace WrathCombo.Combos.PvE;
 
 internal partial class PLD : Tank
 {
+    private const long ParseLord5PldTraceThrottleMs = 15_000;
+    private static long _nextParseLord5PldTraceAt;
+
+    private static void TraceParseLord5Pld(uint anchorActionId, uint selectedActionId, string source)
+    {
+        if (!Service.Configuration.ParseLord5ExperimentalMode || !InCombat() || !HasBattleTarget())
+            return;
+
+        var now = Environment.TickCount64;
+        if (now < _nextParseLord5PldTraceAt)
+            return;
+
+        _nextParseLord5PldTraceAt = now + ParseLord5PldTraceThrottleMs;
+        Svc.Log.Debug(
+            $"[ParseLord5][PLD] build=1.0.4.7 anchor={anchorActionId.ActionName()}({anchorActionId}) " +
+            $"selected={selectedActionId.ActionName()}({selectedActionId}) source={source}");
+    }
+
+    private static bool TryUseMitigation(RotationMode rotationFlags, uint anchorActionId, ref uint actionID)
+    {
+        if (!TryUseMits(rotationFlags, ref actionID) || actionID == 0)
+            return false;
+
+        TraceParseLord5Pld(anchorActionId, actionID, "mitigation");
+        return true;
+    }
+
     #region Simple Modes
 
     internal class PLD_ST_SimpleMode : CustomCombo
@@ -44,12 +73,12 @@ internal partial class PLD : Tank
 
             if (PLD_ST_MitOptions != 1 || P.UIHelper.PresetControlled(Preset)?.enabled == true)
             {
-                if (TryUseMits(RotationMode.Simple, ref actionID))
+                if (TryUseMitigation(RotationMode.Simple, FastBlade, ref actionID))
                     return actionID;
             }
         
             // Weavables
-            if (CanWeave())
+            if (CanPldWeave)
             {
                 // Requiescat
                 if (ActionReady(OriginalHook(Requiescat)) && CooldownFightOrFlight > 50 &&
@@ -181,7 +210,7 @@ internal partial class PLD : Tank
                     return OriginalHook(RageOfHalone);
             }
 
-            return actionID;
+            return FastBlade;
         }
     }
 
@@ -216,12 +245,12 @@ internal partial class PLD : Tank
 
             if (PLD_AoE_MitOptions != 1 || P.UIHelper.PresetControlled(Preset)?.enabled == true)
             {
-                if (TryUseMits(RotationMode.Simple, ref actionID))
+                if (TryUseMitigation(RotationMode.Simple, TotalEclipse, ref actionID))
                     return actionID;
             }
             
             // Weavables
-            if (CanWeave())
+            if (CanPldWeave)
             {
                 // Requiescat
                 if (ActionReady(OriginalHook(Requiescat)) && CooldownFightOrFlight > 50 && InActionRange(OriginalHook(Requiescat)))
@@ -281,7 +310,7 @@ internal partial class PLD : Tank
             if (ComboTimer > 0 && ComboAction is TotalEclipse && LevelChecked(Prominence))
                 return Prominence;
 
-            return actionID;
+            return TotalEclipse;
         }
     }
 
@@ -326,12 +355,12 @@ internal partial class PLD : Tank
 
             if (PLD_ST_Advanced_MitOptions != 1 || P.UIHelper.PresetControlled(Preset)?.enabled == true)
             {
-                if (TryUseMits(RotationMode.Advanced, ref actionID))
+                if (TryUseMitigation(RotationMode.Advanced, FastBlade, ref actionID))
                     return actionID;
             }
         
             // Weavables
-            if (CanWeave())
+            if (CanPldWeave)
             {
                 // Requiescat
                 if (IsEnabled(Preset.PLD_ST_AdvancedMode_Requiescat) &&
@@ -475,7 +504,7 @@ internal partial class PLD : Tank
                     return OriginalHook(RageOfHalone);
             }
 
-            return actionID;
+            return FastBlade;
         }
     }
 
@@ -511,12 +540,12 @@ internal partial class PLD : Tank
 
             if (PLD_AoE_Advanced_MitOptions != 1 || P.UIHelper.PresetControlled(Preset)?.enabled == true)
             {
-                if (TryUseMits(RotationMode.Advanced, ref actionID))
+                if (TryUseMitigation(RotationMode.Advanced, TotalEclipse, ref actionID))
                     return actionID;
             }
             
             // Weavables
-            if (CanWeave())
+            if (CanPldWeave)
             {
                 // Requiescat
                 if (IsEnabled(Preset.PLD_AoE_AdvancedMode_Requiescat) &&
@@ -583,7 +612,7 @@ internal partial class PLD : Tank
             if (ComboTimer > 0 && ComboAction is TotalEclipse && LevelChecked(Prominence))
                 return Prominence;
 
-            return actionID;
+            return TotalEclipse;
         }
     }
 

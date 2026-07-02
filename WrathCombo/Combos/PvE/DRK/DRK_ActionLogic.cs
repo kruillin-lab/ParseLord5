@@ -3,6 +3,7 @@
 using System;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.DRK.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 using PartyRequirement = WrathCombo.Combos.PvE.All.Enums.PartyRequirement;
@@ -346,6 +347,28 @@ internal partial class DRK
             if (config != (int)SimpleMitigation.On &&
                 P.UIHelper.PresetControlled(preset)?.enabled != true)
                 return false;
+
+            if (Service.Configuration.ParseLord5ExperimentalMode)
+            {
+                if (InBossEncounter())
+                {
+                    if (TrySmartBossMits(flags, ref action))
+                        return true;
+
+                    if (TryGetBossMitigation(flags, ref action))
+                        return true;
+                }
+                else
+                {
+                    if (TrySmartNonBossMits(flags, ref action))
+                        return true;
+
+                    if (TryGetNonBossMitigation(flags, ref action))
+                        return true;
+                }
+
+                return false;
+            }
 
             if (InBossEncounter())
             {

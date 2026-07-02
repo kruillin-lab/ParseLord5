@@ -453,13 +453,51 @@ public static class ActionWatching
         {
             if (actionType is ActionType.Action)
             {
-                var disablingReplacingTemp = mode == ActionManager.UseActionMode.Queue || AutoRotationController.AutorotRaidwiding;
+                if (AutoRotationController.IsIssuingManualQueuedAction)
+                {
+                    Service.ActionReplacer.DisableActionReplacingIfRequired();
+                    try
+                    {
+                        return UseActionHook.Original(actionManager, actionType, actionId, targetId, extraParam, mode, comboRouteId, outOptAreaTargeted);
+                    }
+                    finally
+                    {
+                        Service.ActionReplacer.EnableActionReplacingIfRequired();
+                    }
+                }
+
+                var prioritizeManualQueue = AutoRotationController.IsManualActionOverrideCandidate(actionId);
+                AutoRotationController.NoteManualActionOverride(actionId);
+
+                var disablingReplacingTemp = prioritizeManualQueue || mode == ActionManager.UseActionMode.Queue || AutoRotationController.AutorotRaidwiding;
                 if (disablingReplacingTemp) // This is so we can remove queue suppression
                     Service.ActionReplacer.DisableActionReplacingIfRequired(); // It gets re-enabled at the end of sending. 
 
                 var original = actionId; //Save the original action, do not modify
                 var originalTargetId = targetId; //Save the original target, do not modify
                 var changedTargetId = targetId; //This will get modified and used elsewhere
+
+                if (prioritizeManualQueue)
+                {
+                    var isManualGcd = original.ActionAttackType() is ActionAttackType.Spell or ActionAttackType.Weaponskill;
+                    if (actionManager->QueuedActionId != 0 && (isManualGcd || CanQueueCS(original)))
+                    {
+                        actionManager->QueuedActionId = 0;
+                        actionManager->QueuedTargetId = 0;
+                    }
+
+                    if (isManualGcd && RemainingGCD > 0)
+                    {
+                        AutoRotationController.NoteManualQueuedGcd(original, originalTargetId);
+                        Service.ActionReplacer.EnableActionReplacingIfRequired();
+                        return false;
+                    }
+
+                    var ret = UseActionHook.Original(actionManager, actionType, original, originalTargetId, extraParam, mode, comboRouteId, outOptAreaTargeted);
+
+                    Service.ActionReplacer.EnableActionReplacingIfRequired();
+                    return ret;
+                }
 
                 var changed = CheckForChangedTarget(original, ref changedTargetId,
                     out var replacedWith); //Passes the original action to the retargeting framework, outputs a targetId and a replaced action

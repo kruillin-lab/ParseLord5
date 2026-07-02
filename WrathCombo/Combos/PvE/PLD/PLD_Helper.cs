@@ -5,6 +5,7 @@ using System.Linq;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.PLD.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 using PartyRequirement = WrathCombo.Combos.PvE.All.Enums.PartyRequirement;
@@ -85,6 +86,8 @@ internal partial class PLD
 
     private static int RoyalAuthorityCount =>
         ActionWatching.CombatActions.Count(x => x == OriginalHook(RageOfHalone));
+
+    private static bool CanPldWeave => CanWeave() || CanDelayedWeave();
 
     #endregion
 
@@ -183,7 +186,15 @@ internal partial class PLD
         Advanced = 1 << 1
     }
 
-    private static bool TryUseMits(RotationMode rotationFlags, ref uint actionID) => CanUseNonBossMits(rotationFlags, ref actionID) || CanUseBossMits(rotationFlags, ref actionID);
+    private static bool TryUseMits(RotationMode rotationFlags, ref uint actionID)
+    {
+        var anchor = actionID;
+        if (CanUseNonBossMits(rotationFlags, ref actionID) || CanUseBossMits(rotationFlags, ref actionID))
+            return true;
+
+        actionID = anchor;
+        return false;
+    }
 
     private static bool CanUseNonBossMits(RotationMode rotationFlags, ref uint actionID)
     {
@@ -221,6 +232,15 @@ internal partial class PLD
 
         #endregion
 
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+        {
+            var mitAnchor = actionID;
+            if (TrySmartNonBossMits(rotationFlags, ref actionID))
+                return true;
+
+            actionID = mitAnchor;
+        }
+
         #region Hallowed Ground Invulnerability
 
         int hallowedThreshold = rotationFlags.HasFlag(RotationMode.Simple) ? 20 : PLD_Mitigation_NonBoss_HallowedGround_Health;
@@ -237,8 +257,8 @@ internal partial class PLD
         #region Sheltron Use Always
 
         if (IsEnabled(Preset.PLD_Mitigation_NonBoss_Sheltron) && ActionReady(OriginalHook(Sheltron)) &&
-            CanWeave() && !justMitted &&
-            !IsMoving() && CanWeave() &&
+            CanPldWeave && !justMitted &&
+            !IsMoving() &&
             !HasStatusEffect(Buffs.Sheltron) && !HasStatusEffect(Buffs.HallowedGround) &&
             Gauge.OathGauge >= 50)
         {
@@ -254,7 +274,7 @@ internal partial class PLD
             ? 10
             : PLD_Mitigation_NonBoss_MitigationThreshold;
 
-        if (GetAvgEnemyHPPercentInRange(5f) <= mitigationThreshold || !CanWeave() || justMitted) return false;
+        if (GetAvgEnemyHPPercentInRange(5f) <= mitigationThreshold || !CanPldWeave || justMitted) return false;
 
         #endregion
 
@@ -333,9 +353,18 @@ internal partial class PLD
     {
         #region Initial Bailout
 
-        if (!InCombat() || !CanWeave() || !InBossEncounter() || !IsEnabled(Preset.PLD_Mitigation_Boss)) return false;
+        if (!InCombat() || !CanPldWeave || !InBossEncounter() || !IsEnabled(Preset.PLD_Mitigation_Boss)) return false;
 
         #endregion
+
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+        {
+            var mitAnchor = actionID;
+            if (TrySmartBossMits(rotationFlags, ref actionID))
+                return true;
+
+            actionID = mitAnchor;
+        }
 
         #region Sentinel
 

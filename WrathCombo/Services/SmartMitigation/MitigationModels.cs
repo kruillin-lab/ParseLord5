@@ -32,7 +32,9 @@ internal readonly record struct MitigationCoverageRequest(
     float HorizonSeconds,
     float SafetyHpPercent,
     bool ConfirmedTankbuster = false,
-    float SustainMultiplier = 1f);
+    float SustainMultiplier = 1f,
+    /// <summary>Prefer Large (Damnation) over Small when multiple CDs satisfy coverage; only set when ShouldOfferDamnation is true.</summary>
+    bool PreferHeavyMitigation = false);
 
 internal readonly record struct PlayerPressureState(
     float IncomingDps,
@@ -40,7 +42,20 @@ internal readonly record struct PlayerPressureState(
     float NetDps,
     float DangerRatio,
     float MaxSingleHit,
-    float? SecondsUntilDeath);
+    float? SecondsUntilDeath,
+    int? TankCooldownDangerLevel = null)
+{
+    public bool FromTankCooldownHelper => TankCooldownDangerLevel is not null;
+
+    /// <summary>TCH danger level Warning (1) or higher.</summary>
+    public bool TankCooldownInDanger => TankCooldownDangerLevel is >= 1;
+
+    /// <summary>TCH danger level Critical (2) or higher.</summary>
+    public bool TankCooldownCritical => TankCooldownDangerLevel is >= 2;
+
+    /// <summary>TCH danger level Emergency (3).</summary>
+    public bool TankCooldownEmergency => TankCooldownDangerLevel is >= 3;
+}
 
 internal readonly record struct MitigationCoverageResult(
     uint ActionId,

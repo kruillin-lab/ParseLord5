@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
+using WrathCombo.Services;
 using static WrathCombo.Combos.PvE.GNB.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 using PartyRequirement = WrathCombo.Combos.PvE.All.Enums.PartyRequirement;
@@ -115,6 +116,9 @@ internal partial class GNB : Tank
             (CombatEngageDuration().TotalSeconds <= 15 && IsMoving()))  
             return false;
         #endregion
+
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+            return TrySmartNonBossMits(rotationFlags, ref actionID);
         
         #region Superbolide Invulnerability
         var bolideThreshold = rotationFlags.HasFlag(RotationMode.simple) ? 20 : GNB_Mit_Advanced_NonBoss_SuperBolide_Health;
@@ -224,6 +228,9 @@ internal partial class GNB : Tank
         #region Initial Bailout
         if (!InCombat() || !CanWeave() || !InBossEncounter() || !IsEnabled(Preset.GNB_Mit_Advanced_Boss)) return false;
         #endregion
+
+        if (Service.Configuration.ParseLord5ExperimentalMode)
+            return TrySmartBossMits(rotationFlags, ref actionID);
         
         #region Nebula
         var nebulaFirst = rotationFlags.HasFlag(RotationMode.simple)
