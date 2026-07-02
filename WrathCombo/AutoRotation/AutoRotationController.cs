@@ -425,25 +425,8 @@ internal unsafe class AutoRotationController
             }
         }
 
-        double effectiveHealDelay = cfg.HealerSettings.HealDelay;
-        if (ParseLord5Experiments.DynamicHealCurve)
-        {
-            double maxDelay = Math.Min(cfg.HealerSettings.HealDelay, 0.5); // Cap at 500ms in experimental mode
-            if (lowestHp <= 50f)
-            {
-                effectiveHealDelay = 0.0; // Critical danger: instant heal
-            }
-            else if (lowestHp >= 75f)
-            {
-                effectiveHealDelay = maxDelay; // Healthy: capped at 500ms
-            }
-            else
-            {
-                // Linear interpolation between 50% and 75% HP
-                double t = (lowestHp - 50f) / (75f - 50f);
-                effectiveHealDelay = t * maxDelay;
-            }
-        }
+        double effectiveHealDelay = HealDelayCurve.ComputeEffectiveHealDelay(
+            cfg.HealerSettings.HealDelay, lowestHp, ParseLord5Experiments.DynamicHealCurve);
 
         bool canHeal = TimeToHeal is not null
                        && (DateTime.Now - TimeToHeal.Value).TotalSeconds >= effectiveHealDelay
