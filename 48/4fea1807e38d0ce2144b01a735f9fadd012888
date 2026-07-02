@@ -1,0 +1,26 @@
+WrathCombo.Tests/CombatEventBufferTests.cs
+  s_8142d970b6bf28::t_df1d8ccda53a88 1-79
+WrathCombo.Tests/MitigationCoverageCalculatorTests.cs
+  s_8142d970b6bf28::t_5078b77fc2e053 1-216
+WrathCombo.Tests/WrathCombo.Tests.csproj
+  s_8142d970b6bf28::t_3395637c5bfce6 1-20,27
+  s_8142d970b6bf28::t_925a9b4bc27a7d 21-26
+.gitignore
+  s_8142d970b6bf28::t_1dca8315ad43b4 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "484fea1807e38d0ce2144b01a735f9fadd012888",
+  "prompts": {},
+  "sessions": {
+    "s_8142d970b6bf28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22fc6be5-f829-4bef-8e3e-9e57d8739ec6",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
