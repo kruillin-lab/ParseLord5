@@ -1,0 +1,62 @@
+WrathCombo/AutoRotation/AutoRotationController.cs
+  s_7e502254bd8531::t_ac9ffd0f88e88e 51-87,184-185,189-219,224,238,248,251,261,264,266,276,287,293,320,334,564,577-578
+  s_7e502254bd8531::t_8c36a4ee100671 220-223
+  s_7e502254bd8531::t_36e0d55ca6fc56 225-227,235-237
+  s_7e502254bd8531::t_1c116c74bb1d6f 239-241,245-247
+  s_7e502254bd8531::t_d36bc802ad7ddd 249-250
+  s_7e502254bd8531::t_fbe1e7b32c06af 252-254,258-260
+  s_7e502254bd8531::t_ea1df23b4f38e5 262-263
+  s_7e502254bd8531::t_937e59f47ad668 265
+  s_7e502254bd8531::t_156fcbd73b1da9 267-269,273-275
+  s_7e502254bd8531::t_0d0bc19755bc51 277-279,284-286
+  s_7e502254bd8531::t_d59a3bb8072364 288-292
+  s_7e502254bd8531::t_b48dc29d984fc5 294-296,317-319
+  s_7e502254bd8531::t_24301f7f88d270 321
+  s_7e502254bd8531::t_a5569b7f3b489f 333
+  s_7e502254bd8531::t_5acf85b4ded44a 335
+  s_7e502254bd8531::t_21c983fd7bd268 562-563
+  s_7e502254bd8531::t_406ac20b8784cb 565-567,574-576
+  s_7e502254bd8531::t_2ba51faf5bdfa7 579
+WrathCombo/Core/Presets.cs
+  s_7e502254bd8531::t_4180a25a66bc26 2
+AGENTS.md
+  s_7dd51661aed033::t_6af6036cfe2a3d 18-19,21-31
+icm/AGENTS.md
+  s_7dd51661aed033::t_ed28159bbfca63 18-28
+WrathCombo/Combos/PvE/SMN/SMN_Helper.cs
+  s_58c79ba4d1d460::t_86267477aed97e 199-214,345-346
+WrathCombo/CustomCombo/WrathOpener.cs
+  s_7e502254bd8531::t_139915a06e0eb1 181-189,349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "f016d0587ce38236f0a26dc5d5d70ba2f00248ff",
+  "prompts": {},
+  "sessions": {
+    "s_58c79ba4d1d460": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f0107-b8f7-7523-a3cd-5868edbaf901",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_7dd51661aed033": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f20f5-a5a6-7712-ae58-b31b3fa499ec",
+        "model": "gpt-5.3-codex-spark"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_7e502254bd8531": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0e25a427cffe334tgK64TvPbjM",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
