@@ -67,6 +67,10 @@ internal partial class MNK
                 !HasStatusEffect(Buffs.FormlessFist) && IsOriginal(MasterfulBlitz) &&
                 HasBattleTarget() && !JustUsed(PerfectBalance):
             {
+                // Prevent charge overcap when burst-window timing does not line up.
+                if (GetRemainingCharges(PerfectBalance) == GetMaxCharges(PerfectBalance))
+                    return true;
+
                 // Odd window
                 if ((JustUsed(OriginalHook(Bootshine), GCD) || JustUsed(DragonKick, GCD)) &&
                     !JustUsed(PerfectBalance, 20 + GCD * 5) && !HasStatusEffect(Buffs.Brotherhood) &&

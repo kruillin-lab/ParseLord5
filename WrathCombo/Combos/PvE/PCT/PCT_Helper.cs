@@ -119,6 +119,7 @@ internal partial class PCT
         bool paletteReady = LevelChecked(SubtractivePalette) && 
                             !HasStatusEffect(Buffs.SubtractivePalette) && !HasStatusEffect(Buffs.MonochromeTones) && //Don't overwrite self of comet in black
                                          (HasStatusEffect(Buffs.SubtractiveSpectrum) || //Free use from Starry Muse
+                                          !LevelChecked(ScenicMuse) && gauge.PalleteGauge >= 50 || //Use freely at low levels when Scenic Muse is not learned
                                           gauge.PalleteGauge >= 50 && ScenicCD > 35 || //Use freely before pooling
                                           gauge.PalleteGauge == 100 && HasStatusEffect(Buffs.Aetherhues2)||  //Pool but don't overcap
                                           gauge.PalleteGauge >= 50 && ScenicCD < 3 && scenicMuseEnabled); //Use As it is time to start buff window
@@ -150,14 +151,14 @@ internal partial class PCT
             // Baseline (flag off): Living Muse first, then Steel Muse.
             if (Service.Configuration.ParseLord5ExperimentalMode)
             {
-                if (steelMuseEnabled && steelMuseReady &&
+                if (steelMuseEnabled && steelMuseReady && CanWeave() &&
                     (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     HasStatusEffect(Buffs.StarryMuse) && CanWeave() ||
+                     HasStatusEffect(Buffs.StarryMuse) ||
                      hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
                      !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
-                     almostCappedOrCappedSteelMuse && CanWeave() ||
+                     almostCappedOrCappedSteelMuse ||
                      ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
-                     !LevelChecked(ScenicMuse) && CanWeave()))
+                     !LevelChecked(ScenicMuse)))
                 {
                     actionID = OriginalHook(SteelMuse);
                     return true;
@@ -191,14 +192,14 @@ internal partial class PCT
                 }
 
                 // SteelMuse
-                if (steelMuseEnabled && steelMuseReady &&
+                if (steelMuseEnabled && steelMuseReady && CanWeave() &&
                     (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
-                     HasStatusEffect(Buffs.StarryMuse) && CanWeave() ||
+                     HasStatusEffect(Buffs.StarryMuse) ||
                      hammerStampMovementEnabled && IsMoving() && ScenicCD >= 30 ||
                      !hammerStampMovementEnabled && ScenicCD > SteelCD && ScenicCD >= 40 ||
-                     almostCappedOrCappedSteelMuse && CanWeave() ||
+                     almostCappedOrCappedSteelMuse ||
                      ScenicCD < 40 && SteelCD < 40 && ScenicCD > SteelCD ||
-                     !LevelChecked(ScenicMuse) && CanWeave()))
+                     !LevelChecked(ScenicMuse)))
                 {
                     actionID = OriginalHook(SteelMuse);
                     return true;
@@ -333,7 +334,7 @@ internal partial class PCT
             return true;
         }
 
-        if (swiftcastEnabled && ActionReady(Role.Swiftcast) && !HasStatusEffect(Buffs.StarryMuse) &&
+        if (swiftcastEnabled && CanWeave() && ActionReady(Role.Swiftcast) && !HasStatusEffect(Buffs.StarryMuse) &&
             (CreatureMotifReady || WeaponMotifReady || LandscapeMotifReady))
         {
             actionID = Role.Swiftcast;

@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using System.Collections.Generic;
 using ECommons.GameFunctions;
+using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
@@ -56,6 +57,79 @@ internal partial class WHM
             return x.IsBoss() ? WHM_ST_DPS_AeroBossOption : WHM_ST_DPS_AeroBossAddsOption;
         }
         return WHM_ST_DPS_AeroTrashOption;
+    }
+
+    internal static bool TryDpsSingleTargetHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+
+        if (!PartyInCombat())
+            return false;
+
+        var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
+        var targetHp = GetTargetHPPercent(healTarget, WHM_STHeals_IncludeShields);
+
+        for (int i = 0; i < WHM_ST_Heals_Priority.Count; i++)
+        {
+            var index = WHM_ST_Heals_Priority.IndexOf(i + 1);
+            var threshold = GetMatchingConfigST(index, healTarget, out var spell, out var enabled);
+
+            if (!enabled ||
+                targetHp > threshold ||
+                !CanUseDpsHealNow(spell))
+                continue;
+
+            healAction = spell is Asylum or LiturgyOfTheBell
+                ? spell.Retarget(replacedActions, SimpleTarget.Self)
+                : spell == OriginalHook(Temperance)
+                    ? spell
+                    : spell.Retarget(replacedActions, healTarget);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static bool TryDpsAoEHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+
+        if (!PartyInCombat())
+            return false;
+
+        var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
+        var averagePartyHp = GetPartyAvgHPPercent();
+
+        for (int i = 0; i < WHM_AoE_Heals_Priority.Count; i++)
+        {
+            var index = WHM_AoE_Heals_Priority.IndexOf(i + 1);
+            var threshold = GetMatchingConfigAoE(index, healTarget, out var spell, out var enabled);
+
+            if (!enabled ||
+                averagePartyHp > threshold ||
+                !CanUseDpsHealNow(spell))
+                continue;
+
+            healAction = spell switch
+            {
+                Asylum or LiturgyOfTheBell => spell.Retarget(replacedActions, SimpleTarget.Self),
+                Cure3 => spell.Retarget(replacedActions, healTarget),
+                _ => spell,
+            };
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool CanUseDpsHealNow(uint action)
+    {
+        if (!ActionReady(action))
+            return false;
+
+        return IsWhmHealingSetupOgcd(action)
+            ? CanWeave() && !ShouldHoldWhmHealingSetupOgcd(action)
+            : CanQueue(action);
     }
 
     #region Get ST Heals
@@ -251,14 +325,14 @@ internal partial class WHM
     {
         return IsEnabled(Preset.WHM_Raidwide_Asylum) &&
                ActionReady(Asylum) &&
-               CanWeave() && GroupDamageIncoming();
+               CanWeave() && !UsedWhmHealingSetupOgcdThisGcd && GroupDamageIncoming();
     }
 
     internal static bool RaidwideTemperance()
     {
         return IsEnabled(Preset.WHM_Raidwide_Temperance) &&
                ActionReady(Temperance) &&
-               CanWeave() && GroupDamageIncoming();
+               CanWeave() && !UsedWhmHealingSetupOgcdThisGcd && GroupDamageIncoming();
     }
 
     internal static bool RaidwideLiturgyOfTheBell()
@@ -266,14 +340,28 @@ internal partial class WHM
         return IsEnabled(Preset.WHM_Raidwide_LiturgyOfTheBell) &&
                ActionReady(LiturgyOfTheBell) &&
                !HasStatusEffect(Buffs.LiturgyOfTheBell) &&
-               GroupDamageIncoming() && CanWeave();
+               GroupDamageIncoming() && CanWeave() && !UsedWhmHealingSetupOgcdThisGcd;
     }
     internal static bool RaidwidePlenaryIndulgence()
     {
         return IsEnabled(Preset.WHM_Raidwide_PlenaryIndulgence) &&
                ActionReady(PlenaryIndulgence) &&
-               GroupDamageIncoming() && CanWeave();
+               GroupDamageIncoming() && CanWeave() && !UsedWhmHealingSetupOgcdThisGcd;
     }
+
+    private static bool UsedWhmHealingSetupOgcdThisGcd =>
+        PerGcdActionCaps.AnyUsed(IsWhmHealingSetupOgcd);
+
+    private static bool ShouldHoldWhmHealingSetupOgcd(uint action) =>
+        PerGcdActionCaps.ShouldHold(action, IsWhmHealingSetupOgcd);
+
+    private static bool CanUseWhmHealingSetupOgcd(uint action) =>
+        !ShouldHoldWhmHealingSetupOgcd(action);
+
+    private static bool IsWhmHealingSetupOgcd(uint action) =>
+        action is Benediction or Tetragrammaton or DivineBenison or Aquaveil or Asylum or
+            LiturgyOfTheBell or PlenaryIndulgence or Assize or DivineCaress or Temperance ||
+        action == OriginalHook(Temperance);
 
 
     #endregion

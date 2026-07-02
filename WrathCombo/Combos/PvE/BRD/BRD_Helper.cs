@@ -51,8 +51,8 @@ internal partial class BRD
     //Useful Bools
     internal static bool BardHasTarget => HasBattleTarget();
     internal static bool JustSangSong => JustUsed(WanderersMinuet) || JustUsed(MagesBallad) || JustUsed(ArmysPaeon);
-    internal static bool CanBardWeave => CanWeave();
-    internal static bool CanWeaveDelayed => CanDelayedWeave();
+    internal static bool CanBardWeave => CanWeave() || AnimationLock <= BaseActionQueue;
+    internal static bool CanWeaveDelayed => CanDelayedWeave() || AnimationLock <= BaseActionQueue;
     internal static bool CanIronJaws => LevelChecked(IronJaws);
     // Only the pre-burst tail of the RS cooldown — not when RS is already off cooldown (remaining == 0).
     internal static bool BuffTime => IsOnCooldown(RagingStrikes) && GetCooldownRemainingTime(RagingStrikes) < 2.7;
@@ -79,12 +79,13 @@ internal partial class BRD
         // Pooled Apex Logic
         internal static bool UsePooledApex()
         {
-            if (gauge.SoulVoice >= 80)
-            {
-                if (BuffWindow && RagingStrikesDuration < 18 || RagingCD >= 50 && RagingCD <= 62)
-                    return true;
-            }
-            return false;
+            if (gauge.SoulVoice >= 100)
+                return true;
+
+            if (gauge.SoulVoice < 80)
+                return false;
+
+            return BuffWindow && RagingStrikesDuration < 18 || RagingCD >= 50 && RagingCD <= 62;
         }
     
 

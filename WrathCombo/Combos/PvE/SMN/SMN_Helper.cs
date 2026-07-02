@@ -196,7 +196,22 @@ internal partial class SMN
     {
         get
         {
-            if (Gauge.SummonTimerRemaining > 0 && Gauge.AttunementTimerRemaining == 0)
+            if (Gauge.SummonTimerRemaining <= 0)
+                return DemiSummon.None;
+
+            var adjustedRuin = OriginalHook(Ruin);
+            var adjustedOutburst = OriginalHook(Outburst);
+
+            if (adjustedRuin is AstralImpulse || adjustedOutburst is AstralFlare)
+                return IsDreadwyrmTranceReady ? DemiSummon.Dreadwyrm : DemiSummon.Bahamut;
+
+            if (adjustedRuin is FountainOfFire || adjustedOutburst is BrandOfPurgatory)
+                return DemiSummon.Phoenix;
+
+            if (adjustedRuin is UmbralImpulse || adjustedOutburst is UmbralFlare)
+                return DemiSummon.SolarBahamut;
+
+            if (Gauge.AttunementTimerRemaining == 0)
             {
                 if (IsDreadwyrmTranceReady) return DemiSummon.Dreadwyrm;
                 if (IsBahamutReady) return DemiSummon.Bahamut;
@@ -327,8 +342,8 @@ internal partial class SMN
 
         bool SearingLightBurstEnabled =
             flags.HasFlag(Combo.Simple) ||
-            IsSTEnabled(flags, Preset.SMN_AoE_Advanced_Combo_SearingLight_Burst) ||
-            IsAoEEnabled(flags, Preset.SMN_ST_Advanced_Combo_SearingLight_Burst);
+            IsSTEnabled(flags, Preset.SMN_ST_Advanced_Combo_SearingLight_Burst) ||
+            IsAoEEnabled(flags, Preset.SMN_AoE_Advanced_Combo_SearingLight_Burst);
 
         bool energyDrainEnabled =
             flags.HasFlag(Combo.Simple) ||

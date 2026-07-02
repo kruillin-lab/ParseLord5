@@ -31,8 +31,8 @@ internal partial class SAM : Melee
                 if (Service.Configuration.ParseLord5ExperimentalMode)
                 {
                     //Ikishoten Feature
-                    if (CanIkishoten())
-                        return Ikishoten;
+                    if (TryGetIkishotenAction(out uint ikishotenAction))
+                        return ikishotenAction;
 
                     //Meikyo Feature
                     if (CanMeikyo())
@@ -45,8 +45,8 @@ internal partial class SAM : Melee
                         return MeikyoShisui;
 
                     //Ikishoten Feature
-                    if (CanIkishoten())
-                        return Ikishoten;
+                    if (TryGetIkishotenAction(out uint ikishotenAction))
+                        return ikishotenAction;
                 }
 
                 if (GetTargetHPPercent() < ShintenTreshhold)
@@ -273,8 +273,8 @@ internal partial class SAM : Melee
                     {
                         //Ikishoten feature
                         if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
-                            CanIkishoten())
-                            return Ikishoten;
+                            TryGetIkishotenAction(out uint ikishotenAction, IsEnabled(Preset.SAM_ST_Shinten)))
+                            return ikishotenAction;
 
                         //Meikyo feature
                         if (IsEnabled(Preset.SAM_ST_CDs_MeikyoShisui) &&
@@ -290,8 +290,8 @@ internal partial class SAM : Melee
 
                         //Ikishoten feature
                         if (IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
-                            CanIkishoten())
-                            return Ikishoten;
+                            TryGetIkishotenAction(out uint ikishotenAction, IsEnabled(Preset.SAM_ST_Shinten)))
+                            return ikishotenAction;
                     }
                 }
 

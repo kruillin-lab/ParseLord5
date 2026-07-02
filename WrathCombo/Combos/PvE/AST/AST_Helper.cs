@@ -51,6 +51,7 @@ internal partial class AST
     internal static bool WaitGCDs => ActionWatching.NumberOfGcdsUsed >= 10;
     internal static float DivinationCD => GetCooldownRemainingTime(Divination);
     internal static float LightspeedChargeCD => GetCooldownChargeRemainingTime(Lightspeed);
+    internal static bool CanAstWeave => CanWeave();
     #endregion
     
     #region Dot Checker
@@ -86,11 +87,19 @@ internal partial class AST
     
     internal static bool RaidwideCollectiveUnconscious()
     {
-        return IsEnabled(Preset.AST_Raidwide_CollectiveUnconscious) && ActionReady(CollectiveUnconscious) && CanWeave() && GroupDamageIncoming();
+        return IsEnabled(Preset.AST_Raidwide_CollectiveUnconscious) &&
+               ActionReady(CollectiveUnconscious) &&
+               CanAstWeave &&
+               !UsedAstHealingSetupOgcdThisGcd &&
+               GroupDamageIncoming();
     }
     internal static bool RaidwideNeutralSect()
     {
-        return IsEnabled(Preset.AST_Raidwide_NeutralSect) && ActionReady(OriginalHook(NeutralSect)) && CanWeave() && GroupDamageIncoming();
+        return IsEnabled(Preset.AST_Raidwide_NeutralSect) &&
+               ActionReady(OriginalHook(NeutralSect)) &&
+               CanAstWeave &&
+               !UsedAstHealingSetupOgcdThisGcd &&
+               GroupDamageIncoming();
     }
     internal static bool RaidwideAspectedHelios()
     {
@@ -117,20 +126,20 @@ internal partial class AST
                 enabled = IsEnabled(Preset.AST_ST_Heals_CelestialIntersection) &&
                           ActionReady(CelestialIntersection) && !HasStatusEffect(Buffs.Intersection, healTarget) &&
                           GetRemainingCharges(CelestialIntersection) > AST_ST_SimpleHeals_CelestialIntersectionCharges &&
-                          (CanWeave() || !AST_ST_SimpleHeals_WeaveIntersection);
+                          (CanAstWeave || !AST_ST_SimpleHeals_WeaveIntersection);
                 return AST_ST_SimpleHeals_CelestialIntersection;
             case 1:
                 action = EssentialDignity;
                 enabled = IsEnabled(Preset.AST_ST_Heals_EssentialDignity) &&
                           ActionReady(EssentialDignity) &&
                           (GetRemainingCharges(EssentialDignity) > 1 || IsNotEnabled(Preset.AST_ST_Heals_EssentialDignity_Emergency)) &&
-                          (CanWeave() || !AST_ST_SimpleHeals_WeaveDignity);
+                          (CanAstWeave || !AST_ST_SimpleHeals_WeaveDignity);
                 return AST_ST_SimpleHeals_EssentialDignity;
             case 2:
                 action = Exaltation;
                 enabled = IsEnabled(Preset.AST_ST_Heals_Exaltation) &&
                           ActionReady(Exaltation) &&
-                          (CanWeave() || !AST_ST_SimpleHeals_ExaltationOptions[0]) &&
+                          (CanAstWeave || !AST_ST_SimpleHeals_ExaltationOptions[0]) &&
                           (tankCheck || !IsInParty() || !AST_ST_SimpleHeals_ExaltationOptions[2]) &&
                           (!InBossEncounter() || !AST_ST_SimpleHeals_ExaltationOptions[1]);
                 return AST_ST_SimpleHeals_Exaltation;
@@ -139,26 +148,26 @@ internal partial class AST
                 enabled = IsEnabled(Preset.AST_ST_Heals_Bole) &&
                           HasBole &&
                           (tankCheck || !IsInParty() || !AST_ST_SimpleHeals_BoleOptions[1]) &&
-                          (CanWeave() || !AST_ST_SimpleHeals_BoleOptions[0]);
+                          (CanAstWeave || !AST_ST_SimpleHeals_BoleOptions[0]);
                 return AST_ST_SimpleHeals_Bole;
             case 4:
                 action = Arrow;
                 enabled = IsEnabled(Preset.AST_ST_Heals_Arrow) &&
                           HasArrow &&
                           (tankCheck || !IsInParty() || !AST_ST_SimpleHeals_ArrowOptions[1]) &&
-                          (CanWeave() || !AST_ST_SimpleHeals_ArrowOptions[0]);
+                          (CanAstWeave || !AST_ST_SimpleHeals_ArrowOptions[0]);
                 return AST_ST_SimpleHeals_Arrow;
             case 5:
                 action = Ewer;
                 enabled = IsEnabled(Preset.AST_ST_Heals_Ewer) &&
                           HasEwer &&
-                          (CanWeave() || !AST_ST_SimpleHeals_WeaveEwer);
+                          (CanAstWeave || !AST_ST_SimpleHeals_WeaveEwer);
                 return AST_ST_SimpleHeals_Ewer;
             case 6:
                 action = Spire;
                 enabled = IsEnabled(Preset.AST_ST_Heals_Spire) &&
                           HasSpire &&
-                          (CanWeave() || !AST_ST_SimpleHeals_WeaveSpire);
+                          (CanAstWeave || !AST_ST_SimpleHeals_WeaveSpire);
                 return AST_ST_SimpleHeals_Spire;
             case 7:
                 action = AspectedBenefic;
@@ -172,33 +181,33 @@ internal partial class AST
                 action = CelestialOpposition;
                 enabled = IsEnabled(Preset.AST_ST_Heals_CelestialOpposition) && ActionReady(CelestialOpposition) &&
                             (!AST_ST_SimpleHeals_CelestialOppositionOptions[1] || !InBossEncounter()) &&
-                            (!AST_ST_SimpleHeals_CelestialOppositionOptions[0] || CanWeave());
+                            (!AST_ST_SimpleHeals_CelestialOppositionOptions[0] || CanAstWeave);
                 return AST_ST_SimpleHeals_CelestialOpposition;
             case 9:
                 action = CollectiveUnconscious;
                 enabled = IsEnabled(Preset.AST_ST_Heals_CollectiveUnconscious) && ActionReady(CollectiveUnconscious) &&
                           (!AST_ST_SimpleHeals_CollectiveUnconsciousOptions[1] || !InBossEncounter()) &&
-                          (!AST_ST_SimpleHeals_CollectiveUnconsciousOptions[0] || CanWeave());
+                          (!AST_ST_SimpleHeals_CollectiveUnconsciousOptions[0] || CanAstWeave);
                 return AST_ST_SimpleHeals_CollectiveUnconscious;
             case 10:
                 action = LadyOfCrown;
                 enabled = IsEnabled(Preset.AST_ST_Heals_SoloLady) && HasLady &&
                           (!AST_ST_SimpleHeals_SoloLadyOptions[1] || !InBossEncounter()) &&
-                          (!AST_ST_SimpleHeals_SoloLadyOptions[0] || CanWeave());
+                          (!AST_ST_SimpleHeals_SoloLadyOptions[0] || CanAstWeave);
                 return AST_ST_SimpleHeals_SoloLady;
             
             case 11:
                 action = EssentialDignity;
                 enabled = IsEnabled(Preset.AST_ST_Heals_EssentialDignity_Emergency) &&
                           ActionReady(EssentialDignity) &&
-                          (CanWeave() || !AST_ST_SimpleHeals_WeaveEmergencyED);
+                          (CanAstWeave || !AST_ST_SimpleHeals_WeaveEmergencyED);
                 return AST_ST_SimpleHeals_EmergencyED_Threshold;
             
             case 12:
                 action = OriginalHook(NeutralSect);
                 enabled = IsEnabled(Preset.AST_ST_Heals_NeutralSect) && 
                           (!AST_ST_Heals_NeutralSectOptions[1] || !InBossEncounter()) &&
-                          (!AST_ST_Heals_NeutralSectOptions[0] || CanWeave());
+                          (!AST_ST_Heals_NeutralSectOptions[0] || CanAstWeave);
                 return AST_ST_Heals_NeutralSect_Threshold;
         
         }
@@ -218,37 +227,37 @@ internal partial class AST
                 action = LadyOfCrown;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_LazyLady) &&
                           ActionReady(MinorArcana) && HasLady &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveLady);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveLady);
                 return AST_AoE_SimpleHeals_LazyLady;
             case 1:
                 action = CelestialOpposition;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_CelestialOpposition) &&
                           ActionReady(CelestialOpposition) &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveOpposition);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveOpposition);
                 return AST_AoE_SimpleHeals_CelestialOpposition;
             case 2:
                 action = Horoscope;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_Horoscope) && ActionReady(Horoscope) &&
                           !HasStatusEffect(Buffs.Horoscope) && !HasStatusEffect(Buffs.HoroscopeHelios) &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveHoroscope);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveHoroscope);
                 return AST_AoE_SimpleHeals_Horoscope;
             case 3:
                 action = HoroscopeHeal;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_HoroscopeHeal) &&
                           HasStatusEffect(Buffs.HoroscopeHelios) &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveHoroscopeHeal);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveHoroscopeHeal);
                 return AST_AoE_SimpleHeals_HoroscopeHeal;
             case 4:
                 action = NeutralSect;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_NeutralSect) &&
                           ActionReady(OriginalHook(NeutralSect)) &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveNeutralSect);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveNeutralSect);
                 return AST_AoE_SimpleHeals_NeutralSect;
             case 5:
                 action = StellarDetonation;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_StellarDetonation) && 
                           HasStatusEffect(Buffs.GiantDominance) && 
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveStellarDetonation);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveStellarDetonation);
                 return AST_AoE_SimpleHeals_StellarDetonation;
             case 6:
                 action = OriginalHook(AspectedHelios);
@@ -267,7 +276,7 @@ internal partial class AST
                 action = CollectiveUnconscious;
                 enabled = IsEnabled(Preset.AST_AoE_Heals_CollectiveUnconscious) &&
                           ActionReady(CollectiveUnconscious) &&
-                          (CanWeave() || !AST_AoE_SimpleHeals_WeaveCollectiveUnconscious);
+                          (CanAstWeave || !AST_AoE_SimpleHeals_WeaveCollectiveUnconscious);
                 return AST_AoE_SimpleHeals_CollectiveUnconscious;
         }
 
@@ -275,6 +284,197 @@ internal partial class AST
         action = 0;
         return 0;
     }
+    #endregion
+
+    #region DPS Healing Priority
+    internal static bool TrySingleTargetHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+        if (!PartyInCombat())
+            return false;
+
+        IGameObject? healTarget = SimpleTarget.Stack.OneButtonHealLogic;
+        float targetHp = GetTargetHPPercent(healTarget, AST_ST_SimpleHeals_IncludeShields);
+
+        for (int i = 0; i < AST_ST_SimpleHeals_Priority.Count; i++)
+        {
+            int index = AST_ST_SimpleHeals_Priority.IndexOf(i + 1);
+            int threshold = GetMatchingConfigST(index, healTarget, out uint configuredAction, out bool enabled);
+            uint resolvedAction = ResolveSingleTargetHealAction(configuredAction);
+
+            if (!enabled ||
+                targetHp > threshold ||
+                ShouldHoldAstHealingSetupOgcd(resolvedAction) ||
+                !ActionReady(resolvedAction))
+                continue;
+
+            healAction = RetargetSingleTargetHeal(resolvedAction, replacedActions, healTarget);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static bool TryAoEHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+        if (!PartyInCombat())
+            return false;
+
+        if (IsEnabled(Preset.AST_AoE_Heals_NeutralSect) && HasStatusEffect(Buffs.Suntouched) && CanAstWeave)
+        {
+            healAction = SunSign;
+            return true;
+        }
+
+        float averagePartyHp = GetPartyAvgHPPercent();
+        for (int i = 0; i < AST_AoE_SimpleHeals_Priority.Count; i++)
+        {
+            int index = AST_AoE_SimpleHeals_Priority.IndexOf(i + 1);
+            int threshold = GetMatchingConfigAoE(index, out uint configuredAction, out bool enabled);
+            uint resolvedAction = ResolveAoEHealAction(configuredAction);
+
+            if (!enabled ||
+                averagePartyHp > threshold ||
+                !HasEnoughAoEHealTargets(threshold) ||
+                ShouldHoldAstHealingSetupOgcd(resolvedAction) ||
+                !ActionReady(resolvedAction))
+                continue;
+
+            healAction = RetargetAoEHeal(resolvedAction, replacedActions);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static bool TryDpsSingleTargetHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+        if (!PartyInCombat() || !CanAstWeave || UsedAstHealingSetupOgcdThisGcd)
+            return false;
+
+        IGameObject? healTarget = SimpleTarget.Stack.OneButtonHealLogic;
+        float targetHp = GetTargetHPPercent(healTarget, AST_ST_SimpleHeals_IncludeShields);
+
+        for (int i = 0; i < AST_ST_SimpleHeals_Priority.Count; i++)
+        {
+            int index = AST_ST_SimpleHeals_Priority.IndexOf(i + 1);
+            int threshold = GetMatchingConfigST(index, healTarget, out uint configuredAction, out bool enabled);
+            uint resolvedAction = ResolveSingleTargetHealAction(configuredAction);
+
+            if (!enabled ||
+                targetHp > threshold ||
+                !IsAstDpsHealingSetupOgcd(resolvedAction) ||
+                ShouldHoldAstHealingSetupOgcd(resolvedAction) ||
+                !ActionReady(resolvedAction))
+                continue;
+
+            healAction = RetargetSingleTargetHeal(resolvedAction, replacedActions, healTarget);
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static bool TryDpsAoEHealPriority(uint[] replacedActions, out uint healAction)
+    {
+        healAction = 0;
+        if (!PartyInCombat() || !CanAstWeave || UsedAstHealingSetupOgcdThisGcd)
+            return false;
+
+        float averagePartyHp = GetPartyAvgHPPercent();
+        for (int i = 0; i < AST_AoE_SimpleHeals_Priority.Count; i++)
+        {
+            int index = AST_AoE_SimpleHeals_Priority.IndexOf(i + 1);
+            int threshold = GetMatchingConfigAoE(index, out uint configuredAction, out bool enabled);
+            uint resolvedAction = ResolveAoEHealAction(configuredAction);
+
+            if (!enabled ||
+                averagePartyHp > threshold ||
+                !HasEnoughAoEHealTargets(threshold) ||
+                !IsAstDpsHealingSetupOgcd(resolvedAction) ||
+                ShouldHoldAstHealingSetupOgcd(resolvedAction) ||
+                !ActionReady(resolvedAction))
+                continue;
+
+            healAction = RetargetAoEHeal(resolvedAction, replacedActions);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasEnoughAoEHealTargets(int threshold)
+    {
+        try
+        {
+            return GetPartyMembers()
+                .Count(member => member.BattleChara is { IsDead: false, IsTargetable: true } battleChara &&
+                                 !member.IsOutOfPartyNPC &&
+                                 GetTargetDistance(battleChara) <= 20f &&
+                                 GetTargetHPPercent(battleChara) <= threshold) >= 2;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool UsedAstHealingSetupOgcdThisGcd =>
+        PerGcdActionCaps.AnyUsed(IsAstHealingSetupOgcd);
+
+    private static bool ShouldHoldAstHealingSetupOgcd(uint action) =>
+        PerGcdActionCaps.ShouldHold(action, IsAstHealingSetupOgcd);
+
+    private static bool IsAstHealingSetupOgcd(uint action) =>
+        action is EssentialDignity or Exaltation or CelestialIntersection or CelestialOpposition or
+            CollectiveUnconscious or Horoscope or NeutralSect or LadyOfCrown or Play2 or Play3 ||
+        action == OriginalHook(NeutralSect) ||
+        action == OriginalHook(LadyOfCrown);
+
+    private static bool IsAstDpsHealingSetupOgcd(uint action) =>
+        action is EssentialDignity or Exaltation or CelestialIntersection or CelestialOpposition or
+            CollectiveUnconscious or Horoscope or NeutralSect or LadyOfCrown ||
+        action == OriginalHook(NeutralSect) ||
+        action == OriginalHook(LadyOfCrown);
+
+    private static uint ResolveSingleTargetHealAction(uint action) =>
+        action switch
+        {
+            Bole or Arrow => OriginalHook(Play2),
+            Ewer or Spire => OriginalHook(Play3),
+            LadyOfCrown => OriginalHook(LadyOfCrown),
+            NeutralSect => OriginalHook(NeutralSect),
+            AspectedBenefic => OriginalHook(AspectedBenefic),
+            _ => action
+        };
+
+    private static uint ResolveAoEHealAction(uint action) =>
+        action switch
+        {
+            LadyOfCrown => OriginalHook(LadyOfCrown),
+            NeutralSect => OriginalHook(NeutralSect),
+            AspectedHelios => OriginalHook(AspectedHelios),
+            _ => action
+        };
+
+    private static uint RetargetSingleTargetHeal(uint action, uint[] replacedActions, IGameObject? healTarget)
+    {
+        if (action is EssentialDignity or Exaltation or CelestialIntersection or AspectedBenefic or Play2 or Play3)
+            return action.Retarget(replacedActions, healTarget);
+
+        return action;
+    }
+
+    private static uint RetargetAoEHeal(uint action, uint[] replacedActions)
+    {
+        if (action is EarthlyStar)
+            return action.Retarget(replacedActions, SimpleTarget.Self);
+
+        return action;
+    }
+
     #endregion
 
     #region Card Targeting
@@ -315,8 +515,8 @@ internal partial class AST
 
                     var focusSatisfiedOrSkipped =
                         (int)AST_QuickTarget_Override != 4 ||
-                        ((card is CardType.Balance && IsMeleeOrTank(battleTargetOverride.ClassJob.Value)) ||
-                         (card is CardType.Spear && IsRangedOrHealer(battleTargetOverride.ClassJob.Value)));
+                        ((card is CardType.Balance && JobRoles.Melee.Contains(battleTargetOverride.ClassJob.Value.RowId)) ||
+                         (card is CardType.Spear && JobRoles.Ranged.Contains(battleTargetOverride.ClassJob.Value.RowId)));
 
                     if (targetOverride is IBattleChara &&
                         !targetOverride.IsDead &&
@@ -360,13 +560,9 @@ internal partial class AST
                 !HasStatusEffect(Buffs.BalanceBuff, thisTarget, true) &&
                 !HasStatusEffect(Buffs.SpearBuff, thisTarget, true);
 
-            bool IsMeleeOrTank (ClassJob job) =>
+            bool IsDpsJob(ClassJob job) =>
                 JobRoles.Melee.Contains(job.RowId) ||
-                JobRoles.Tank.Contains(job.RowId);
-
-            bool IsRangedOrHealer(ClassJob job) =>
-                JobRoles.Ranged.Contains(job.RowId) ||
-                JobRoles.Healer.Contains(job.RowId);
+                JobRoles.Ranged.Contains(job.RowId);
 
             bool DamageDownFree(IGameObject? thisTarget) =>
                 !TargetHasDamageDown(thisTarget);
@@ -388,10 +584,13 @@ internal partial class AST
                 if (restrictions.HasFlag(Restrictions.CardsRole))
                     filter = card switch
                     {
-                        CardType.Balance => filter.Where(x => IsMeleeOrTank(x.RealJob!.Value)).ToList(),
-                        CardType.Spear => filter.Where(x => IsRangedOrHealer(x.RealJob!.Value)).ToList(),
+                        CardType.Balance => filter.Where(x => JobRoles.Melee.Contains(x.RealJob!.Value.RowId)).ToList(),
+                        CardType.Spear => filter.Where(x => JobRoles.Ranged.Contains(x.RealJob!.Value.RowId)).ToList(),
                         _ => filter,
                     };
+
+                if (restrictions.HasFlag(Restrictions.DPS))
+                    filter = filter.Where(x => IsDpsJob(x.RealJob!.Value)).ToList();
 
                 if (restrictions.HasFlag(Restrictions.NotDD))
                     filter = filter.Where(x => DamageDownFree(x.BattleChara)).ToList();

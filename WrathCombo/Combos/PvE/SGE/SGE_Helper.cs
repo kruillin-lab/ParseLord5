@@ -111,11 +111,11 @@ internal partial class SGE
     private static bool RaidwideKerachole() =>
         IsEnabled(Preset.SGE_Raidwide_Kerachole) &&
         ActionReady(Kerachole) && AdvancedHasAddersgall() &&
-        CanWeave() && GroupDamageIncoming();
+        CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && GroupDamageIncoming();
 
     private static bool RaidwideHolos() =>
         IsEnabled(Preset.SGE_Raidwide_Holos) &&
-        ActionReady(Holos) && CanWeave() && GroupDamageIncoming() &&
+        ActionReady(Holos) && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && GroupDamageIncoming() &&
         GetPartyAvgHPPercent() <= SGE_Raidwide_HolosOption;
 
     private static bool RaidwideEprognosis()
@@ -125,6 +125,20 @@ internal partial class SGE
 
         return IsEnabled(Preset.SGE_Raidwide_EPrognosis) && shieldCheck && GroupDamageIncoming() && LevelChecked(Eukrasia);
     }
+
+    private static bool UsedSgeHealingSetupOgcdThisGcd =>
+        PerGcdActionCaps.AnyUsed(IsSgeHealingSetupOgcd);
+
+    private static bool ShouldHoldSgeHealingSetupOgcd(uint action) =>
+        PerGcdActionCaps.ShouldHold(action, IsSgeHealingSetupOgcd);
+
+    private static bool CanUseSgeHealingSetupOgcd(uint action) =>
+        !ShouldHoldSgeHealingSetupOgcd(action);
+
+    private static bool IsSgeHealingSetupOgcd(uint action) =>
+        action is Rhizomata or Soteria or Zoe or Pepsis or Taurochole or Haima or Krasis or Druochole or
+            Kerachole or Ixochole or Holos or Panhaima or Philosophia ||
+        action == OriginalHook(Physis);
 
     #endregion
 

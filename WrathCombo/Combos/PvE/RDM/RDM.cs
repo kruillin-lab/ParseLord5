@@ -201,8 +201,9 @@ internal partial class RDM : Caster
             if (HasManaStacks)
                 return UseHolyFlare(actionID);
 
-            if (ActionReady(Moulinet) && HasBattleTarget() && InActionRange(OriginalHook(Moulinet)) &&
-                (CanMagickedSwordplay || HasEnoughManaToStart || ComboAction is EnchantedMoulinet or Moulinet or EnchantedMoulinetDeux && HasEnoughManaForCombo))
+            if (ActionReady(OriginalHook(Moulinet)) && HasBattleTarget() && InActionRange(OriginalHook(Moulinet)) &&
+                (CanMagickedSwordplay || HasEnoughManaToStart ||
+                 (ComboAction is EnchantedMoulinet or Moulinet or EnchantedMoulinetDeux or EnchantedMoulinetTrois && HasEnoughManaForCombo)))
                 return OriginalHook(Moulinet);
 
             if (!LevelChecked(Moulinet) && InMeleeRange() && HasEnoughManaForCombo)
@@ -484,9 +485,10 @@ internal partial class RDM : Caster
 
             if (IsEnabled(Preset.RDM_AoE_MeleeCombo))
             {
-                if (ActionReady(Moulinet) &&
+                if (ActionReady(OriginalHook(Moulinet)) &&
                     (IsNotEnabled(Preset.RDM_AoE_MeleeCombo_Target) && !HasBattleTarget() || HasBattleTarget() && InActionRange(OriginalHook(Moulinet)) &&
-                    (CanMagickedSwordplay || HasEnoughManaToStart || ComboAction is EnchantedMoulinet or Moulinet or EnchantedMoulinetDeux && HasEnoughManaForCombo)))
+                    (CanMagickedSwordplay || HasEnoughManaToStart ||
+                     (ComboAction is EnchantedMoulinet or Moulinet or EnchantedMoulinetDeux or EnchantedMoulinetTrois && HasEnoughManaForCombo))))
                     return OriginalHook(Moulinet);
 
                 if (!LevelChecked(Moulinet) && InMeleeRange() && HasEnoughManaForCombo)

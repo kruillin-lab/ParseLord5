@@ -37,10 +37,14 @@ internal partial class WHM : Healer
             if (!actionFound)
                 return actionID;
 
+            if (!PartyInCombat()) return actionID;
+
+            if (TryDpsSingleTargetHealPriority(StoneGlareList.ToArray(), out var priorityHeal) ||
+                TryDpsAoEHealPriority(StoneGlareList.ToArray(), out priorityHeal))
+                return priorityHeal;
+
             if (ContentSpecificActions.TryGet(out var contentAction))
                 return contentAction;
-
-            if (!PartyInCombat()) return actionID;
 
             #region Weaves
 
@@ -118,6 +122,11 @@ internal partial class WHM : Healer
 
             if (ContentSpecificActions.TryGet(out var contentAction))
                 return contentAction;
+
+            uint[] replacedActions = [Holy, Holy3];
+            if (TryDpsSingleTargetHealPriority(replacedActions, out var priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
 
             #region Weaves
 
@@ -204,6 +213,12 @@ internal partial class WHM : Healer
 
             #endregion
 
+            if (!PartyInCombat()) return actionID;
+
+            if (TryDpsSingleTargetHealPriority(replacedAction, out var priorityHeal) ||
+                TryDpsAoEHealPriority(replacedAction, out priorityHeal))
+                return priorityHeal;
+
             #region Opener
 
             if (IsEnabled(Preset.WHM_ST_MainCombo_Opener))
@@ -214,8 +229,6 @@ internal partial class WHM : Healer
 
             if (ContentSpecificActions.TryGet(out var contentAction))
                 return contentAction;
-
-            if (!PartyInCombat()) return actionID;
 
             #region Special Feature Raidwide
 
@@ -339,6 +352,10 @@ internal partial class WHM : Healer
             if (ContentSpecificActions.TryGet(out var contentAction))
                 return contentAction;
 
+            uint[] replacedActions = [Holy, Holy3];
+            if (TryDpsSingleTargetHealPriority(replacedActions, out var priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
 
             #region Swiftcast Opener
 
@@ -451,11 +468,11 @@ internal partial class WHM : Healer
             
             var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
             
-            if (ActionReady(Benediction) && InCombat() && CanWeave() &&
+            if (ActionReady(Benediction) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Benediction) &&
                 GetTargetHPPercent(healTarget) <= 20)
                 return Benediction.RetargetIfEnabled(Cure);
             
-            if (ActionReady(Tetragrammaton) && InCombat() && CanWeave() &&
+            if (ActionReady(Tetragrammaton) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Tetragrammaton) &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Tetragrammaton.RetargetIfEnabled(Cure);
             
@@ -471,7 +488,7 @@ internal partial class WHM : Healer
             if (CanWeave() && Role.CanLucidDream(6500))
                 return Role.LucidDreaming;
             
-            if (ActionReady(Asylum) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+            if (ActionReady(Asylum) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Asylum) && GetTargetHPPercent(healTarget) <= 90 &&
                 (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(Cure ,SimpleTarget.Self);
@@ -481,15 +498,15 @@ internal partial class WHM : Healer
                 GetTargetHPPercent(healTarget) >= 40)
                 return Regen.RetargetIfEnabled(Cure);
 
-            if (ActionReady(DivineBenison) && InCombat() && CanWeave() &&
+            if (ActionReady(DivineBenison) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(DivineBenison) &&
                 GetStatusEffect(Buffs.DivineBenison, healTarget) == null &&
                 GetTargetHPPercent(healTarget) <= 95)
                 return DivineBenison.RetargetIfEnabled(Cure);
 
-            if (ActionReady(Aquaveil) && InCombat() && CanWeave() && IsOffCooldown(Aquaveil) && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
+            if (ActionReady(Aquaveil) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Aquaveil) && IsOffCooldown(Aquaveil) && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Aquaveil.RetargetIfEnabled(Cure);
 
-            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) && GetTargetHPPercent(healTarget) <= 90 &&
                 (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return OriginalHook(Temperance);
             
@@ -516,29 +533,30 @@ internal partial class WHM : Healer
 
             var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
 
-            if (ActionReady(Assize) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90)
+            if (ActionReady(Assize) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Assize) && GetPartyAvgHPPercent() <= 90)
                 return Assize;
             
-            if (ActionReady(Asylum) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90 &&
+            if (ActionReady(Asylum) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Asylum) && GetPartyAvgHPPercent() <= 90 &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(Medica1, SimpleTarget.Self);
 
             if (CanWeave() && Role.CanLucidDream(WHM_AoEHeals_Lucid))
                 return Role.LucidDreaming;
             
-            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() &&
+            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) &&
                 (GetPartyAvgHPPercent() <= 70 ||
                  GroupDamageIncoming() ||
                  HasStatusEffect(Buffs.DivineGrace)))
                 return OriginalHook(Temperance);
             
             if (LevelChecked(LiturgyOfTheBell) && InCombat() && CanWeave() &&
+                CanUseWhmHealingSetupOgcd(LiturgyOfTheBell) &&
                 IsOffCooldown(LiturgyOfTheBell) &&
                 (GetPartyAvgHPPercent() <= 50 ||
                  GroupDamageIncoming()))
                 return LiturgyOfTheBell;
 
-            if (ActionReady(PlenaryIndulgence) && InCombat() && CanWeave() &&
+            if (ActionReady(PlenaryIndulgence) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(PlenaryIndulgence) &&
                 (GetPartyAvgHPPercent() <= 70 ||
                  GroupDamageIncoming()))
                 return PlenaryIndulgence;
@@ -623,6 +641,7 @@ internal partial class WHM : Healer
             if (IsEnabled(Preset.WHM_STHeals_Temperance) &&
                 HasStatusEffect(Buffs.DivineGrace) &&
                 (!WHM_STHeals_TemperanceOptions[1] || !InBossEncounter()) &&
+                CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) &&
                 (!WHM_STHeals_TemperanceOptions[0] || CanWeave()))
                 return OriginalHook(Temperance);
 
@@ -637,6 +656,7 @@ internal partial class WHM : Healer
                 {
                     if (GetTargetHPPercent(healTarget,
                             WHM_STHeals_IncludeShields) <= config &&
+                        !ShouldHoldWhmHealingSetupOgcd(spell) &&
                         ActionReady(spell))
                         return spell is Asylum or LiturgyOfTheBell
                             ? spell.Retarget(Cure,SimpleTarget.Self)
@@ -697,6 +717,7 @@ internal partial class WHM : Healer
                     out var spell, out var enabled);
 
                 if (enabled && GetPartyAvgHPPercent() <= config &&
+                    !ShouldHoldWhmHealingSetupOgcd(spell) &&
                     ActionReady(spell))
                 {
                     if (IsEnabled(Preset.WHM_AoEHeals_ThinAir) && canThinAir && spell is Cure3 or Medica2 or Medica3)

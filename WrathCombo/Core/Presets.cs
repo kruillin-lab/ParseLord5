@@ -1,4 +1,5 @@
 ﻿using ECommons;
+using ECommons.DalamudServices;
 using ECommons.Logging;
 using System;
 using System.Collections.Frozen;
@@ -75,8 +76,9 @@ internal static class PresetStorage
             ReplaceSkill = preset.GetAttribute<ReplaceSkillAttribute>();
             JobInfo = preset.GetAttribute<JobInfoAttribute>();
             AutoAction = preset.GetAttribute<AutoActionAttribute>();
-            IsAoE = AutoAction?.IsAoE
-                ?? preset.ToString().Contains("_AoE_", StringComparison.OrdinalIgnoreCase);
+            IsAoE = AutoAction?.IsAoE ?? false;
+            if (AutoAction is null && preset.ToString().Contains("_AoE_", StringComparison.OrdinalIgnoreCase))
+                Svc.Log.Warning($"Preset {preset} looks like an AoE auto-action (name contains \"_AoE_\") but has no AutoActionAttribute; classifying as single-target. Add [AutoAction(..., isAoE: true)].");
             IsHidden = preset.GetAttribute<HiddenAttribute>() != null;
             ComboType = GetComboType(preset);
             if (AutoAction != null)

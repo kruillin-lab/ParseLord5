@@ -7,9 +7,12 @@ $SAMFile = Join-Path $CombosDir "SAM\SAM.cs"
 $SAMHelperFile = Join-Path $CombosDir "SAM\SAM_Helper.cs"
 $VPRFile = Join-Path $CombosDir "VPR\VPR.cs"
 $VPRHelperFile = Join-Path $CombosDir "VPR\VPR_Helper.cs"
+$WHMFile = Join-Path $CombosDir "WHM\WHM.cs"
+$WHMHelperFile = Join-Path $CombosDir "WHM\WHM_Helper.cs"
+$MNKHelperFile = Join-Path $CombosDir "MNK\MNK_Helper.cs"
 
 Write-Host "=== ParseLord5 Domain Evals ==="
-Write-Host "Scope: preset enumeration, structure validation, and SAM/VPR domain-specific checks"
+Write-Host "Scope: preset enumeration, structure validation, and SAM/VPR/WHM/MNK domain-specific checks"
 Write-Host ""
 
 # ---- FIXTURE 1: Preset enum has entries ----
@@ -153,9 +156,107 @@ if ($vprHelperContent -match 'Twinblood\s*=\s*\d+') {
     $failCount++
 }
 
+# ---- FIXTURE 7: SAM ST Ikishoten can recover after the exact second-GCD window ----
+Write-Host "--- Fixture: sam-st-ikishoten-recovery ---"
+$samIkishotenCallCount = ([regex]::Matches($samContent, 'TryGetIkishotenAction\s*\(')).Count
+$samAdvancedIkishotenCallCount = ([regex]::Matches($samContent, 'TryGetIkishotenAction\s*\(\s*out uint ikishotenAction,\s*IsEnabled\(Preset\.SAM_ST_Shinten\)\s*\)')).Count
+$samIkishotenHelperBlock = [regex]::Match(
+    $samHelperContent,
+    'private static bool TryGetIkishotenAction\(out uint action, bool allowKenkiDump = true\)(?<body>[\s\S]*?)\r?\n    private static bool CanSenei'
+).Groups['body'].Value
+$samHasLateWindow = $samHelperContent -match 'NumberOfGcdsUsed\s*>=\s*2'
+$samHasExactOnlyWindow = $samHelperContent -match 'NumberOfGcdsUsed\s+is\s+2'
+$samHasKenkiSafeIkishoten = $samIkishotenHelperBlock -match 'Kenki\s*<=\s*50' -and $samIkishotenHelperBlock -match 'action\s*=\s*Ikishoten'
+$samHasKenkiDump = $samIkishotenHelperBlock -match 'allowKenkiDump' -and
+    $samIkishotenHelperBlock -match 'ActionReady\(Shinten\)' -and
+    $samIkishotenHelperBlock -match 'InActionRange\(Shinten\)' -and
+    $samIkishotenHelperBlock -match 'action\s*=\s*Shinten'
+
+if ($samIkishotenCallCount -ge 4 -and $samAdvancedIkishotenCallCount -ge 2 -and $samHasLateWindow -and -not $samHasExactOnlyWindow -and $samHasKenkiSafeIkishoten -and $samHasKenkiDump) {
+    Write-Host "PASS sam-st-ikishoten-recovery: ST routes recover after GCD 2 and dump Kenki before Ikishoten overcap"
+    $passCount++
+} else {
+    if ($samIkishotenCallCount -lt 4) {
+        Write-Host "  Expected all ST Ikishoten branches to call TryGetIkishotenAction, found $samIkishotenCallCount"
+    }
+    if ($samAdvancedIkishotenCallCount -lt 2) {
+        Write-Host "  Expected Advanced ST Ikishoten branches to honor the Shinten toggle, found $samAdvancedIkishotenCallCount"
+    }
+    if (-not $samHasLateWindow) {
+        Write-Host "  Missing NumberOfGcdsUsed >= 2 recovery window in SAM_Helper.cs"
+    }
+    if ($samHasExactOnlyWindow) {
+        Write-Host "  Found exact-only NumberOfGcdsUsed is 2 gate in SAM_Helper.cs"
+    }
+    if (-not $samHasKenkiSafeIkishoten) {
+        Write-Host "  Missing Ikishoten selection at safe Kenki in TryGetIkishotenAction"
+    }
+    if (-not $samHasKenkiDump) {
+        Write-Host "  Missing Shinten Kenki dump before Ikishoten overcap in TryGetIkishotenAction"
+    }
+    Write-Host "FAIL sam-st-ikishoten-recovery"
+    $failCount++
+}
+
+# ---- FIXTURE 8: WHM DPS paths honor healing stacks without stalling between queue windows ----
+Write-Host "--- Fixture: whm-dps-healing-interception ---"
+$whmContent = Get-Content -LiteralPath $WHMFile -Raw
+$whmHelperContent = Get-Content -LiteralPath $WHMHelperFile -Raw
+$whmDpsBlocks = [ordered]@{
+    "WHM_ST_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_ST_Simple_DPS.*?internal class WHM_AoE_Simple_DPS', 'Singleline').Value
+    "WHM_AoE_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_Simple_DPS.*?internal class WHM_ST_MainCombo', 'Singleline').Value
+    "WHM_ST_MainCombo" = [regex]::Match($whmContent, 'internal class WHM_ST_MainCombo.*?internal class WHM_AoE_DPS', 'Singleline').Value
+    "WHM_AoE_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_DPS.*?#endregion\s+#region Simple Heals', 'Singleline').Value
+}
+$whmInterceptionFailures = @()
+
+foreach ($entry in $whmDpsBlocks.GetEnumerator()) {
+    if ([string]::IsNullOrWhiteSpace($entry.Value) -or
+        $entry.Value -notmatch 'TryDpsSingleTargetHealPriority' -or
+        $entry.Value -notmatch 'TryDpsAoEHealPriority') {
+        $whmInterceptionFailures += $entry.Key
+    }
+}
+
+$hasPressableHealGate =
+    $whmHelperContent -match 'CanUseDpsHealNow' -and
+    $whmHelperContent -match 'CanWeave\(\)\s*&&\s*!ShouldHoldWhmHealingSetupOgcd' -and
+    $whmHelperContent -match 'CanQueue\(action\)'
+
+if ($whmInterceptionFailures.Count -eq 0 -and $hasPressableHealGate) {
+    Write-Host "PASS whm-dps-healing-interception: all WHM DPS paths check ST/AoE stacks and only select pressable heals"
+    $passCount++
+} else {
+    if ($whmInterceptionFailures.Count -gt 0) {
+        Write-Host "  Missing stack interception in: $($whmInterceptionFailures -join ', ')"
+    }
+    if (-not $hasPressableHealGate) {
+        Write-Host "  Missing weave/queue readiness gate in WHM_Helper.cs"
+    }
+    Write-Host "FAIL whm-dps-healing-interception"
+    $failCount++
+}
+
+# ---- FIXTURE 9: MNK ST Perfect Balance spends a charge before overcapping ----
+Write-Host "--- Fixture: mnk-st-perfect-balance-charge-failsafe ---"
+$mnkHelperContent = Get-Content -LiteralPath $MNKHelperFile -Raw
+$mnkPerfectBalanceStBlock = [regex]::Match(
+    $mnkHelperContent,
+    'private static bool CanPerfectBalance\(bool onAoE = false\).*?case false when(?<body>.*?)case true when',
+    'Singleline'
+).Groups['body'].Value
+
+if (-not [string]::IsNullOrWhiteSpace($mnkPerfectBalanceStBlock) -and
+    $mnkPerfectBalanceStBlock -match 'GetRemainingCharges\(PerfectBalance\)\s*==\s*GetMaxCharges\(PerfectBalance\)') {
+    Write-Host "PASS mnk-st-perfect-balance-charge-failsafe: ST spends Perfect Balance at maximum charges"
+    $passCount++
+} else {
+    Write-Host "FAIL mnk-st-perfect-balance-charge-failsafe: ST can hold Perfect Balance at maximum charges"
+    $failCount++
+}
+
 Write-Host ""
 Write-Host "=== Summary ==="
 Write-Host "passed=$passCount failed=$failCount negative_controls=1 total=$(($passCount + $failCount))"
 
 if ($failCount -gt 0) { exit 1 } else { exit 0 }
-

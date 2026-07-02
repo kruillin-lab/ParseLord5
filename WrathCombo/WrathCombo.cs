@@ -34,6 +34,7 @@ using WrathCombo.Services;
 using WrathCombo.Services.ActionRequestIPC;
 using WrathCombo.Services.IPC;
 using WrathCombo.Services.IPC_Subscriber;
+using WrathCombo.Services.TankCooldownHelperIPC;
 using WrathCombo.Services.SmartMitigation;
 using WrathCombo.Window;
 using WrathCombo.Window.Tabs;
@@ -194,6 +195,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         ActionWatching.Enable();
         IPC = Provider.Init();
         PingPluginIPC.Init();
+        TankCooldownHelperIpcClient.Init();
         ConflictingPluginsChecks.Begin();
 
         // Subscribe to language changes to update localized text if needed (Client != Selected UI)

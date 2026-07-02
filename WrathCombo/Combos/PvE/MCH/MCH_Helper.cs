@@ -98,6 +98,13 @@ internal partial class MCH
         MCH_ST_QueenBossOption == 1 ||
         !InBossEncounter() ? MCH_ST_QueenHPOption : 0;
 
+    private static bool ShouldUseAutoCrossbow(bool forceAutoCrossbow = false) =>
+        HasBattleTarget() &&
+        ActionReady(AutoCrossbow) &&
+        (!LevelChecked(CheckMate) ||
+         forceAutoCrossbow ||
+         LevelChecked(BlazingShot) && NumberOfEnemiesInRange(AutoCrossbow, CurrentTarget) >= 4);
+
     #endregion
 
     #region Reassembled

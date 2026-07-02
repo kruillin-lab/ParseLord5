@@ -48,7 +48,43 @@ internal unsafe class AutoRotationController
 
     public static bool WouldLikeToGroundTarget;
     public static bool Paused;
-    public static int UnpauseSeconds;
+    public static int UnpauseSeconds = 0;
+    public static bool IsIssuingAutorotAction;
+    public static bool IsIssuingManualQueuedAction;
+    private static long ManualOverrideUntil;
+    private static uint ManualQueuedActionId;
+    private static ulong ManualQueuedTargetId;
+    private static long ManualQueuedUntil;
+    private const long ManualOverrideDurationMs = 900;
+    private const long ManualQueueGraceMs = 1500;
+    private static readonly uint[] ManualOverrideActionBlacklist =
+    [
+        DNC.StandardStep,
+        DNC.TechnicalStep,
+        DNC.StandardFinish0,
+        DNC.StandardFinish1,
+        DNC.StandardFinish2,
+        DNC.TechnicalFinish0,
+        DNC.TechnicalFinish1,
+        DNC.TechnicalFinish2,
+        DNC.TechnicalFinish3,
+        DNC.TechnicalFinish4,
+        DNC.Emboite,
+        DNC.Entrechat,
+        DNC.Jete,
+        DNC.Pirouette,
+        DNC.FinishingMove,
+        SGE.Eukrasia,
+        SGE.EukrasianDosis,
+        SGE.EukrasianDosis2,
+        SGE.EukrasianDosis3,
+        SGE.EukrasianDyskrasia,
+        SGE.EukrasianDiagnosis,
+        SGE.EukrasianPrognosis,
+        SGE.EukrasianPrognosis2,
+        NIN.Ninjutsu,
+        NIN.Rabbit,
+    ];
 
     public static IGameObject? AutorotHealTarget;
     public static bool AutorotRaidwiding;
@@ -73,7 +109,6 @@ internal unsafe class AutoRotationController
             return;
 
         bool pauseWarningFound = false;
-        bool raidwideWarningFound = false;
         var logMessages = Svc.Data.Excel.GetSheet<LogMessage>();
         switch (Content.TerritoryID)
         {
@@ -146,8 +181,142 @@ internal unsafe class AutoRotationController
                || Player.Mounted
                || !EzThrottler.Throttle("Autorot", cfg.Throttler)
                || (cfg.DPSSettings.UnTargetAndDisableForPenalty && PlayerHasActionPenalty())
-               || (ActionManager.Instance()->QueuedActionId > 0)
+               || (ActionManager.Instance()->QueuedActionId > 0 && !Service.Configuration.OverwriteQueue && !HasManualQueuedAction())
+               || (Environment.TickCount64 < ManualOverrideUntil && !HasManualQueuedAction())
                || Paused;
+    }
+
+    private static bool HasManualQueuedAction()
+    {
+        if (ManualQueuedActionId == 0)
+            return false;
+
+        if (Environment.TickCount64 <= ManualQueuedUntil)
+            return true;
+
+        ClearManualQueuedAction();
+        return false;
+    }
+
+    private static void ClearManualQueuedAction()
+    {
+        ManualQueuedActionId = 0;
+        ManualQueuedTargetId = 0;
+        ManualQueuedUntil = 0;
+    }
+
+    internal static void NoteManualActionOverride(uint actionId)
+    {
+        if (!IsManualActionOverrideCandidate(actionId))
+            return;
+
+        ManualOverrideUntil = Environment.TickCount64 + ManualOverrideDurationMs;
+    }
+
+    internal static void NoteManualQueuedGcd(uint actionId, ulong targetId)
+    {
+        if (!IsManualActionOverrideCandidate(actionId))
+            return;
+
+        ManualQueuedActionId = actionId;
+        ManualQueuedTargetId = targetId;
+        ManualQueuedUntil = Environment.TickCount64 + (long)(MathF.Max(RemainingGCD, 0.1f) * 1000) + ManualQueueGraceMs;
+    }
+
+    internal static bool IsManualActionOverrideCandidate(uint actionId) =>
+        !IsIssuingAutorotAction &&
+        cfg?.Enabled == true &&
+        actionId != 0 &&
+        !IsManualOverrideBlacklisted(actionId) &&
+        RemainingGCD > 0;
+
+    private static bool IsManualOverrideBlacklisted(uint actionId) =>
+        NIN.MudraSigns.Contains(actionId) ||
+        ManualOverrideActionBlacklist.Contains(actionId);
+
+    private static bool UseAutorotAction(ActionType actionType, uint actionId)
+    {
+        IsIssuingAutorotAction = true;
+        try
+        {
+            return ActionManager.Instance()->UseAction(actionType, actionId);
+        }
+        finally
+        {
+            IsIssuingAutorotAction = false;
+        }
+    }
+
+    private static bool UseAutorotAction(ActionType actionType, uint actionId, ulong targetId)
+    {
+        IsIssuingAutorotAction = true;
+        try
+        {
+            return ActionManager.Instance()->UseAction(actionType, actionId, targetId);
+        }
+        finally
+        {
+            IsIssuingAutorotAction = false;
+        }
+    }
+
+    private static bool TryUseManualQueuedAction()
+    {
+        if (!HasManualQueuedAction())
+            return false;
+
+        var actionId = ManualQueuedActionId;
+        if (ActionManager.Instance()->QueuedActionId != 0 && ActionManager.Instance()->QueuedActionId != actionId)
+        {
+            ActionManager.Instance()->QueuedActionId = 0;
+            ActionManager.Instance()->QueuedTargetId = 0;
+        }
+
+        if (!AutoRotationHelper.AutoRotCanPressAction(actionId))
+            return true;
+
+        var targetId = ManualQueuedTargetId;
+        var areaTargeted = ActionSheet[actionId].TargetArea;
+        var targetObject = targetId.GetObject();
+        var canUseSelf = ActionManager.CanUseActionOnTarget(actionId, Player.GameObject);
+        var canUseTarget = targetObject is not null && ActionManager.CanUseActionOnTarget(actionId, targetObject.Struct());
+
+        if (!areaTargeted && targetId != 0xE000_0000 && targetObject is null && !canUseSelf)
+        {
+            ClearManualQueuedAction();
+            return false;
+        }
+
+        if (!areaTargeted && !canUseSelf && !canUseTarget)
+        {
+            ClearManualQueuedAction();
+            return false;
+        }
+
+        WouldLikeToGroundTarget = areaTargeted;
+        IsIssuingManualQueuedAction = true;
+        bool ret;
+        try
+        {
+            ret = UseAutorotAction(ActionType.Action, actionId, targetId);
+        }
+        finally
+        {
+            IsIssuingManualQueuedAction = false;
+        }
+        WouldLikeToGroundTarget = false;
+
+        if (ret)
+        {
+            ClearManualQueuedAction();
+            ManualOverrideUntil = Environment.TickCount64 + ManualOverrideDurationMs;
+        }
+        else if (Environment.TickCount64 >= ManualQueuedUntil)
+        {
+            ClearManualQueuedAction();
+        }
+
+        return true;
     }
 
     internal static void Run()
@@ -160,6 +329,9 @@ internal unsafe class AutoRotationController
 
         uint _ = 0;
         var autoActions = Presets.GetJobAutorots;
+
+        if (TryUseManualQueuedAction())
+            return;
 
         // Pre-emptive HoT/Shield for healers
         if (cfg.HealerSettings.PreEmptiveHoT && Player.Job is Job.CNJ or Job.WHM or Job.AST)
@@ -343,7 +515,7 @@ internal unsafe class AutoRotationController
                 if (act == AST.Bole) act = AST.Play2;
                 if (act == AST.Spire) act = AST.Play3;
                 WouldLikeToGroundTarget = ActionSheet[act].TargetArea;
-                ActionManager.Instance()->UseAction(ActionType.Action, act is SGE.Eukrasia ? act.Retarget(SimpleTarget.Self) : act.Retarget(safeGameObjectId.GetObject()), safeGameObjectId!.Value);
+                UseAutorotAction(ActionType.Action, act is SGE.Eukrasia ? act.Retarget(SimpleTarget.Self) : act.Retarget(safeGameObjectId.GetObject()), safeGameObjectId!.Value);
                 WouldLikeToGroundTarget = false;
                 if (act != SGE.Eukrasia)
                     TankbusterHandled = true;
@@ -387,10 +559,31 @@ internal unsafe class AutoRotationController
     ];
 
     public static List<uint> BlacklistedRaidwides = [];
+
+    private static bool UsedRaidwideAbilityThisGcd()
+    {
+        foreach (var action in WeaveActions)
+        {
+            if (action.ActionAttackType() is not ActionAttackType.Ability)
+                continue;
+
+            foreach (var (raidwide, _) in RaidwideActions)
+            {
+                if (raidwide == action)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     private static void HandleRaidwide(bool multihit)
     {
         foreach (var (spell, multihitter) in RaidwideActions)
         {
+            if (spell.ActionAttackType() is ActionAttackType.Ability && UsedRaidwideAbilityThisGcd())
+                return;
+
             if (AutorotRaidwides >= 2)
                 return;
 
@@ -403,7 +596,7 @@ internal unsafe class AutoRotationController
             if (AbleToCast(spell))
             {
                 WouldLikeToGroundTarget = ActionSheet[spell].TargetArea;
-                ActionManager.Instance()->UseAction(ActionType.Action, spell);
+                UseAutorotAction(ActionType.Action, spell);
                 WouldLikeToGroundTarget = false;
                 return;
             }
@@ -497,7 +690,7 @@ internal unsafe class AutoRotationController
 
                 if (Player.Object is not null && ActionManager.CanUseActionOnTarget(spell, SimpleTarget.FocusTarget.Struct()) && !OutOfRange(spell, Player.Object, SimpleTarget.FocusTarget) && ActionManager.Instance()->GetActionStatus(ActionType.Action, spell) == 0)
                 {
-                    ActionManager.Instance()->UseAction(ActionType.Action, regenSpell, SimpleTarget.FocusTarget.GameObjectId);
+                    UseAutorotAction(ActionType.Action, regenSpell, SimpleTarget.FocusTarget.GameObjectId);
                     return;
                 }
             }
@@ -540,7 +733,7 @@ internal unsafe class AutoRotationController
 
                 if (ActionManager.Instance()->GetActionStatus(ActionType.Action, spell) == 0)
                 {
-                    ActionManager.Instance()->UseAction(ActionType.Action, prepSpell);
+                    UseAutorotAction(ActionType.Action, prepSpell);
                     return;
                 }
             }
@@ -562,7 +755,7 @@ internal unsafe class AutoRotationController
 
                 if (Player.Object is not null && ActionManager.CanUseActionOnTarget(spell, SimpleTarget.FocusTarget.Struct()) && !OutOfRange(spell, Player.Object, SimpleTarget.FocusTarget) && ActionManager.Instance()->GetActionStatus(ActionType.Action, spell) == 0)
                 {
-                    ActionManager.Instance()->UseAction(ActionType.Action, spell, SimpleTarget.FocusTarget.GameObjectId);
+                    UseAutorotAction(ActionType.Action, spell, SimpleTarget.FocusTarget.GameObjectId);
                     return;
                 }
             }
@@ -619,7 +812,7 @@ internal unsafe class AutoRotationController
             {
                 if (resSpell == OccultCrescent.Revive)
                 {
-                    ActionManager.Instance()->UseAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
+                    UseAutorotAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
                     return;
                 }
 
@@ -632,7 +825,7 @@ internal unsafe class AutoRotationController
                         {
                             if (ActionManager.Instance()->GetActionStatus(ActionType.Action, RoleActions.Magic.Swiftcast) == 0)
                             {
-                                ActionManager.Instance()->UseAction(ActionType.Action, RoleActions.Magic.Swiftcast);
+                                UseAutorotAction(ActionType.Action, RoleActions.Magic.Swiftcast);
                                 return;
                             }
                         }
@@ -640,7 +833,7 @@ internal unsafe class AutoRotationController
 
                     if (HasStatusEffect(RoleActions.Magic.Buffs.Swiftcast) || HasStatusEffect(RDM.Buffs.Dualcast) || !IsMoving())
                     {
-                        ActionManager.Instance()->UseAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
+                        UseAutorotAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
                         return;
                     }
                 }
@@ -649,13 +842,13 @@ internal unsafe class AutoRotationController
                 {
                     if (ActionReady(RoleActions.Magic.Swiftcast) && !HasStatusEffect(RDM.Buffs.Dualcast))
                     {
-                        ActionManager.Instance()->UseAction(ActionType.Action, RoleActions.Magic.Swiftcast);
+                        UseAutorotAction(ActionType.Action, RoleActions.Magic.Swiftcast);
                         return;
                     }
 
                     if (ActionManager.GetAdjustedCastTime(ActionType.Action, resSpell) == 0)
                     {
-                        ActionManager.Instance()->UseAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
+                        UseAutorotAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
                     }
 
                 }
@@ -665,7 +858,7 @@ internal unsafe class AutoRotationController
                     {
                         if (ActionManager.Instance()->GetActionStatus(ActionType.Action, RoleActions.Magic.Swiftcast) == 0)
                         {
-                            ActionManager.Instance()->UseAction(ActionType.Action, RoleActions.Magic.Swiftcast);
+                            UseAutorotAction(ActionType.Action, RoleActions.Magic.Swiftcast);
                             return;
                         }
                     }
@@ -675,7 +868,7 @@ internal unsafe class AutoRotationController
 
                         if ((cfg is not null) && ((cfg.HealerSettings.AutoRezRequireSwift && ActionManager.GetAdjustedCastTime(ActionType.Action, resSpell) == 0) || !cfg.HealerSettings.AutoRezRequireSwift))
                         {
-                            ActionManager.Instance()->UseAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
+                            UseAutorotAction(ActionType.Action, resSpell, member.BattleChara.GameObjectId);
                         }
                     }
                 }
@@ -693,7 +886,7 @@ internal unsafe class AutoRotationController
             if (res is 0 or 565)
             {
                 Svc.Log.Debug($"Cleansing {memberBC.Name}");
-                ActionManager.Instance()->UseAction(ActionType.Action, RoleActions.Healer.Esuna.Retarget(memberBC), memberBC.GameObjectId);
+                UseAutorotAction(ActionType.Action, RoleActions.Healer.Esuna.Retarget(memberBC), memberBC.GameObjectId);
             }
         }
     }
@@ -714,7 +907,7 @@ internal unsafe class AutoRotationController
             var enemiesTargeting = Svc.Objects.Count(x => x.IsTargetable && x.IsHostile() && x.TargetObjectId == member.BattleChara.GameObjectId);
             if (enemiesTargeting > 0 && !HasStatusEffect(SGE.Buffs.Kardion, member.BattleChara))
             {
-                ActionManager.Instance()->UseAction(ActionType.Action, SGE.Kardia.Retarget(member.BattleChara), member.BattleChara.GameObjectId);
+                UseAutorotAction(ActionType.Action, SGE.Kardia.Retarget(member.BattleChara), member.BattleChara.GameObjectId);
                 return;
             }
         }
@@ -842,11 +1035,7 @@ internal unsafe class AutoRotationController
                 LockedST = false;
 
                 uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, Player.Object));
-                if (!ActionReady(outAct))
-                    return false;
-
-                var canQueue = outAct.ActionAttackType() is { } type && (type is ActionAttackType.Ability || type is not ActionAttackType.Ability && RemainingGCD <= cfg.QueueWindow);
-                if (!canQueue)
+                if (!CanQueue(outAct))
                     return false;
 
                 if (HealerTargeting.CanAoEHeal(outAct))
@@ -859,7 +1048,7 @@ internal unsafe class AutoRotationController
                     var targetId = player.GameObjectId;
                     var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
                     WouldLikeToGroundTarget = ActionSheet[outAct].TargetArea;
-                    var ret = ActionManager.Instance()->UseAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
+                    var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
                     WouldLikeToGroundTarget = false;
 
                     return true;
@@ -893,13 +1082,7 @@ internal unsafe class AutoRotationController
                 OverrideTarget = target;
                 uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
                 if (outAct is All.SavageBlade) return true;
-                if (!ActionReady(outAct))
-                {
-                    OverrideTarget = null;
-                    return false;
-                }
-
-                if (!AutoRotCanPressAction(outAct))
+                if (!CanQueue(outAct))
                 {
                     OverrideTarget = null;
                     return false;
@@ -933,13 +1116,13 @@ internal unsafe class AutoRotationController
                     Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, original);
                 }
 
-                if (inRange)
+                if (inRange && AutoRotCanPressAction(outAct))
                 {
                     //Chance target of target.GameObjectID can be null
                     var targetId = (targetsHostile && target != null) || switched ? target.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
                     var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
                     WouldLikeToGroundTarget = areaTargeted;
-                    var ret = ActionManager.Instance()->UseAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
+                    var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
                     WouldLikeToGroundTarget = false;
                     if (NIN.MudraSigns.Contains(outAct))
                         _lockedAoE = true;
@@ -968,6 +1151,7 @@ internal unsafe class AutoRotationController
             var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
             if (!CanQueue(outAct))
             {
+                OverrideTarget = null;
                 return false;
             }
 
@@ -1018,7 +1202,7 @@ internal unsafe class AutoRotationController
                 var targetId = canUseTarget || areaTargeted ? target.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
                 var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
                 WouldLikeToGroundTarget = ActionSheet[outAct].TargetArea;
-                var ret = ActionManager.Instance()->UseAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
+                var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
                 WouldLikeToGroundTarget = false;
 
                 if (NIN.MudraSigns.Contains(outAct))
@@ -1055,7 +1239,7 @@ internal unsafe class AutoRotationController
         /// <summary>
         ///     Matches <see cref="CanQueue" /> weave timing so oGCDs are not rejected while a short animation lock remains.
         /// </summary>
-        private static bool AutoRotCanPressAction(uint outAct) =>
+        internal static bool AutoRotCanPressAction(uint outAct) =>
             outAct.ActionAttackType() is { } type &&
             ((type is ActionAttackType.Ability && AnimationLock <= BaseActionQueue) ||
              (type is not ActionAttackType.Ability && RemainingGCD <= cfg.QueueWindow));

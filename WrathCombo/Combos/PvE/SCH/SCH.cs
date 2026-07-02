@@ -176,39 +176,39 @@ internal partial class SCH : Healer
                 cleansableTarget)
                 return Role.Esuna.RetargetIfEnabled(Physick);
             
-            if (ActionReady(Aetherflow) && !HasAetherflow &&
+            if (ActionReady(Aetherflow) && !HasAetherflow && CanUseSchHealingSetupOgcd(Aetherflow) &&
                 InCombat() && CanWeave())
                 return Aetherflow;
             
-            if (ActionReady(Dissipation) && !HasAetherflow &&
+            if (ActionReady(Dissipation) && !HasAetherflow && CanUseSchHealingSetupOgcd(Dissipation) &&
                 InCombat() && !FairyBusy && CanWeave())
                 return Dissipation;
             
             if (Role.CanLucidDream(6500) && CanWeave()) 
                 return Role.LucidDreaming;
             
-            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave())
+            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave() && CanUseSchHealingSetupOgcd(Consolation))
                 return Consolation;
             
-            if (ActionReady(Excogitation) && InCombat() && CanWeave() &&
+            if (ActionReady(Excogitation) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Excogitation) &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Excogitation.RetargetIfEnabled(Physick);
             
-            if (ActionReady(Lustrate) && InCombat() && CanWeave() &&
+            if (ActionReady(Lustrate) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Lustrate) &&
                 GetTargetHPPercent(healTarget) <= 50)
                 return Lustrate.RetargetIfEnabled(Physick);
             
-            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return SacredSoil.Retarget(Physick, SimpleTarget.Self);
             
-            if (ActionReady(Protraction) && InCombat() && CanWeave() && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty())) 
+            if (ActionReady(Protraction) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Protraction) && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty())) 
                 return Protraction.RetargetIfEnabled(Physick);
             
-            if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && !FairyBusy && ActionReady(Aetherpact))
+            if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Aetherpact) && !FairyBusy && ActionReady(Aetherpact))
                 return Aetherpact.RetargetIfEnabled(Physick);
 
-            if (InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode) && HasPetPresent() && !FairyBusy)
             {
                 if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
@@ -226,7 +226,7 @@ internal partial class SCH : Healer
                     return Seraphism;
             }
 
-            if (ActionReady(Expedient) && InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return Expedient;
 
             if (TryShieldedEmergencyAdloquium(healTarget, out var shieldedHeal))
@@ -248,28 +248,29 @@ internal partial class SCH : Healer
             if (EndAetherpact)
                 return DissolveUnion;
             
-            if (ActionReady(Expedient) && InCombat() && CanWeave() && GroupDamageIncoming())
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) && GroupDamageIncoming())
                 return Expedient;
             
-            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && GroupDamageIncoming())
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) && GroupDamageIncoming())
                 return SacredSoil.Retarget([Succor, Concitation], SimpleTarget.Self);
             
-            if (ActionReady(Aetherflow) && !HasAetherflow &&
+            if (ActionReady(Aetherflow) && !HasAetherflow && CanUseSchHealingSetupOgcd(Aetherflow) &&
                 InCombat() && CanWeave())
                 return Aetherflow;
             
             if (Role.CanLucidDream(6500) && CanWeave()) 
                 return Role.LucidDreaming;
 
-            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave())
+            if (Gauge.SeraphTimer > 0 && !FairyBusy && ActionReady(Consolation) && CanWeave() && CanUseSchHealingSetupOgcd(Consolation))
                 return Consolation;
 
-            if (InCombat() && CanWeave() && IsOffCooldown(Indomitability) && LevelChecked(Indomitability) && GetPartyAvgHPPercent() <= 85)
-                return !HasAetherflow && ActionReady(Recitation)
+            if (InCombat() && CanWeave() && IsOffCooldown(Indomitability) && LevelChecked(Indomitability) && GetPartyAvgHPPercent() <= 85 &&
+                (CanUseSchHealingSetupOgcd(Indomitability) || !HasAetherflow && CanUseSchHealingSetupOgcd(Recitation)))
+                return !HasAetherflow && ActionReady(Recitation) && CanUseSchHealingSetupOgcd(Recitation)
                     ? Recitation
                     : Indomitability;
 
-            if (InCombat() && CanWeave() && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && HasPetPresent() && !FairyBusy)
             {
                 if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
@@ -342,6 +343,16 @@ internal partial class SCH : Healer
             {
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_Aetherflow) && !WasLastAction(Dissipation) && ActionReady(Aetherflow) && !HasAetherflow)
                     return Aetherflow;
+
+                var healTarget = SimpleTarget.Stack.OneButtonHealLogic;
+                if (HasAetherflow && GetTargetHPPercent(healTarget) <= 50 && !UsedSchHealingSetupOgcdThisGcd)
+                {
+                    if (ActionReady(Excogitation))
+                        return Excogitation.RetargetIfEnabled(replacedActions);
+
+                    if (ActionReady(Lustrate))
+                        return Lustrate.RetargetIfEnabled(replacedActions);
+                }
 
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
@@ -533,7 +544,7 @@ internal partial class SCH : Healer
 
             // Aetherflow
             if (IsEnabled(Preset.SCH_ST_Heal_Aetherflow) &&
-                ActionReady(Aetherflow) && !HasAetherflow &&
+                ActionReady(Aetherflow) && !HasAetherflow && CanUseSchHealingSetupOgcd(Aetherflow) &&
                 InCombat() && CanWeave())
                 return Aetherflow;
 
@@ -542,6 +553,7 @@ internal partial class SCH : Healer
                 && ActionReady(Dissipation)
                 && !HasAetherflow
                 && InCombat()
+                && CanUseSchHealingSetupOgcd(Dissipation)
                 && !FairyBusy)
                 return Dissipation;
 
@@ -562,9 +574,12 @@ internal partial class SCH : Healer
                         spell is Adloquium or Manifestation &&
                         GetTargetHPPercent(healTarget, SCH_ST_Heal_IncludeShields) <=
                         SCH_ST_Heal_AdloquiumOption_Emergency)
-                        return OriginalHook(EmergencyTactics);
+                        return CanUseSchHealingSetupOgcd(OriginalHook(EmergencyTactics))
+                            ? OriginalHook(EmergencyTactics)
+                            : actionID;
 
                     if (GetTargetHPPercent(healTarget, SCH_ST_Heal_IncludeShields) <= config &&
+                        !ShouldHoldSchHealingSetupOgcd(spell) &&
                         ActionReady(spell))
                         return spell.RetargetIfEnabled(Physick);
                 }
@@ -601,11 +616,13 @@ internal partial class SCH : Healer
             if (!HasAetherflow && InCombat())
             {
                 if (IsEnabled(Preset.SCH_AoE_Heal_Aetherflow) && ActionReady(Aetherflow) &&
-                    (!SCH_AoE_Heal_Aetherflow_Indomitability || GetCooldownRemainingTime(Indomitability) <= 1))
+                    (!SCH_AoE_Heal_Aetherflow_Indomitability || GetCooldownRemainingTime(Indomitability) <= 1) &&
+                    CanUseSchHealingSetupOgcd(Aetherflow))
                     return Aetherflow;
 
                 if (IsEnabled(Preset.SCH_AoE_Heal_Dissipation) && ActionReady(Dissipation) && !FairyBusy &&
-                    (!SCH_AoE_Heal_Dissipation_Indomitability || GetCooldownRemainingTime(Indomitability) <= 1))
+                    (!SCH_AoE_Heal_Dissipation_Indomitability || GetCooldownRemainingTime(Indomitability) <= 1) &&
+                    CanUseSchHealingSetupOgcd(Dissipation))
                     return Dissipation;
             }
             if (IsEnabled(Preset.SCH_AoE_Heal_Lucid) && Role.CanLucidDream(SCH_AoE_Heal_LucidOption))
@@ -620,13 +637,16 @@ internal partial class SCH : Healer
                 bool onIdom = SCH_AoE_Heal_Indomitability_Recitation && spell is Indomitability;
                 bool onSuccor = SCH_AoE_Heal_Succor_Options[1] && spell is Succor or Concitation or Accession;
 
-                if (enabled && averagePartyHP <= config && ActionReady(spell))
-                    return ActionReady(Recitation) && (onIdom || onSuccor) ?
-                       Recitation :
-                       spell;
+                if (enabled && averagePartyHP <= config && !ShouldHoldSchHealingSetupOgcd(spell) && ActionReady(spell))
+                {
+                    if (ActionReady(Recitation) && (onIdom || onSuccor) && CanUseSchHealingSetupOgcd(Recitation))
+                        return Recitation;
+
+                    return spell;
+                }
             }
 
-            if (SCH_AoE_Heal_Succor_Options[0] && ActionReady(EmergencyTactics))
+            if (SCH_AoE_Heal_Succor_Options[0] && ActionReady(EmergencyTactics) && CanUseSchHealingSetupOgcd(EmergencyTactics))
                 return OriginalHook(EmergencyTactics);
 
             return !LevelChecked(Succor) ?

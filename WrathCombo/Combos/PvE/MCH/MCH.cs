@@ -270,13 +270,14 @@ internal partial class MCH : PhysicalRanged
                     return OriginalHook(AirAnchor);
             }
 
-            if (ActionReady(OriginalHook(Heatblast)) && IsOverheated)
-                return HasBattleTarget() &&
-                       (!LevelChecked(CheckMate) && ActionReady(AutoCrossbow) ||
-                        LevelChecked(CheckMate) && LevelChecked(BlazingShot) &&
-                        NumberOfEnemiesInRange(AutoCrossbow, CurrentTarget) >= 5)
-                    ? AutoCrossbow
-                    : OriginalHook(Heatblast);
+            if (IsOverheated)
+            {
+                if (ShouldUseAutoCrossbow())
+                    return AutoCrossbow;
+
+                if (ActionReady(OriginalHook(Heatblast)))
+                    return OriginalHook(Heatblast);
+            }
 
             return actionID;
         }
@@ -624,14 +625,14 @@ internal partial class MCH : PhysicalRanged
                 }
             }
 
-            if (ActionReady(OriginalHook(Heatblast)) && IsOverheated)
-                return HasBattleTarget() &&
-                       (!LevelChecked(CheckMate) && ActionReady(AutoCrossbow) ||
-                        LevelChecked(CheckMate) && LevelChecked(BlazingShot) &&
-                        NumberOfEnemiesInRange(AutoCrossbow, CurrentTarget) >= 5 ||
-                        IsNotEnabled(Preset.MCH_AoE_Adv_GaussRicochet))
-                    ? AutoCrossbow
-                    : OriginalHook(Heatblast);
+            if (IsOverheated)
+            {
+                if (ShouldUseAutoCrossbow(IsNotEnabled(Preset.MCH_AoE_Adv_GaussRicochet)))
+                    return AutoCrossbow;
+
+                if (ActionReady(OriginalHook(Heatblast)))
+                    return OriginalHook(Heatblast);
+            }
 
             return actionID;
         }

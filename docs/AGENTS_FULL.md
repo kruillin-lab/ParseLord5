@@ -81,3 +81,25 @@ On a Windows machine with XIVLauncher: build Debug (outputs to devPlugins), add 
 - Build fails with thousands of `AtkUnitBase` / `FFXIVClientStructs` errors → Dalamud hook path is missing or stale; refresh `latest.zip` into the `Hooks/dev` folder above.
 - `quality-gate.json` `markdown-audit` command is Windows-local and not runnable in Cloud.
 - Submodule pins must match; do not bump `ECommons` without a deliberate compatibility pass.
+
+### Automating cloud agent → local dev DLL (Windows)
+
+**Automatable:** `git fetch` / `pull` → `dotnet build` → `rotation-evals.ps1` → DLL in `%AppData%\XIVLauncher\devPlugins\ParseLord5\`.
+
+**Not automatable without the game running:** enabling the dev plugin, starting FFXIV, or hot-reload (use Dalamud **Auto Reload** while logged in).
+
+One-shot script:
+
+```powershell
+cd C:\Users\kruil\Documents\Projects\ParseLord5
+.\scripts\sync-dev-build.ps1 -Notify
+```
+
+| Trigger | How |
+|---------|-----|
+| Manual | Run after agent finishes or on a hotkey |
+| Scheduled | Task Scheduler every 5–15 min while iterating: `pwsh -NoProfile -File ...\scripts\sync-dev-build.ps1` |
+| On push | Self-hosted GitHub Actions runner on this PC, or webhook → script |
+| Hermes cron | `hermes cron` job calling the same PowerShell line |
+
+Agent branch instead of base: `-Branch cursor/your-branch`.

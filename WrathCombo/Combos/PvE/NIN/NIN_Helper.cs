@@ -60,9 +60,9 @@ internal partial class NIN
                                           NIN_AoE_AdvancedMode_Ninjitsus_Katon_Uptime && !InMeleeRange() &&
                                           GetCooldownChargeRemainingTime(Ten) <= TrickCD - 10); //Uptime option
 
-    internal static bool CanUseDoton => LevelChecked(Doton) && MudraReady && DotonStoppedMoving && !JustUsed(Doton) &&
-                                        (!HasDoton || DotonRemaining <= 2) && //No doton down
-                                        (TrickDebuff || GetCooldownChargeRemainingTime(Ten) < 3); //Pool for buff window
+    internal static bool CanUseDoton => LevelChecked(Doton) && MudraReady && !HasKassatsu && DotonStoppedMoving && !JustUsed(Doton) &&
+                                         (!HasDoton ||
+                                          DotonRemaining <= 2 && (TrickDebuff || GetCooldownChargeRemainingTime(Ten) < 3));
 
     internal static bool CanUseSuiton => LevelChecked(Suiton) && MudraReady && !HasStatusEffect(Buffs.ShadowWalker);
 
@@ -72,7 +72,7 @@ internal partial class NIN
                                                (BuffWindow || IsNotEnabled(Preset.NIN_ST_AdvancedMode_TrickAttack) && !STSimpleMode || KassatsuRemaining < 3);
 
     internal static bool CanUseGokaMekkyaku => LevelChecked(GokaMekkyaku) && MudraReady && HasKassatsu &&
-                                               (BuffWindow || IsNotEnabled(Preset.NIN_ST_AdvancedMode_TrickAttack) && !STSimpleMode || KassatsuRemaining < 3);
+                                               (BuffWindow || TrickDisabledAoE || KassatsuRemaining < 3);
     #endregion
 
     #region GCD Logic
@@ -144,14 +144,14 @@ internal partial class NIN
     internal static bool HasKassatsu => HasStatusEffect(Buffs.Kassatsu) || JustUsed(Kassatsu, 1);
     internal static float KassatsuRemaining => GetStatusEffectRemainingTime(Buffs.Kassatsu);
     internal static bool CanKassatsu => !MudraPhase && ActionReady(Kassatsu) && NinjaWeave &&
-                                        (TrickCD < 10 && HasStatusEffect(Buffs.ShadowWalker) ||
-                                         BuffWindow ||
-                                         TrickDisabledST);
+                                        (BuffWindow ||
+                                         TrickDisabledST ||
+                                         !LevelChecked(Suiton));
 
     internal static bool CanKassatsuAoE => !MudraPhase && ActionReady(Kassatsu) && NinjaWeave &&
-                                        (TrickCD < 10 && HasStatusEffect(Buffs.ShadowWalker) ||
-                                         BuffWindow ||
-                                         TrickDisabledAoE);
+                                        (BuffWindow ||
+                                         TrickDisabledAoE ||
+                                         !LevelChecked(Huton));
 
     internal static bool CanMeisui => !MudraPhase && ActionReady(Meisui) && NinjaWeave && HasStatusEffect(Buffs.ShadowWalker) &&
                                       (BuffWindow || TrickDisabledST);

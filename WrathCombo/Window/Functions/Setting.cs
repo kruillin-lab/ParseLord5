@@ -151,7 +151,7 @@ public class Setting
     #region Required Attribute Fields
 
     public Category    Category;
-    public string      CategoryName;
+    public string      CategoryName = string.Empty;
     public string      DefaultValue;
     public string      FieldName;
     public string      HelpMark;

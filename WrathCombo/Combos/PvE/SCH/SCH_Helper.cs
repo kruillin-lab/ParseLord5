@@ -95,11 +95,13 @@ internal partial class SCH
     
     internal static bool RaidwideSacredSoil()
     {
-        return IsEnabled(Preset.SCH_Raidwide_SacredSoil) && ActionReady(SacredSoil) && CanWeave() && GroupDamageIncoming();
+        return IsEnabled(Preset.SCH_Raidwide_SacredSoil) && ActionReady(SacredSoil) && CanWeave() &&
+               !UsedSchHealingSetupOgcdThisGcd && GroupDamageIncoming();
     }
     internal static bool RaidwideExpedient()
     {
-        return IsEnabled(Preset.SCH_Raidwide_Expedient) && ActionReady(Expedient) && CanWeave() && GroupDamageIncoming();
+        return IsEnabled(Preset.SCH_Raidwide_Expedient) && ActionReady(Expedient) && CanWeave() &&
+               !UsedSchHealingSetupOgcdThisGcd && GroupDamageIncoming();
     }
     internal static bool RaidwideSuccor()
     {
@@ -107,8 +109,24 @@ internal partial class SCH
     }
     internal static bool RaidwideRecitation()
     {
-        return SCH_Raidwide_Succor_Recitation&& ActionReady(Recitation);
+        return SCH_Raidwide_Succor_Recitation && ActionReady(Recitation) && CanUseSchHealingSetupOgcd(Recitation);
     }
+
+    private static bool UsedSchHealingSetupOgcdThisGcd =>
+        PerGcdActionCaps.AnyUsed(IsSchHealingSetupOgcd);
+
+    private static bool ShouldHoldSchHealingSetupOgcd(uint action) =>
+        PerGcdActionCaps.ShouldHold(action, IsSchHealingSetupOgcd);
+
+    private static bool CanUseSchHealingSetupOgcd(uint action) =>
+        !ShouldHoldSchHealingSetupOgcd(action);
+
+    private static bool IsSchHealingSetupOgcd(uint action) =>
+        action is Aetherflow or Recitation or Dissipation or EmergencyTactics or Lustrate or SacredSoil or Indomitability or
+            Excogitation or Protraction or WhisperingDawn or FeyIllumination or FeyBlessing or Aetherpact or
+            SummonSeraph or Consolation or Seraphism or Expedient ||
+        action == OriginalHook(WhisperingDawn) ||
+        action == OriginalHook(SummonSeraph);
     #endregion
     
     #region Eos Summoner

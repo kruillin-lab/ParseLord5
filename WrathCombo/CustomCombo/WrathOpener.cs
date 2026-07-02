@@ -178,6 +178,15 @@ public abstract class WrathOpener
                 return false;
             }
 
+            // Step 1 timeout: if in combat and the opener hasn't started within
+            // OpenerTimeout, fail it so it stops intercepting the combo button.
+            if (OpenerStep == 1 && InCombat() &&
+                ActionWatching.TimeSinceLastAction.TotalSeconds >= Service.Configuration.OpenerTimeout)
+            {
+                CurrentState = OpenerState.FailedOpener;
+                return false;
+            }
+
             if (OpenerStep > 1)
             {
                 bool prevStepSkipping = SkipSteps.FindFirst(x => x.Steps.FindFirst(y => y == OpenerStep - 1, out var t), out var p);
@@ -337,7 +346,7 @@ public abstract class WrathOpener
     private static void ResetAfterCombat(ConditionFlag flag, bool value)
     {
         if (flag == ConditionFlag.InCombat && !value)
-            CurrentOpener.ResetOpener();
+            CurrentOpener?.ResetOpener();
     }
 
     private static void RevertInterruptedCasts(uint interruptedAction)

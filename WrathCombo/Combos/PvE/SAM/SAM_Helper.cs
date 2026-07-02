@@ -250,12 +250,35 @@ internal partial class SAM
 
     #region Burst Management
 
-    private static bool CanIkishoten() =>
-        ActionReady(Ikishoten) &&
-        !HasStatusEffect(Buffs.ZanshinReady) && Kenki <= 50 &&
-        (NumberOfGcdsUsed is 2 ||
-         JustUsed(Senei, 15f) ||
-         !LevelChecked(Senei));
+    private static bool CanUseIkishotenWindow() =>
+        NumberOfGcdsUsed >= 2 ||
+        JustUsed(Senei, 15f) ||
+        !LevelChecked(Senei);
+
+    private static bool TryGetIkishotenAction(out uint action, bool allowKenkiDump = true)
+    {
+        action = 0;
+
+        if (!ActionReady(Ikishoten) ||
+            HasStatusEffect(Buffs.ZanshinReady) ||
+            !CanUseIkishotenWindow())
+            return false;
+
+        if (Kenki <= 50)
+        {
+            action = Ikishoten;
+            return true;
+        }
+
+        if (allowKenkiDump &&
+            ActionReady(Shinten) && InActionRange(Shinten))
+        {
+            action = Shinten;
+            return true;
+        }
+
+        return false;
+    }
 
     private static bool CanSenei() =>
         ActionReady(Senei) && NumberOfGcdsUsed >= 4 &&

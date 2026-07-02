@@ -42,13 +42,17 @@ internal partial class AST : Healer
                 return contentAction;
             #endregion
 
+            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
+
             #region OGCDs
             
             if (ActionReady(Lightspeed) && InCombat() && IsMoving() && 
                 !HasStatusEffect(Buffs.Lightspeed))
                 return Lightspeed;
             
-            if (CanWeave() && InCombat())
+            if (CanAstWeave && InCombat())
             {
                 //Lucid Dreaming
                 if (Role.CanLucidDream(6500))
@@ -137,12 +141,17 @@ internal partial class AST : Healer
 
             #endregion
 
+            var replacedActions = GravityList.ToArray();
+            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
+
             #region OGCDs
             if (ActionReady(Lightspeed) && IsMoving() && 
                 !HasStatusEffect(Buffs.Lightspeed))
                 return Lightspeed;
             
-            if (InCombat() && CanWeave())
+            if (InCombat() && CanAstWeave)
             {
                 //Lucid Dreaming
                 if (Role.CanLucidDream(6500))
@@ -253,6 +262,10 @@ internal partial class AST : Healer
             }
             #endregion
 
+            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
+
             #region Opener
             if (IsEnabled(Preset.AST_ST_DPS_Opener) &&
                 Opener().FullOpener(ref actionID))
@@ -289,7 +302,7 @@ internal partial class AST : Healer
                 (IsNotEnabled(Preset.AST_DPS_LightSpeedHold) || LightspeedChargeCD < DivinationCD || !LevelChecked(Divination)))
                 return Lightspeed;
 
-            if (InCombat() && CanWeave())
+            if (InCombat() && CanAstWeave)
             {
                 //Lucid Dreaming
                 if (IsEnabled(Preset.AST_DPS_Lucid) && Role.CanLucidDream(AST_ST_DPS_LucidDreaming))
@@ -429,6 +442,11 @@ internal partial class AST : Healer
                 return contentAction;
             #endregion
 
+            var replacedActions = GravityList.ToArray();
+            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
+                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
+                return priorityHeal;
+
             #region Healing Helper
 
             if (RaidwideCollectiveUnconscious())
@@ -448,7 +466,7 @@ internal partial class AST : Healer
                 (IsNotEnabled(Preset.AST_AOE_LightSpeedHold) || LightspeedChargeCD < DivinationCD || !LevelChecked(Divination)))
                 return Lightspeed;
             
-            if (InCombat() && CanWeave())
+            if (InCombat() && CanAstWeave)
             {
                 //Lucid Dreaming
                 if (IsEnabled(Preset.AST_AOE_Lucid) && Role.CanLucidDream(AST_AOE_LucidDreaming))
@@ -578,16 +596,16 @@ internal partial class AST : Healer
                 cleansableTarget)
                 return Role.Esuna.RetargetIfEnabled(Benefic);
             
-            if (CanWeave() && Role.CanLucidDream(6500))
+            if (CanAstWeave && Role.CanLucidDream(6500))
                 return Role.LucidDreaming;
             
-            if (ActionReady(EssentialDignity) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 50)
+            if (ActionReady(EssentialDignity) && InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && GetTargetHPPercent(healTarget) <= 50)
                 return EssentialDignity.RetargetIfEnabled(Benefic);
             
-            if (ActionReady(Exaltation) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
+            if (ActionReady(Exaltation) && InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Exaltation.RetargetIfEnabled(Benefic);
 
-            if (InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
             {
                 if (ActionReady(OriginalHook(CelestialOpposition)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CelestialOpposition);
@@ -647,7 +665,7 @@ internal partial class AST : Healer
             if (HasStatusEffect(Buffs.HoroscopeHelios))
                 return HoroscopeHeal;
             
-            if (InCombat() && CanWeave())
+            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd)
             {
                 if (ActionReady(OriginalHook(CelestialOpposition)) && GetPartyAvgHPPercent() <= 90)
                     return OriginalHook(CelestialOpposition);
@@ -764,7 +782,7 @@ internal partial class AST : Healer
                     : OriginalHook(AspectedHelios);
 
             //Check for Suntouched to finish the combo after Neutral sect regardless of priorities
-            if (IsEnabled(Preset.AST_AoE_Heals_NeutralSect) && HasStatusEffect(Buffs.Suntouched) && CanWeave())
+            if (IsEnabled(Preset.AST_AoE_Heals_NeutralSect) && HasStatusEffect(Buffs.Suntouched) && CanAstWeave)
                 return SunSign;
 
             //Priority List
@@ -774,7 +792,11 @@ internal partial class AST : Healer
                 int index = AST_AoE_SimpleHeals_Priority.IndexOf(i + 1);
                 int config = GetMatchingConfigAoE(index, out uint spell, out bool enabled);
 
-                if (enabled && averagePartyHP <= config && ActionReady(spell))
+                if (enabled &&
+                    averagePartyHP <= config &&
+                    HasEnoughAoEHealTargets(config) &&
+                    !ShouldHoldAstHealingSetupOgcd(spell) &&
+                    ActionReady(spell))
                     return spell;
             }
 

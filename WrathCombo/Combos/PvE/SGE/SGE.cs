@@ -505,25 +505,25 @@ internal partial class SGE : Healer
             if (Role.CanLucidDream(6500) && CanWeave())
                 return Role.LucidDreaming;
 
-            if (ActionReady(Rhizomata) && !HasAddersgall() && InCombat() &&
+            if (ActionReady(Rhizomata) && !HasAddersgall() && InCombat() && CanUseSgeHealingSetupOgcd(Rhizomata) &&
                 CanWeave())
                 return Rhizomata;
 
             if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia) && InCombat() &&
-                CanWeave())
+                CanWeave() && CanUseSgeHealingSetupOgcd(Soteria))
                 return Soteria;
 
-            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90 &&
                 (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return OriginalHook(Physis);
 
-            if (ActionReady(Kerachole) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 90 &&
+            if (ActionReady(Kerachole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Kerachole) && GetTargetHPPercent(healTarget) <= 90 &&
                 TraitLevelChecked(Traits.EnhancedKerachole) &&
                 HasAddersgall() &&
                 (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
                 return Kerachole;
 
-            if (InCombat() && CanWeave() && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
+            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
             {
                 if (ActionReady(Krasis))
                     return Krasis.RetargetIfEnabled(Diagnosis);
@@ -533,10 +533,10 @@ internal partial class SGE : Healer
                     return Haima.RetargetIfEnabled(Diagnosis);
             }
 
-            if (ActionReady(Druochole) && InCombat() && CanWeave() && HasAddersgall() && GetTargetHPPercent(healTarget) <= 75)
+            if (ActionReady(Druochole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Druochole) && HasAddersgall() && GetTargetHPPercent(healTarget) <= 75)
                 return Druochole.RetargetIfEnabled(Diagnosis);
 
-            if (InCombat() && CanWeave() && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
+            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (!InBossEncounter() || Service.Configuration.ParseLord5ExperimentalMode))
             {
                 if (ActionReady(Holos) && GetTargetHPPercent(healTarget) <= 80)
                     return Holos;
@@ -545,7 +545,7 @@ internal partial class SGE : Healer
                     return Panhaima;
             }
 
-            if (ActionReady(Pepsis) && InCombat() && CanWeave() && GetTargetHPPercent(healTarget) <= 80 &&
+            if (ActionReady(Pepsis) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Pepsis) && GetTargetHPPercent(healTarget) <= 80 &&
                 HasStatusEffect(Buffs.EukrasianDiagnosis, healTarget))
                 return Pepsis;
 
@@ -570,34 +570,34 @@ internal partial class SGE : Healer
             if (Role.CanLucidDream(6500) && CanWeave())
                 return Role.LucidDreaming;
 
-            if (ActionReady(Rhizomata) && !HasAddersgall() && InCombat() &&
+            if (ActionReady(Rhizomata) && !HasAddersgall() && InCombat() && CanUseSgeHealingSetupOgcd(Rhizomata) &&
                 CanWeave())
                 return Rhizomata;
 
-            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90)
+            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetPartyAvgHPPercent() <= 90)
                 return OriginalHook(Physis);
 
-            if (ActionReady(Kerachole) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 90 &&
+            if (ActionReady(Kerachole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Kerachole) && GetPartyAvgHPPercent() <= 90 &&
                 TraitLevelChecked(Traits.EnhancedKerachole) &&
                 HasAddersgall())
                 return Kerachole;
 
-            if (ActionReady(Holos) && InCombat() && CanWeave() && GetPartyAvgHPPercent() <= 80)
+            if (ActionReady(Holos) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Holos) && GetPartyAvgHPPercent() <= 80)
                 return Holos;
 
-            if (ActionReady(Ixochole) && InCombat() && CanWeave() && HasAddersgall() && GetPartyAvgHPPercent() <= 80)
+            if (ActionReady(Ixochole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Ixochole) && HasAddersgall() && GetPartyAvgHPPercent() <= 80)
                 return Ixochole;
 
-            if (ActionReady(Philosophia) && InCombat() && CanWeave() && !HasStatusEffect(Buffs.Panhaima) && GetPartyAvgHPPercent() <= 85)
+            if (ActionReady(Philosophia) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Philosophia) && !HasStatusEffect(Buffs.Panhaima) && GetPartyAvgHPPercent() <= 85)
                 return Philosophia;
 
-            if (ActionReady(Panhaima) && InCombat() && CanWeave() && !HasStatusEffect(Buffs.Eudaimonia) && GetPartyAvgHPPercent() <= 80)
+            if (ActionReady(Panhaima) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Panhaima) && !HasStatusEffect(Buffs.Eudaimonia) && GetPartyAvgHPPercent() <= 80)
                 return Panhaima;
 
-            if (ActionReady(Zoe) && InCombat() && CanWeave() && (ActionReady(Pneuma) || !LevelChecked(Pneuma)) && GetPartyAvgHPPercent() <= 85)
+            if (ActionReady(Zoe) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Zoe) && (ActionReady(Pneuma) || !LevelChecked(Pneuma)) && GetPartyAvgHPPercent() <= 85)
                 return Zoe;
 
-            if (ActionReady(Pepsis) && InCombat() && CanWeave() && HasStatusEffect(Buffs.EukrasianPrognosis) && GetPartyAvgHPPercent() <= 80)
+            if (ActionReady(Pepsis) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Pepsis) && HasStatusEffect(Buffs.EukrasianPrognosis) && GetPartyAvgHPPercent() <= 80)
                 return Pepsis;
 
             if (ActionReady(Eukrasia) && GetPartyBuffPercent(Buffs.EukrasianPrognosis) <= 50 && GetPartyBuffPercent(SCH.Buffs.Galvanize) <= 50)
@@ -654,7 +654,7 @@ internal partial class SGE : Healer
                     .RetargetIfEnabled(Diagnosis);
 
             if (IsEnabled(Preset.SGE_ST_Heal_Rhizomata) &&
-                ActionReady(Rhizomata) && !HasAddersgall())
+                ActionReady(Rhizomata) && !HasAddersgall() && CanUseSgeHealingSetupOgcd(Rhizomata))
                 return Rhizomata;
 
             if (IsEnabled(Preset.SGE_ST_Heal_Kardia) &&
@@ -676,6 +676,7 @@ internal partial class SGE : Healer
 
                 if (enabled)
                     if (GetTargetHPPercent(healTarget, SGE_ST_Heal_IncludeShields) <= config &&
+                        !ShouldHoldSgeHealingSetupOgcd(spell) &&
                         ActionReady(spell))
                         return spell
                             .RetargetIfEnabled(Diagnosis);
@@ -715,7 +716,7 @@ internal partial class SGE : Healer
                 return OriginalHook(Prognosis);
 
             if (IsEnabled(Preset.SGE_AoE_Heal_Rhizomata) &&
-                ActionReady(Rhizomata) && !HasAddersgall())
+                ActionReady(Rhizomata) && !HasAddersgall() && CanUseSgeHealingSetupOgcd(Rhizomata))
                 return Rhizomata;
 
             if (IsEnabled(Preset.SGE_AoE_Heal_Lucid) &&
@@ -728,7 +729,7 @@ internal partial class SGE : Healer
                 int index = SGE_AoE_Heals_Priority.IndexOf(i + 1);
                 int config = GetMatchingConfigAoE(index, out uint spell, out bool enabled);
 
-                if (enabled && averagePartyHP <= config && ActionReady(spell))
+                if (enabled && averagePartyHP <= config && !ShouldHoldSgeHealingSetupOgcd(spell) && ActionReady(spell))
                     return spell;
             }
 
