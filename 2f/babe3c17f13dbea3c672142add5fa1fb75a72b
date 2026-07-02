@@ -1,0 +1,24 @@
+WrathCombo/Combos/PvE/WAR/WAR_MitigationBridge.cs
+  s_8142d970b6bf28::t_df787da75c7947 64,74,97,145
+WrathCombo/Combos/PvE/WAR/WAR_SmartMitigation.cs
+  s_8142d970b6bf28::t_d25c95cabf9e69 141
+  s_8142d970b6bf28::t_a6155efea1b77f 41,43
+  s_8142d970b6bf28::t_884cdcbe98f72f 31
+  s_8142d970b6bf28::t_df787da75c7947 97,194,219,301,346,389,454,532,660
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "2fbabe3c17f13dbea3c672142add5fa1fb75a72b",
+  "prompts": {},
+  "sessions": {
+    "s_8142d970b6bf28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22fc6be5-f829-4bef-8e3e-9e57d8739ec6",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
