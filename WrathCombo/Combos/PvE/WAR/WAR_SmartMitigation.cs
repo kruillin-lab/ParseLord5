@@ -1,4 +1,3 @@
-using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using System;
 using System.Collections.Generic;
@@ -18,13 +17,6 @@ internal partial class WAR
     private const long ParseLord5WarSmartMitTraceThrottleMs = 5_000;
     private static long _nextParseLord5WarSmartMitTraceAt;
 
-    private readonly record struct WarThreatState(
-        bool ConfirmedTankbuster,
-        bool SoftTankbuster,
-        bool Raidwide,
-        float MechanicSpikeFraction,
-        bool SustainedPressure);
-
     private static bool TrySmartBossMits(RotationMode rotationFlags, ref uint actionID) =>
         TrySmartMits(rotationFlags, isBoss: true, ref actionID);
 
@@ -36,7 +28,7 @@ internal partial class WAR
         if (LocalPlayer is not { } player)
             return false;
 
-        var pressure = GetWarPlayerPressure((uint)player.GameObjectId);
+        var pressure = TankSmartMitigationThreat.GetPlayerPressure((uint)player.GameObjectId);
 
         actionID = 0;
 
@@ -46,9 +38,9 @@ internal partial class WAR
         if (!isBoss && TrySmartNonBossEmergency(rotationFlags, pressure, ref actionID))
             return true;
 
-        var threat = DetectWarThreat(isBoss, pressure);
+        var threat = TankSmartMitigationThreat.Detect(isBoss, pressure);
 
-        if (!HasWarMitigationThreat(threat, isBoss, pressure))
+        if (!TankSmartMitigationThreat.HasMitigationThreat(threat, isBoss, pressure))
         {
             var noThreatSource = TankCooldownHelperIpcClient.IsPluginLoaded &&
                                  !pressure.FromTankCooldownHelper
@@ -74,44 +66,6 @@ internal partial class WAR
             return true;
 
         return TrySelectSmartPartyMitigation(rotationFlags, isBoss, threat, pressure, ref actionID);
-    }
-
-    private static WarThreatState DetectWarThreat(bool isBoss, PlayerPressureState pressure)
-    {
-        var confirmedTankbuster = HasIncomingTankBusterEffect(out _);
-
-        if (!confirmedTankbuster &&
-            TryGetTankBusterTarget(out IBattleChara tbTarget) &&
-            LocalPlayer is { } player &&
-            tbTarget.GameObjectId == player.GameObjectId)
-        {
-            confirmedTankbuster = true;
-        }
-
-        var softTankbuster = !confirmedTankbuster && isBoss && IsPlayerTargeted();
-        var raidwide = GroupDamageIncoming();
-
-        var mechanicSpikeFraction = 0f;
-        if (confirmedTankbuster)
-            mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, MitigationCoverageCalculator.TankbusterSpikeFraction);
-        else if (softTankbuster)
-            mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, MitigationCoverageCalculator.SoftTankbusterSpikeFraction);
-
-        if (raidwide)
-            mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, MitigationCoverageCalculator.RaidwideSpikeFraction);
-
-        if (LocalPlayer is { MaxHp: > 0 } hpPlayer && pressure.MaxSingleHit > 0f)
-            mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, pressure.MaxSingleHit / hpPlayer.MaxHp);
-
-        var deathTimerThreshold = isBoss ? 10f : 12f;
-        var sustainedPressure = pressure.TankCooldownCritical ||
-            pressure.TankCooldownInDanger ||
-            (pressure.NetDps > 0f && (
-                pressure.DangerRatio >= (isBoss ? 0.8f : 1.0f) ||
-                (pressure.SecondsUntilDeath is { } ttd && ttd <= deathTimerThreshold))) ||
-            confirmedTankbuster;
-
-        return new WarThreatState(confirmedTankbuster, softTankbuster, raidwide, mechanicSpikeFraction, sustainedPressure);
     }
 
     private static bool TrySmartNonBossEmergency(
@@ -140,7 +94,7 @@ internal partial class WAR
         uint currentHp,
         uint maxHp,
         PlayerPressureState pressure,
-        WarThreatState threat,
+        TankThreatState threat,
         ref uint actionID)
     {
         if (!InWarOgcdWindow || IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
@@ -184,7 +138,7 @@ internal partial class WAR
             ? 1f
             : 1f + Math.Min(enemyCount, 5) * 0.06f;
 
-        var spikeFraction = ResolveWarMechanicSpikeFraction(threat, isBoss, enemyCount, pressure);
+        var spikeFraction = TankSmartMitigationThreat.ResolveMechanicSpikeFraction(threat, pressure);
 
         var request = new MitigationCoverageRequest(
             currentHp,
@@ -237,7 +191,7 @@ internal partial class WAR
     private static bool TrySelectWarTrashReprisalFirst(
         RotationMode rotationFlags,
         PlayerPressureState pressure,
-        WarThreatState threat,
+        TankThreatState threat,
         ref uint actionID)
     {
         if (IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
@@ -262,7 +216,7 @@ internal partial class WAR
     private static bool TrySelectSmartPartyMitigation(
         RotationMode rotationFlags,
         bool isBoss,
-        WarThreatState threat,
+        TankThreatState threat,
         PlayerPressureState pressure,
         ref uint actionID)
     {
@@ -338,87 +292,13 @@ internal partial class WAR
         return false;
     }
 
-    private static bool HasWarMitigationThreat(WarThreatState threat, bool isBoss, PlayerPressureState pressure)
-    {
-        if (pressure.TankCooldownEmergency)
-            return true;
-
-        if (threat.ConfirmedTankbuster || threat.Raidwide)
-            return true;
-
-        if (pressure.FromTankCooldownHelper)
-        {
-            if (pressure.TankCooldownCritical)
-                return true;
-
-            if (threat.SoftTankbuster && pressure.TankCooldownInDanger)
-                return true;
-
-            if (threat.SustainedPressure)
-                return true;
-
-            if (threat.MechanicSpikeFraction >= MitigationCoverageCalculator.RaidwideSpikeFraction)
-                return true;
-
-            return pressure.TankCooldownInDanger;
-        }
-
-        if (threat.SoftTankbuster && pressure.DangerRatio >= 0.9f)
-            return true;
-
-        if (threat.SustainedPressure && pressure.NetDps > 0f)
-            return true;
-
-        if (threat.MechanicSpikeFraction >= MitigationCoverageCalculator.RaidwideSpikeFraction)
-            return true;
-
-        return pressure.DangerRatio >= (isBoss ? 1.0f : 1.2f) && pressure.NetDps > 0f;
-    }
-
-    private static PlayerPressureState GetWarPlayerPressure(uint objectId)
-    {
-        if (TankCooldownHelperIpcClient.TryGetPlayerPressure(objectId, out var pressure))
-            return pressure;
-
-        return CombatTelemetryService.GetPlayerPressure(objectId);
-    }
-
-    private static float ResolveWarMechanicSpikeFraction(
-        WarThreatState threat,
-        bool isBoss,
-        int enemyCount,
-        PlayerPressureState pressure)
-    {
-        var spike = threat.MechanicSpikeFraction;
-
-        if (threat.ConfirmedTankbuster)
-            spike = Math.Max(spike, MitigationCoverageCalculator.TankbusterSpikeFraction);
-
-        if (threat.SoftTankbuster)
-            spike = Math.Max(spike, MitigationCoverageCalculator.SoftTankbusterSpikeFraction);
-
-        if (threat.Raidwide)
-            spike = Math.Max(spike, MitigationCoverageCalculator.RaidwideSpikeFraction);
-
-        if (pressure.MaxSingleHit > 0f && LocalPlayer is { MaxHp: > 0 } player)
-            spike = Math.Max(spike, pressure.MaxSingleHit / player.MaxHp);
-
-        if (pressure.TankCooldownEmergency)
-            spike = Math.Max(spike, MitigationCoverageCalculator.TankbusterSpikeFraction);
-        else if (pressure.TankCooldownCritical)
-            spike = Math.Max(spike, MitigationCoverageCalculator.SoftTankbusterSpikeFraction);
-        else if (pressure.TankCooldownInDanger)
-            spike = Math.Max(spike, MitigationCoverageCalculator.RaidwideSpikeFraction);
-
-        return spike;
-    }
 
     /// <summary>
     /// TCH danger fallback when coverage returns null. Uses smallest CD unless Damnation gate passes.
     /// </summary>
     private static bool TrySelectWarTchDangerFallback(
         List<MitigationOption> options,
-        WarThreatState threat,
+        TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
         uint maxHp,
@@ -463,7 +343,7 @@ internal partial class WAR
     /// Soft tankbuster (targeted) and sustained pressure alone never qualify.
     /// </summary>
     private static bool ShouldOfferDamnation(
-        WarThreatState threat,
+        TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
         uint maxHp)
@@ -506,7 +386,7 @@ internal partial class WAR
     /// <summary>TB telegraph safety net — smallest CD only (Damnation not in option list without gate).</summary>
     private static bool TrySelectWarMitigationFallback(
         List<MitigationOption> options,
-        WarThreatState threat,
+        TankThreatState threat,
         bool isBoss,
         ref uint actionID)
     {
@@ -571,7 +451,7 @@ internal partial class WAR
 
     private static List<MitigationOption> BuildWarBossMitigationOptions(
         RotationMode rotationFlags,
-        WarThreatState threat,
+        TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
         uint maxHp)
@@ -649,7 +529,7 @@ internal partial class WAR
 
     private static List<MitigationOption> BuildWarNonBossMitigationOptions(
         RotationMode rotationFlags,
-        WarThreatState threat,
+        TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
         uint maxHp)
@@ -777,7 +657,7 @@ internal partial class WAR
         uint selectedActionId,
         MitigationCoverageResult? coverage,
         PlayerPressureState pressure,
-        WarThreatState threat,
+        TankThreatState threat,
         bool isBoss,
         string source,
         uint currentHp = 0,

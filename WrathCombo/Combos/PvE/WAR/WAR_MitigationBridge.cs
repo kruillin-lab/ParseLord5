@@ -61,7 +61,7 @@ internal partial class WAR
     }
 
     private static bool ShouldSkipWarTrashMitigationStacking(
-        WarThreatState threat,
+        TankThreatState threat,
         int enemyCount) =>
         IsWarLongMitigationActive() &&
         enemyCount <= 2 &&
@@ -71,7 +71,7 @@ internal partial class WAR
     private static List<MitigationOption> FilterWarMitigationOptions(
         List<MitigationOption> options,
         ActiveMitigationState active,
-        WarThreatState threat,
+        TankThreatState threat,
         bool isBoss,
         PlayerPressureState pressure,
         uint currentHp,
@@ -94,7 +94,7 @@ internal partial class WAR
     private static bool ShouldIncludeWarMitigationOption(
         MitigationOption option,
         ActiveMitigationState active,
-        WarThreatState threat,
+        TankThreatState threat,
         bool isBoss,
         PlayerPressureState pressure,
         uint currentHp,
@@ -142,7 +142,7 @@ internal partial class WAR
     private static List<MitigationOption> BuildWarPartyMitigationOptions(
         RotationMode rotationFlags,
         bool isBoss,
-        WarThreatState threat,
+        TankThreatState threat,
         int enemyCount)
     {
         var options = new List<MitigationOption>(2);
