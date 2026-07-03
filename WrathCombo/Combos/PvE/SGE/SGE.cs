@@ -621,6 +621,7 @@ internal partial class SGE : Healer
                     .RetargetIfEnabled(actionID);
 
             if (IsEnabled(Preset.SGE_ST_Heal_Rhizomata) &&
+                CanWeave() &&
                 ActionReady(Rhizomata) && !HasAddersgall() && CanUseSgeHealingSetupOgcd(Rhizomata))
                 return Rhizomata;
 
@@ -633,6 +634,7 @@ internal partial class SGE : Healer
 
             // Lucid Dreaming
             if (IsEnabled(Preset.SGE_ST_Heal_Lucid) &&
+                CanWeave() &&
                 Role.CanLucidDream(SGE_ST_Heal_LucidOption))
                 return Role.LucidDreaming;
 
@@ -643,6 +645,7 @@ internal partial class SGE : Healer
 
                 if (enabled)
                     if (GetTargetHPPercent(healTarget, SGE_ST_Heal_IncludeShields) <= config &&
+                        (!IsSgeHealingSetupOgcd(spell) || CanWeave()) &&
                         !ShouldHoldSgeHealingSetupOgcd(spell) &&
                         ActionReady(spell))
                         return spell
@@ -681,10 +684,12 @@ internal partial class SGE : Healer
                 return OriginalHook(Prognosis);
 
             if (IsEnabled(Preset.SGE_AoE_Heal_Rhizomata) &&
+                CanWeave() &&
                 ActionReady(Rhizomata) && !HasAddersgall() && CanUseSgeHealingSetupOgcd(Rhizomata))
                 return Rhizomata;
 
             if (IsEnabled(Preset.SGE_AoE_Heal_Lucid) &&
+                CanWeave() &&
                 Role.CanLucidDream(SGE_AoE_Heal_LucidOption))
                 return Role.LucidDreaming;
 
@@ -694,7 +699,9 @@ internal partial class SGE : Healer
                 int index = SGE_AoE_Heals_Priority.IndexOf(i + 1);
                 int config = GetMatchingConfigAoE(index, out uint spell, out bool enabled);
 
-                if (enabled && averagePartyHP <= config && !ShouldHoldSgeHealingSetupOgcd(spell) && ActionReady(spell))
+                if (enabled && averagePartyHP <= config &&
+                    (!IsSgeHealingSetupOgcd(spell) || CanWeave()) &&
+                    !ShouldHoldSgeHealingSetupOgcd(spell) && ActionReady(spell))
                     return spell;
             }
 
