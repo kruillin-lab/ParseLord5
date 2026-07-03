@@ -1,0 +1,19 @@
+WrathCombo/Combos/PvE/SGE/SGE.cs
+  s_16a270e9417e7f::t_c22c5ea9479ff5 624,637,648,687,692,702-704
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3f18fc3ab9696da57c6410442db15d4edf575c7b",
+  "prompts": {},
+  "sessions": {
+    "s_16a270e9417e7f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5369ab53-6055-44fc-9f1f-f5b577e3b565",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
