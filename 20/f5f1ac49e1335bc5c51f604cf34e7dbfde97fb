@@ -1,0 +1,149 @@
+WrathCombo/CustomCombo/Functions/Party.cs
+  s_16a270e9417e7f::t_870f44ede933b1 36,38
+WrathCombo/Combos/PvE/DRK/DRK_ActionLogic.cs
+  s_16a270e9417e7f::t_640d130bd536b7 351,353-354,356-357,359,361-364
+WrathCombo/Combos/PvE/BRD/BRD_Helper.cs
+  s_16a270e9417e7f::t_57a346e4bff14f 368
+WrathCombo/Combos/PvE/DRK/DRK.cs
+  s_16a270e9417e7f::t_46bc7b942c4c7e 133-135,187-189,229,269
+WrathCombo/Combos/PvE/PLD/PLD.cs
+  s_16a270e9417e7f::t_a0137a39852911 22
+WrathCombo/Combos/PvE/RDM/RDM.cs
+  s_16a270e9417e7f::t_f9d7c22eea4cf1 41,145,262,408
+WrathCombo/Combos/PvE/SAM/SAM.cs
+  s_16a270e9417e7f::t_52675a3c4dbdcc 33,129,204,354
+WrathCombo/Combos/PvE/SCH/SCH.cs
+  s_16a270e9417e7f::t_ffe7489da17a02 54,108,178,188,206,349,432
+WrathCombo/Combos/PvE/SGE/SGE.cs
+  s_16a270e9417e7f::t_823a8aa566e328 51,132,249,257,366,374,452,457,473
+WrathCombo/Combos/PvE/WAR/WAR.cs
+  s_16a270e9417e7f::t_e41571363883f7 30
+WrathCombo/Combos/PvE/WAR/WAR_Helper.cs
+  s_16a270e9417e7f::t_4d55e5636337d7 213-214,220,526-528,533,535,539-540,543,545
+WrathCombo/Core/Configuration.ExperimentalFlags.cs
+  s_16a270e9417e7f::t_e08cce5913e0d9 11-14,22,25,28,31,35,38
+WrathCombo/AutoRotation/AutoRotationController.cs
+  s_ba66ee948b1356::t_fc744995e6c8c9 437,970,990
+WrathCombo/Combos/PvE/AST/AST.cs
+  s_6f4d9a9676bdd6::t_77e53112e2e17d 89,174,327,472,551
+WrathCombo/Combos/PvE/BLM/BLM.cs
+  s_16a270e9417e7f::t_6f3ec7444f3e81 25,103,162,266
+WrathCombo/Combos/PvE/DNC/DNC.cs
+  s_16a270e9417e7f::t_b15859dcc7ddcf 186-214,535-553,555-561,818-843,1095-1097,1109-1118
+WrathCombo/Combos/PvE/DRG/DRG.cs
+  s_16a270e9417e7f::t_7360e99def941c 26,102,188,314
+WrathCombo/Combos/PvE/GNB/GNB.cs
+  s_1ba759d326cb3b::t_07e3d90fe7c019 53,163,267,342
+WrathCombo/Combos/PvE/GNB/GNB_Helper.cs
+  s_afe78009e42edd::t_e53db2f156148f 90-93,97,106,108
+WrathCombo/Combos/PvE/MCH/MCH.cs
+  s_16a270e9417e7f::t_c687e3ed4911c4 54,129,246,253,378
+WrathCombo/Combos/PvE/MNK/MNK.cs
+  s_37b253d96a8646::t_c94d67d9517e8d 33,104,197,306
+WrathCombo/Combos/PvE/NIN/NIN.cs
+  s_16a270e9417e7f::t_c08941ae41653d 69,191,323,477
+WrathCombo/Combos/PvE/PCT/PCT_Helper.cs
+  s_16a270e9417e7f::t_91faa3b34746dc 167
+WrathCombo/Combos/PvE/PLD/PLD_Helper.cs
+  s_16a270e9417e7f::t_ea575eba9f09c1 171-173,175,293-295,297,603
+WrathCombo/Combos/PvE/RPR/RPR.cs
+  s_0d0f80f5ca3d87::t_bb032bc1f10926 43,124,208,324
+WrathCombo/Combos/PvE/SMN/SMN.cs
+  s_1ba45179da8b47::t_75a81548fdd91d 50,95,146-147,149-151,153-154,156-158,160,162-163,200-201,203-205,207-208,210-212,214,216-217
+WrathCombo/Combos/PvE/VPR/VPR_Helper.cs
+  s_8aabfc859d9c8f::t_3bc1a9d3c45cec 363,381
+WrathCombo/Combos/PvE/WHM/WHM.cs
+  s_4df7c3f3ad02df::t_9d750ba8fa968f 59,127,235,363,457
+WrathCombo/Window/Tabs/AutoRotationTab.cs
+  s_ba66ee948b1356::t_eb4d53fa3ba926 118-121
+WrathCombo/WrathCombo.cs
+  s_16a270e9417e7f::t_434b4a8bb962d1 369
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "20f5f1ac49e1335bc5c51f604cf34e7dbfde97fb",
+  "prompts": {},
+  "sessions": {
+    "s_0d0f80f5ca3d87": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aa8b324bfe465f75d",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_16a270e9417e7f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5369ab53-6055-44fc-9f1f-f5b577e3b565",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_1ba45179da8b47": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a2bba56c4488f5ff2",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_1ba759d326cb3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a02b5edef841cfd26",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_37b253d96a8646": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-acf7dadba4cf9ba05",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_4df7c3f3ad02df": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aedb5547baeded425",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_6f4d9a9676bdd6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ac9be44b8f320ba74",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_8aabfc859d9c8f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aaea8df851340946d",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_afe78009e42edd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae10e7fc923470ffa",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    },
+    "s_ba66ee948b1356": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a3ed50a2ce124434b",
+        "model": "unknown"
+      },
+      "human_author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
