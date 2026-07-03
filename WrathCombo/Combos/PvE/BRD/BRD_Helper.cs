@@ -365,11 +365,7 @@ internal partial class BRD
                 actionID = EmpyrealArrow;
                 return true;
             }
-            // ParseLord5 experiment: swap Wanderer's Minuet / Mage's Ballad priority.
-            // Baseline (flag off): Wanderer's first, then Mage's (upstream order).
-            var magesBalladFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (magesBalladFirst && MagesSong())
+            if (MagesSong())
             {
                 actionID = MagesBallad;
                 return true;
@@ -377,11 +373,6 @@ internal partial class BRD
             if (WandererSong())
             {
                 actionID = WanderersMinuet;
-                return true;
-            }
-            if (!magesBalladFirst && MagesSong())
-            {
-                actionID = MagesBallad;
                 return true;
             }
             if (ArmySong())

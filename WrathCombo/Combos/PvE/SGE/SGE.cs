@@ -48,18 +48,11 @@ internal partial class SGE : Healer
                 if (ActionReady(Druochole) && Addersgall >= 3)
                     return Druochole.RetargetIfEnabled(actionID);
 
-                // ParseLord5 experiment: swap Psyche / Soteria priority.
-                // Baseline (flag off): Psyche first, then Soteria.
-                var soteriaFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (soteriaFirst && ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
                     return Soteria;
 
                 if (ActionReady(Psyche) && InCombat())
                     return Psyche;
-
-                if (!soteriaFirst && ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
@@ -133,20 +126,14 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(actionID);
 
-                // ParseLord5 experiment (AoE): swap Psyche / Soteria priority.
-                // Baseline (flag off): Psyche first, then Soteria.
-                var soteriaFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canPsyche = ActionReady(Psyche) && HasBattleTarget() &&
                     InActionRange(Psyche);
 
-                if (soteriaFirst && ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
+                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
                     return Soteria;
 
                 if (canPsyche)
                     return Psyche;
-
-                if (!soteriaFirst && ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
@@ -252,8 +239,6 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(dosisActions);
 
-                // ParseLord5 experiment: Soteria→Rhizomata→Psyche; baseline Psyche→Rhizomata→Soteria.
-                var soteriaFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canSoteria =
                     IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
                     ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia);
@@ -261,22 +246,16 @@ internal partial class SGE : Healer
                     IsEnabled(Preset.SGE_ST_DPS_Psyche) &&
                     ActionReady(Psyche) && InCombat();
 
-                if (soteriaFirst && canSoteria)
+                if (canSoteria)
                     return Soteria;
-
-                if (!soteriaFirst && canPsyche)
-                    return Psyche;
 
                 // Rhizomata
                 if (IsEnabled(Preset.SGE_ST_DPS_Rhizo) &&
                     ActionReady(Rhizomata) && Addersgall < SGE_ST_DPS_Rhizo)
                     return Rhizomata;
 
-                if (soteriaFirst && canPsyche)
+                if (canPsyche)
                     return Psyche;
-
-                if (!soteriaFirst && canSoteria)
-                    return Soteria;
             }
 
             if (IsEnabled(Preset.SGE_ST_DPS_EDosis) && PartyInCombat())
@@ -376,8 +355,6 @@ internal partial class SGE : Healer
                     return Druochole
                         .RetargetIfEnabled(actionID);
 
-                // ParseLord5 experiment: Soteria→Rhizomata→Psyche; baseline Psyche→Rhizomata→Soteria.
-                var soteriaFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canSoteria =
                     IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
                     ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia);
@@ -386,22 +363,16 @@ internal partial class SGE : Healer
                     ActionReady(Psyche) && HasBattleTarget() &&
                     InActionRange(Psyche);
 
-                if (soteriaFirst && canSoteria)
+                if (canSoteria)
                     return Soteria;
-
-                if (!soteriaFirst && canPsyche)
-                    return Psyche;
 
                 // Rhizomata
                 if (IsEnabled(Preset.SGE_AoE_DPS_Rhizo) &&
                     ActionReady(Rhizomata) && Addersgall <= SGE_AoE_DPS_Rhizo)
                     return Rhizomata;
 
-                if (soteriaFirst && canPsyche)
+                if (canPsyche)
                     return Psyche;
-
-                if (!soteriaFirst && canSoteria)
-                    return Soteria;
             }
 
             var hasDotTarget = EnemiesInRange(EukrasianDyskrasia).Count(x => (GetPossessedStatusRemainingTime(Debuffs.EukrasianDyskrasia, x) is <= 4 or float.NaN &&
@@ -478,14 +449,12 @@ internal partial class SGE : Healer
                 CanWeave() && CanUseSgeHealingSetupOgcd(Soteria))
                 return Soteria;
 
-            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90)
                 return OriginalHook(Physis);
 
             if (ActionReady(Kerachole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Kerachole) && GetTargetHPPercent(healTarget) <= 90 &&
                 TraitLevelChecked(Traits.EnhancedKerachole) &&
-                HasAddersgall() &&
-                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+                HasAddersgall())
                 return Kerachole;
 
             if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
@@ -501,7 +470,7 @@ internal partial class SGE : Healer
             if (ActionReady(Druochole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Druochole) && HasAddersgall() && GetTargetHPPercent(healTarget) <= 75)
                 return Druochole.RetargetIfEnabled(Diagnosis);
 
-            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd)
             {
                 if (ActionReady(Holos) && GetTargetHPPercent(healTarget) <= 80)
                     return Holos;

@@ -50,23 +50,17 @@ internal partial class WHM : Healer
 
             if (CanWeave())
             {
-                // ParseLord5 experiment: swap Assize / PresenceOfMind priority.
-                // Baseline (flag off): PresenceOfMind first, then Assize.
-                var assizeFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canAssize = ActionReady(Assize) &&
                     HasBattleTarget() && GetTargetDistance() <= 20;
                 var canPresenceOfMind = ActionReady(PresenceOfMind) &&
                     ActionWatching.NumberOfGcdsUsed >= 3 &&
                     !HasStatusEffect(Buffs.SacredSight);
 
-                if (assizeFirst && canAssize)
+                if (canAssize)
                     return Assize;
 
                 if (canPresenceOfMind)
                     return PresenceOfMind;
-
-                if (!assizeFirst && canAssize)
-                    return Assize;
 
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
@@ -124,23 +118,17 @@ internal partial class WHM : Healer
 
             if (CanWeave() || IsMoving())
             {
-                // ParseLord5 experiment (AoE): swap Assize / PresenceOfMind priority.
-                // Baseline (flag off): Assize first, then PresenceOfMind.
-                var presenceOfMindFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canPresenceOfMind = ActionReady(PresenceOfMind) &&
                     ActionWatching.NumberOfGcdsUsed >= 4 &&
                     !HasStatusEffect(Buffs.SacredSight);
                 var canAssize = ActionReady(Assize) &&
                     HasBattleTarget() && GetTargetDistance() <= 20;
 
-                if (presenceOfMindFirst && canPresenceOfMind)
+                if (canPresenceOfMind)
                     return PresenceOfMind;
 
                 if (canAssize)
                     return Assize;
-
-                if (!presenceOfMindFirst && canPresenceOfMind)
-                    return PresenceOfMind;
 
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
@@ -236,9 +224,6 @@ internal partial class WHM : Healer
 
             if (CanWeave())
             {
-                // ParseLord5 experiment: swap Assize / PresenceOfMind priority.
-                // Baseline (flag off): PresenceOfMind first, then Assize.
-                var assizeFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canAssize = IsEnabled(Preset.WHM_ST_MainCombo_Assize) &&
                     ActionReady(Assize) &&
                     HasBattleTarget() && GetTargetDistance() <= 20;
@@ -247,14 +232,11 @@ internal partial class WHM : Healer
                     ActionWatching.NumberOfGcdsUsed >= 3 &&
                     !HasStatusEffect(Buffs.SacredSight);
 
-                if (assizeFirst && canAssize)
+                if (canAssize)
                     return Assize;
 
                 if (canPresenceOfMind)
                     return PresenceOfMind;
-
-                if (!assizeFirst && canAssize)
-                    return Assize;
 
                 if (IsEnabled(Preset.WHM_ST_MainCombo_Lucid) &&
                     Role.CanLucidDream(WHM_STDPS_Lucid))
@@ -370,9 +352,6 @@ internal partial class WHM : Healer
 
             if (CanWeave() || IsMoving())
             {
-                // ParseLord5 experiment (AoE): swap Assize / PresenceOfMind priority.
-                // Baseline (flag off): Assize first, then PresenceOfMind.
-                var presenceOfMindFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canPresenceOfMind = IsEnabled(Preset.WHM_AoE_DPS_PresenceOfMind) &&
                     ActionReady(PresenceOfMind) &&
                     ActionWatching.NumberOfGcdsUsed >= 4 &&
@@ -381,14 +360,11 @@ internal partial class WHM : Healer
                     ActionReady(Assize) &&
                     HasBattleTarget() && GetTargetDistance() <= 20;
 
-                if (presenceOfMindFirst && canPresenceOfMind)
+                if (canPresenceOfMind)
                     return PresenceOfMind;
 
                 if (canAssize)
                     return Assize;
-
-                if (!presenceOfMindFirst && canPresenceOfMind)
-                    return PresenceOfMind;
             }
 
             #endregion
@@ -462,7 +438,6 @@ internal partial class WHM : Healer
                 return Role.LucidDreaming;
             
             if (ActionReady(Asylum) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Asylum) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return Asylum.Retarget(actionID ,SimpleTarget.Self);
             
@@ -479,8 +454,7 @@ internal partial class WHM : Healer
             if (ActionReady(Aquaveil) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(Aquaveil) && IsOffCooldown(Aquaveil) && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Aquaveil.RetargetIfEnabled(actionID);
 
-            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) && GetTargetHPPercent(healTarget) <= 90 &&
-                (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+            if (ActionReady(OriginalHook(Temperance)) && InCombat() && CanWeave() && CanUseWhmHealingSetupOgcd(OriginalHook(Temperance)) && GetTargetHPPercent(healTarget) <= 90)
                 return OriginalHook(Temperance);
             
             if (ActionReady(AfflatusSolace) && !BloodLilyReady)

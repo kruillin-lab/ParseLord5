@@ -40,18 +40,11 @@ internal partial class RPR : Melee
                 if (CanTrueNorthForGluttony())
                     return Role.TrueNorth;
 
-                // ParseLord5 experiment: swap Gluttony / Bloodstalk priority.
-                // Baseline (flag off): Gluttony first, then Bloodstalk.
-                var bloodstalkFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (bloodstalkFirst && CanBloodstalkOverflow())
+                if (CanBloodstalkOverflow())
                     return OriginalHook(BloodStalk);
 
                 if (CanGluttonyWeave())
                     return Gluttony;
-
-                if (!bloodstalkFirst && CanBloodstalkOverflow())
-                    return OriginalHook(BloodStalk);
 
                 if (UseEnshroudWeaves(out uint weave, false))
                     return weave;
@@ -128,18 +121,11 @@ internal partial class RPR : Melee
                 if (CanBurstGluttonyWeave())
                     return Gluttony;
 
-                // ParseLord5 experiment (AoE): swap Gluttony / Grim Swathe priority.
-                // Baseline (flag off): Gluttony first, then Grim Swathe.
-                var grimSwatheFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (grimSwatheFirst && CanGrimSwatheOverflow(true))
+                if (CanGrimSwatheOverflow(true))
                     return GrimSwathe;
 
                 if (CanGluttonyWeave())
                     return Gluttony;
-
-                if (!grimSwatheFirst && CanGrimSwatheOverflow(true))
-                    return GrimSwathe;
 
                 if (UseEnshroudWeaves(out uint weave, true))
                     return weave;
@@ -218,13 +204,8 @@ internal partial class RPR : Melee
                     CanTrueNorthForGluttony(true, RPR_ManualTN))
                     return Role.TrueNorth;
 
-                // ParseLord5 experiment: swap Gluttony / Bloodstalk priority.
-                // Baseline (flag off): Gluttony first, then Bloodstalk.
-                var bloodstalkFirst = ParseLord5Experiments.JobRotationExperiments;
-
                 //Bloodstalk
-                if (bloodstalkFirst &&
-                    IsEnabled(Preset.RPR_ST_Bloodstalk) &&
+                if (IsEnabled(Preset.RPR_ST_Bloodstalk) &&
                     CanBloodstalkOverflow(gluttonyEnabled: IsEnabled(Preset.RPR_ST_Gluttony)))
                     return OriginalHook(BloodStalk);
 
@@ -232,12 +213,6 @@ internal partial class RPR : Melee
                 if (IsEnabled(Preset.RPR_ST_Gluttony) &&
                     CanGluttonyWeave())
                     return Gluttony;
-
-                //Bloodstalk
-                if (!bloodstalkFirst &&
-                    IsEnabled(Preset.RPR_ST_Bloodstalk) &&
-                    CanBloodstalkOverflow(gluttonyEnabled: IsEnabled(Preset.RPR_ST_Gluttony)))
-                    return OriginalHook(BloodStalk);
 
                 if (UseEnshroudWeaves(out uint weave, false,
                     IsEnabled(Preset.RPR_ST_Sacrificium),
@@ -346,23 +321,13 @@ internal partial class RPR : Melee
                     CanEnshroud(true))
                     return Enshroud;
 
-                // ParseLord5 experiment (AoE): swap Gluttony / Grim Swathe priority.
-                // Baseline (flag off): Gluttony first, then Grim Swathe.
-                var grimSwatheFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (grimSwatheFirst &&
-                    IsEnabled(Preset.RPR_AoE_GrimSwathe) &&
+                if (IsEnabled(Preset.RPR_AoE_GrimSwathe) &&
                     CanGrimSwatheOverflow(true))
                     return GrimSwathe;
 
                 if (IsEnabled(Preset.RPR_AoE_Gluttony) &&
                     CanGluttonyWeave())
                     return Gluttony;
-
-                if (!grimSwatheFirst &&
-                    IsEnabled(Preset.RPR_AoE_GrimSwathe) &&
-                    CanGrimSwatheOverflow(true))
-                    return GrimSwathe;
 
                 if (UseEnshroudWeaves(out uint weave, true,
                     IsEnabled(Preset.RPR_AoE_Sacrificium),

@@ -66,19 +66,12 @@ internal partial class NIN : Melee
                 if (CanBhavacakra && NinkiPooling)
                     return LevelChecked(Bhavacakra) ? OriginalHook(Bhavacakra) : OriginalHook(HellfrogMedium);
 
-                // ParseLord5 experiment: swap TrickAttack / Mug priority.
-                // Baseline (flag off): Mug first, then TrickAttack.
-                var trickFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (trickFirst && CanTrickST && CombatEngageDuration().TotalSeconds > 5)
+                if (CanTrickST && CombatEngageDuration().TotalSeconds > 5)
                     return OriginalHook(TrickAttack);
 
                 if (CanMugST && CombatEngageDuration().TotalSeconds > 5)
                     return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(Bhavacakra) : OriginalHook(Mug);
 
-                if (!trickFirst && CanTrickST && CombatEngageDuration().TotalSeconds > 5)
-                    return OriginalHook(TrickAttack);
-                
                 if (Role.CanFeint() && GroupDamageIncoming() && CanWeave())
                     return Role.Feint;
             }
@@ -195,18 +188,11 @@ internal partial class NIN : Melee
                 if (CanHellfrogMedium && NinkiPooling)
                     return OriginalHook(HellfrogMedium);
 
-                // ParseLord5 experiment (AoE): swap TrickAttack / Mug priority.
-                // Baseline (flag off): Mug first, then TrickAttack.
-                var trickFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (trickFirst && CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
+                if (CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
                     return OriginalHook(TrickAttack);
 
                 if (CanMugAoE && CombatEngageDuration().TotalSeconds > 5)
                     return NinkiWillOvercap && TraitLevelChecked(Traits.MugMastery) ? OriginalHook(HellfrogMedium) : OriginalHook(Mug);
-
-                if (!trickFirst && CanTrickAoE && CombatEngageDuration().TotalSeconds > 5)
-                    return OriginalHook(TrickAttack);
             }
             #endregion
 
@@ -329,15 +315,12 @@ internal partial class NIN : Melee
                     (NinkiPooling || !NIN_ST_AdvancedMode_Bhavacakra_Pooling))
                     return LevelChecked(Bhavacakra) ? OriginalHook(Bhavacakra) : OriginalHook(HellfrogMedium);
 
-                // ParseLord5 experiment: swap TrickAttack / Mug priority.
-                // Baseline (flag off): Mug first, then TrickAttack.
-                var trickFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canTrickST = IsEnabled(Preset.NIN_ST_AdvancedMode_TrickAttack) && CanTrickST &&
                     CombatEngageDuration().TotalSeconds > 5 && GetTargetHPPercent() > STTrickThreshold;
                 var canMugST = IsEnabled(Preset.NIN_ST_AdvancedMode_Mug) && CanMugST &&
                     CombatEngageDuration().TotalSeconds > 5 && GetTargetHPPercent() > STMugThreshold;
 
-                if (trickFirst && canTrickST)
+                if (canTrickST)
                     return OriginalHook(TrickAttack);
 
                 if (canMugST)
@@ -345,9 +328,6 @@ internal partial class NIN : Melee
                            TraitLevelChecked(Traits.MugMastery) &&
                            IsEnabled(Preset.NIN_ST_AdvancedMode_Bhavacakra)
                         ? OriginalHook(Bhavacakra) : OriginalHook(Mug);
-
-                if (!trickFirst && canTrickST)
-                    return OriginalHook(TrickAttack);
 
                 if (IsEnabled(Preset.NIN_ST_AdvancedMode_StunInterupt) && CanWeave() && !MudraPhase &&
                     RoleActions.Melee.CanLegSweep())
@@ -489,15 +469,12 @@ internal partial class NIN : Melee
                     (NinkiPooling || !NIN_AoE_AdvancedMode_HellfrogMedium_Pooling))
                     return OriginalHook(HellfrogMedium);
 
-                // ParseLord5 experiment (AoE): swap TrickAttack / Mug priority.
-                // Baseline (flag off): Mug first, then TrickAttack.
-                var trickFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canTrickAoE = IsEnabled(Preset.NIN_AoE_AdvancedMode_TrickAttack) && CanTrickAoE &&
                     CombatEngageDuration().TotalSeconds > 5 && GetTargetHPPercent() > AoETrickThreshold;
                 var canMugAoE = IsEnabled(Preset.NIN_AoE_AdvancedMode_Mug) && CanMugAoE &&
                     CombatEngageDuration().TotalSeconds > 5 && GetTargetHPPercent() > AoEMugThreshold;
 
-                if (trickFirst && canTrickAoE)
+                if (canTrickAoE)
                     return OriginalHook(TrickAttack);
 
                 if (canMugAoE)
@@ -507,9 +484,6 @@ internal partial class NIN : Melee
                         ? OriginalHook(HellfrogMedium)
                         : OriginalHook(Mug);
 
-                if (!trickFirst && canTrickAoE)
-                    return OriginalHook(TrickAttack);
-                
                 if (IsEnabled(Preset.NIN_AoE_AdvancedMode_StunInterupt) && CanWeave() && !MudraPhase &&
                     RoleActions.Melee.CanLegSweep())
                     return Role.LegSweep;

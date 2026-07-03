@@ -147,11 +147,6 @@ internal partial class PCT
                 return true;
             }
 
-            // ParseLord5 experiment: swap Living Muse / Steel Muse priority.
-            // Experimental (flag on): Steel Muse first, then Living Muse.
-            // Baseline (flag off): Living Muse first, then Steel Muse.
-            var steelMuseFirst = ParseLord5Experiments.JobRotationExperiments;
-
             var canSteelMuse = steelMuseEnabled && steelMuseReady && CanWeave() &&
                 (TargetIsBoss() && GetTargetHPPercent() < burnBossThreshold ||
                  HasStatusEffect(Buffs.StarryMuse) ||
@@ -169,7 +164,7 @@ internal partial class PCT
                  ScenicCD > GetCooldownChargeRemainingTime(LivingMuse) ||
                  !scenicMuseEnabled);
 
-            if (steelMuseFirst && canSteelMuse)
+            if (canSteelMuse)
             {
                 actionID = OriginalHook(SteelMuse);
                 return true;
@@ -178,12 +173,6 @@ internal partial class PCT
             if (canLivingMuse)
             {
                 actionID = OriginalHook(LivingMuse);
-                return true;
-            }
-
-            if (!steelMuseFirst && canSteelMuse)
-            {
-                actionID = OriginalHook(SteelMuse);
                 return true;
             }
 

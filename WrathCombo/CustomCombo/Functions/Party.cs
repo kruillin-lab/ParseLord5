@@ -33,9 +33,9 @@ internal abstract partial class CustomComboFunctions
         if (!Player.Available) return [];
         _partyList.RemoveAll(x => x.BattleChara is null);
         int throttleTime = 2000;
-        if (ParseLord5Experiments.FastPartyCache && (InCombat() || PartyInCombat()))
+        if (InCombat() || PartyInCombat())
         {
-            throttleTime = 100; // Fast 100ms updates in combat when experimental mode is on
+            throttleTime = 100; // Fast 100ms updates in combat
         }
 
         if (allowCache && !EzThrottler.Throttle("PartyUpdateThrottle", throttleTime))

@@ -27,21 +27,15 @@ internal partial class SAM : Melee
             //oGCDs
             if (CanWeave())
             {
-                // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
-                // Baseline (flag off): Meikyo first, then Ikishoten.
-                var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canIkishoten = TryGetIkishotenAction(out uint ikishotenAction);
 
                 //Ikishoten Feature
-                if (ikishotenFirst && canIkishoten)
+                if (canIkishoten)
                     return ikishotenAction;
 
                 //Meikyo Feature
                 if (CanMeikyo())
                     return MeikyoShisui;
-
-                if (!ikishotenFirst && canIkishoten)
-                    return ikishotenAction;
 
                 if (GetTargetHPPercent() < 1)
                     return UseKenkiSpender(actionID, true, true, true);
@@ -128,21 +122,15 @@ internal partial class SAM : Melee
                 if (CanAoEHagakure())
                     return Hagakure;
 
-                // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
-                // Baseline (flag off): Meikyo first, then Ikishoten.
-                var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
                 uint kenkiAction = 0;
                 var canIkishoten = CanAoEIkishotenKenki(out kenkiAction);
                 var canMeikyo = CanAoEMeikyo();
 
-                if (ikishotenFirst && canIkishoten)
+                if (canIkishoten)
                     return kenkiAction;
 
                 if (canMeikyo)
                     return MeikyoShisui;
-
-                if (!ikishotenFirst && canIkishoten)
-                    return kenkiAction;
 
                 if (CanAoEZanshin())
                     return Zanshin;
@@ -204,9 +192,6 @@ internal partial class SAM : Melee
             {
                 if (IsEnabled(Preset.SAM_ST_CDs))
                 {
-                    // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority.
-                    // Baseline (flag off): Meikyo first, then Ikishoten.
-                    var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
                     uint ikishotenAction = 0;
                     var canIkishoten =
                         IsEnabled(Preset.SAM_ST_CDs_Ikishoten) &&
@@ -216,15 +201,12 @@ internal partial class SAM : Melee
                         CanMeikyo(SAM_ST_MeikyoExecuteThreshold);
 
                     //Ikishoten feature
-                    if (ikishotenFirst && canIkishoten)
+                    if (canIkishoten)
                         return ikishotenAction;
 
                     //Meikyo feature
                     if (canMeikyo)
                         return MeikyoShisui;
-
-                    if (!ikishotenFirst && canIkishoten)
-                        return ikishotenAction;
                 }
 
                 if (IsEnabled(Preset.SAM_ST_Damage))
@@ -361,9 +343,6 @@ internal partial class SAM : Melee
 
                 if (IsEnabled(Preset.SAM_AoE_CDs))
                 {
-                    // ParseLord5 experiment: swap MeikyoShisui / Ikishoten priority (AoE).
-                    // Baseline (flag off): Meikyo first, then Ikishoten.
-                    var ikishotenFirst = ParseLord5Experiments.JobRotationExperiments;
                     uint kenkiAction = 0;
                     var canIkishoten =
                         IsEnabled(Preset.SAM_AoE_CDs_Ikishoten) &&
@@ -372,14 +351,11 @@ internal partial class SAM : Melee
                         IsEnabled(Preset.SAM_AoE_MeikyoShisui) &&
                         CanAoEMeikyo();
 
-                    if (ikishotenFirst && canIkishoten)
+                    if (canIkishoten)
                         return kenkiAction;
 
                     if (canMeikyo)
                         return MeikyoShisui;
-
-                    if (!ikishotenFirst && canIkishoten)
-                        return kenkiAction;
                 }
 
                 if (IsEnabled(Preset.SAM_AoE_Damage))

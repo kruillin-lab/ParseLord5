@@ -27,8 +27,7 @@ internal partial class WAR
 
         // WAR_Helper.Minimal (InCombat() && HasBattleTarget()) was removed upstream;
         // inCombat/hasBattleTarget above already compute the same condition.
-        if (!ParseLord5Experiments.JobRotationExperiments ||
-            !inCombat ||
+        if (!inCombat ||
             !hasBattleTarget)
             return;
 

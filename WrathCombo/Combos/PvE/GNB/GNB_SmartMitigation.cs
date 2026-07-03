@@ -505,9 +505,6 @@ internal partial class GNB
         uint currentHp = 0,
         uint maxHp = 0)
     {
-        if (!ParseLord5Experiments.SmartMitigation)
-            return;
-
         var now = Environment.TickCount64;
         if (now < _nextParseLord5GnbSmartMitTraceAt)
             return;

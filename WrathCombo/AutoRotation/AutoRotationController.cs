@@ -434,7 +434,7 @@ internal unsafe class AutoRotationController
         }
 
         double effectiveHealDelay = HealDelayCurve.ComputeEffectiveHealDelay(
-            cfg.HealerSettings.HealDelay, lowestHp, ParseLord5Experiments.DynamicHealCurve);
+            cfg.HealerSettings.HealDelay, lowestHp, true);
 
         bool canHeal = TimeToHeal is not null
                        && (DateTime.Now - TimeToHeal.Value).TotalSeconds >= effectiveHealDelay
@@ -967,8 +967,7 @@ internal unsafe class AutoRotationController
                     IGameObject? target = dpsmode switch
                     {
                         DPSRotationMode.Manual =>
-                            (ParseLord5Experiments.NoTargetDpsFallback && 
-                             (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
+                            ((Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) &&
                              cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
                                 ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)
                                 : Svc.Targets.Target,
@@ -988,8 +987,7 @@ internal unsafe class AutoRotationController
                     IGameObject? target = dpsmode switch
                     {
                         DPSRotationMode.Manual =>
-                            (ParseLord5Experiments.NoTargetDpsFallback && 
-                             (Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) && 
+                            ((Svc.Targets.Target == null || !Svc.Targets.Target.IsHostile()) &&
                              cfg.DPSSettings.DPSManualFallbackMode != DPSRotationMode.Manual)
                                 ? GetSingleTarget(cfg.DPSSettings.DPSManualFallbackMode)
                                 : Svc.Targets.Target,

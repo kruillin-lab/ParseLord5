@@ -115,13 +115,10 @@ internal class AutoRotationTab : ConfigWindow
 
                 ImGuiComponents.HelpMarker(AutoRotationUI.HelpText_EnforceBestAoETarget);
 
-                if (ParseLord5Experiments.NoTargetDpsFallback)
-                {
-                    ImGui.Spacing();
-                    ImGuiEx.TextUnderlined("Experimental: No-Target Fallback Mode");
-                    changed |= ImGuiEx.EnumCombo("###DPSManualFallbackMode", ref cfg.DPSSettings.DPSManualFallbackMode);
-                    ImGuiComponents.HelpMarker("When manual targeting mode is active and you have no hard target selected, the rotation will temporarily target using this mode. Tabbing or clicking any target will immediately override this fallback.");
-                }
+                ImGui.Spacing();
+                ImGuiEx.TextUnderlined("No-Target Fallback Mode");
+                changed |= ImGuiEx.EnumCombo("###DPSManualFallbackMode", ref cfg.DPSSettings.DPSManualFallbackMode);
+                ImGuiComponents.HelpMarker("When manual targeting mode is active and you have no hard target selected, the rotation will temporarily target using this mode. Tabbing or clicking any target will immediately override this fallback.");
             }
 
 

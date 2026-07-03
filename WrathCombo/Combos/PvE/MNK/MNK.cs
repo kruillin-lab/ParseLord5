@@ -30,18 +30,11 @@ internal partial class MNK : Melee
                 if (ShouldUsePBAfterBurstHolding(false))
                     return PerfectBalance;
 
-                // ParseLord5 experiment: swap Brotherhood / Riddle of Fire priority.
-                // Baseline (flag off): Brotherhood first, then Riddle of Fire.
-                var riddleOfFireFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (riddleOfFireFirst && CanRoF())
+                if (CanRoF())
                     return RiddleOfFire;
 
                 if (CanBrotherhood())
                     return Brotherhood;
-
-                if (!riddleOfFireFirst && CanRoF())
-                    return RiddleOfFire;
 
                 if (CanPerfectBalance(false))
                     return PerfectBalance;
@@ -108,18 +101,11 @@ internal partial class MNK : Melee
                 if (ShouldUsePBAfterBurstHolding(true))
                     return PerfectBalance;
 
-                // ParseLord5 experiment (AoE): swap Brotherhood / Riddle of Fire priority.
-                // Baseline (flag off): Brotherhood first, then Riddle of Fire.
-                var riddleOfFireFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (riddleOfFireFirst && CanRoF())
+                if (CanRoF())
                     return RiddleOfFire;
 
                 if (CanBrotherhood())
                     return Brotherhood;
-
-                if (!riddleOfFireFirst && CanRoF())
-                    return RiddleOfFire;
 
                 if (CanPerfectBalance(true))
                     return PerfectBalance;
@@ -199,9 +185,6 @@ internal partial class MNK : Melee
 
                 if (IsEnabled(Preset.MNK_STUseBuffs))
                 {
-                    // ParseLord5 experiment: swap Brotherhood / Riddle of Fire priority.
-                    // Baseline (flag off): Brotherhood first, then Riddle of Fire.
-                    var riddleOfFireFirst = ParseLord5Experiments.JobRotationExperiments;
                     var canRoF =
                         IsEnabled(Preset.MNK_STUseROF) &&
                         GetTargetHPPercent() > RiddleOfFireHPThreshold &&
@@ -211,14 +194,11 @@ internal partial class MNK : Melee
                         GetTargetHPPercent() > BrotherhoodHPThreshold &&
                         CanBrotherhood();
 
-                    if (riddleOfFireFirst && canRoF)
+                    if (canRoF)
                         return RiddleOfFire;
 
                     if (canBrotherhood)
                         return Brotherhood;
-
-                    if (!riddleOfFireFirst && canRoF)
-                        return RiddleOfFire;
                 }
 
                 if (IsEnabled(Preset.MNK_STUsePerfectBalance) &&
@@ -320,20 +300,14 @@ internal partial class MNK : Melee
                 if (IsEnabled(Preset.MNK_AoEUseBuffs) &&
                     GetTargetHPPercent() >= MNK_AoE_BuffsHPThreshold)
                 {
-                    // ParseLord5 experiment (AoE): swap Brotherhood / Riddle of Fire priority.
-                    // Baseline (flag off): Brotherhood first, then Riddle of Fire.
-                    var riddleOfFireFirst = ParseLord5Experiments.JobRotationExperiments;
                     var canRoF = IsEnabled(Preset.MNK_AoEUseROF) && CanRoF();
                     var canBrotherhood = IsEnabled(Preset.MNK_AoEUseBrotherhood) && CanBrotherhood();
 
-                    if (riddleOfFireFirst && canRoF)
+                    if (canRoF)
                         return RiddleOfFire;
 
                     if (canBrotherhood)
                         return Brotherhood;
-
-                    if (!riddleOfFireFirst && canRoF)
-                        return RiddleOfFire;
                 }
 
                 if (IsEnabled(Preset.MNK_AoEUsePerfectBalance) &&

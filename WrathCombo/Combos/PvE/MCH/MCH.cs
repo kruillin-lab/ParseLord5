@@ -51,18 +51,11 @@ internal partial class MCH : PhysicalRanged
                     if (CanBarrelStabilizer(requireBoss: true))
                         return BarrelStabilizer;
 
-                    // ParseLord5 experiment: swap Reassemble / Queen priority.
-                    // Baseline (flag off): Queen first, then Reassemble.
-                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                    if (reassembleFirst && CanReassemble(false))
+                    if (CanReassemble(false))
                         return Reassemble;
 
                     if (CanQueen())
                         return OriginalHook(RookAutoturret);
-
-                    if (!reassembleFirst && CanReassemble(false))
-                        return Reassemble;
 
                     if (GaussRicochetWeaves(out gaussRico, false, false))
                         return gaussRico;
@@ -133,19 +126,11 @@ internal partial class MCH : PhysicalRanged
                         !HasStatusEffect(Buffs.FullMetalMachinist))
                         return BarrelStabilizer;
 
-                    // ParseLord5 experiment (AoE): swap Reassemble / Queen priority.
-                    // Baseline (flag off): Queen first, then Reassemble.
-                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
-                    var canReassemble = CanReassemble(true);
-
-                    if (reassembleFirst && canReassemble)
+                    if (CanReassemble(true))
                         return Reassemble;
 
                     if (ActionReady(OriginalHook(RookAutoturret)) && Battery is 100)
                         return OriginalHook(RookAutoturret);
-
-                    if (!reassembleFirst && canReassemble)
-                        return Reassemble;
 
                     if (CanBarrelStabilizer(onAoE: true))
                         return BarrelStabilizer;
@@ -250,8 +235,6 @@ internal partial class MCH : PhysicalRanged
 
                 if (!IsOverheated)
                 {
-                    // ParseLord5 experiment: Reassemble→Barrel→Queen; baseline Queen→Barrel→Reassemble.
-                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
                     var canReassemble =
                         IsEnabled(Preset.MCH_ST_Adv_Reassemble) &&
                         CanReassemble(false, MCH_ST_Adv_ReassembleChoice, MCH_ST_ReassemblePool, ReassembleHPThreshold);
@@ -260,21 +243,15 @@ internal partial class MCH : PhysicalRanged
                         CanQueen(hpThreshold: QueenHPThreshold, wildfireBossOnlyOption: MCH_ST_WildfireBossOnlyOption,
                             turretUsage: MCH_ST_TurretUsage);
 
-                    if (reassembleFirst && canReassemble)
+                    if (canReassemble)
                         return Reassemble;
-
-                    if (!reassembleFirst && canQueen)
-                        return OriginalHook(RookAutoturret);
 
                     if (IsEnabled(Preset.MCH_ST_Adv_Stabilizer) &&
                         CanBarrelStabilizer(false, BarrelStabilizerHPThreshold, MCH_ST_BarrelStabilizerBossOnlyOption))
                         return BarrelStabilizer;
 
-                    if (reassembleFirst && canQueen)
+                    if (canQueen)
                         return OriginalHook(RookAutoturret);
-
-                    if (!reassembleFirst && canReassemble)
-                        return Reassemble;
 
                     if (IsEnabled(Preset.MCH_ST_Adv_GaussRicochet) &&
                         GaussRicochetWeaves(out gaussRico, false, false,
@@ -387,9 +364,6 @@ internal partial class MCH : PhysicalRanged
                         CanBarrelStabilizer(true, MCH_AoE_BarrelStabilizerHPThreshold))
                         return BarrelStabilizer;
 
-                    // ParseLord5 experiment (AoE Adv): swap Reassemble / Queen priority.
-                    // Baseline (flag off): Queen first, then Reassemble.
-                    var reassembleFirst = ParseLord5Experiments.JobRotationExperiments;
                     var canReassemble =
                         IsEnabled(Preset.MCH_AoE_Adv_Reassemble) &&
                         GetTargetHPPercent() > MCH_AoE_ReassembleHPThreshold &&
@@ -401,16 +375,13 @@ internal partial class MCH : PhysicalRanged
                          GetCooldownRemainingTime(Chainsaw) < GCDTotal && LevelChecked(Chainsaw) ||
                          HasStatusEffect(Buffs.ExcavatorReady) && LevelChecked(Excavator));
 
-                    if (reassembleFirst && canReassemble)
+                    if (canReassemble)
                         return Reassemble;
 
                     if (IsEnabled(Preset.MCH_AoE_Adv_Queen) &&
                         CanQueen(true, MCH_AoE_TurretBatteryUsage,
                             MCH_AoE_QueenHpThreshold))
                         return OriginalHook(RookAutoturret);
-
-                    if (!reassembleFirst && canReassemble)
-                        return Reassemble;
 
                     if (IsEnabled(Preset.MCH_AoE_Adv_GaussRicochet) &&
                         GaussRicochetWeaves(out gaussRico, true, false))

@@ -22,19 +22,12 @@ internal partial class DRG : Melee
             {
                 if (CanDRGWeave())
                 {
-                    // ParseLord5 experiment: swap LanceCharge / BattleLitany priority.
-                    // Baseline (flag off): BattleLitany first, then LanceCharge.
-                    var lanceChargeFirst = ParseLord5Experiments.JobRotationExperiments;
-
                     //Lance Charge Feature
-                    if (lanceChargeFirst && CanLanceCharge())
+                    if (CanLanceCharge())
                         return LanceCharge;
 
                     if (CanBattleLitany())
                         return BattleLitany;
-
-                    if (!lanceChargeFirst && CanLanceCharge())
-                        return LanceCharge;
 
                     if (CanLifeSurge())
                         return LifeSurge;
@@ -105,19 +98,12 @@ internal partial class DRG : Melee
             {
                 if (CanDRGWeave())
                 {
-                    // ParseLord5 experiment (AoE): swap LanceCharge / BattleLitany priority.
-                    // Baseline (flag off): BattleLitany first, then LanceCharge.
-                    var lanceChargeFirst = ParseLord5Experiments.JobRotationExperiments;
-
                     //Lance Charge Feature
-                    if (lanceChargeFirst && CanLanceCharge())
+                    if (CanLanceCharge())
                         return LanceCharge;
 
                     if (CanBattleLitany())
                         return BattleLitany;
-
-                    if (!lanceChargeFirst && CanLanceCharge())
-                        return LanceCharge;
 
                     if (CanLifeSurge(true))
                         return LifeSurge;
@@ -191,9 +177,6 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_ST_Buffs))
                     {
-                        // ParseLord5 experiment: swap LanceCharge / BattleLitany priority.
-                        // Baseline (flag off): BattleLitany first, then LanceCharge.
-                        var lanceChargeFirst = ParseLord5Experiments.JobRotationExperiments;
                         var canLanceCharge =
                             IsEnabled(Preset.DRG_ST_LanceCharge) &&
                             CanLanceCharge(LanceChargeHPThreshold);
@@ -202,15 +185,12 @@ internal partial class DRG : Melee
                             CanBattleLitany(BattleLitanyHPThreshold);
 
                         //Lance Charge Feature
-                        if (lanceChargeFirst && canLanceCharge)
+                        if (canLanceCharge)
                             return LanceCharge;
 
                         //Battle Litany Feature
                         if (canBattleLitany)
                             return BattleLitany;
-
-                        if (!lanceChargeFirst && canLanceCharge)
-                            return LanceCharge;
 
                         if (IsEnabled(Preset.DRG_ST_LifeSurge) &&
                             CanLifeSurge())
@@ -323,9 +303,6 @@ internal partial class DRG : Melee
                 {
                     if (IsEnabled(Preset.DRG_AoE_Buffs))
                     {
-                        // ParseLord5 experiment (AoE): swap LanceCharge / BattleLitany priority.
-                        // Baseline (flag off): BattleLitany first, then LanceCharge.
-                        var lanceChargeFirst = ParseLord5Experiments.JobRotationExperiments;
                         var canLanceCharge =
                             IsEnabled(Preset.DRG_AoE_LanceCharge) &&
                             CanLanceCharge(DRG_AoE_LanceChargeHPThreshold);
@@ -334,14 +311,11 @@ internal partial class DRG : Melee
                             CanBattleLitany(DRG_AoE_BattleLitanyHPThreshold);
 
                         //Lance Charge Feature
-                        if (lanceChargeFirst && canLanceCharge)
+                        if (canLanceCharge)
                             return LanceCharge;
 
                         if (canBattleLitany)
                             return BattleLitany;
-
-                        if (!lanceChargeFirst && canLanceCharge)
-                            return LanceCharge;
 
                         if (IsEnabled(Preset.DRG_AoE_LifeSurge) &&
                             CanLifeSurge(true))

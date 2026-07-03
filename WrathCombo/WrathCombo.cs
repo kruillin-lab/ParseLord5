@@ -366,8 +366,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
             AutoRotationController.Run();
 
-            if (ParseLord5Experiments.CombatTelemetry)
-                CombatTelemetryService.Update();
+            CombatTelemetryService.Update();
 
             if (Player.IsDead)
             {

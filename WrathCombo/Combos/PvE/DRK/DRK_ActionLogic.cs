@@ -348,35 +348,22 @@ internal partial class DRK
                 P.UIHelper.PresetControlled(preset)?.enabled != true)
                 return false;
 
-            if (ParseLord5Experiments.SmartMitigation)
-            {
-                if (InBossEncounter())
-                {
-                    if (TrySmartBossMits(flags, ref action))
-                        return true;
-
-                    if (TryGetBossMitigation(flags, ref action))
-                        return true;
-                }
-                else
-                {
-                    if (TrySmartNonBossMits(flags, ref action))
-                        return true;
-
-                    if (TryGetNonBossMitigation(flags, ref action))
-                        return true;
-                }
-
-                return false;
-            }
-
             if (InBossEncounter())
             {
+                if (TrySmartBossMits(flags, ref action))
+                    return true;
+
                 if (TryGetBossMitigation(flags, ref action))
                     return true;
             }
-            else if (TryGetNonBossMitigation(flags, ref action))
-                return true;
+            else
+            {
+                if (TrySmartNonBossMits(flags, ref action))
+                    return true;
+
+                if (TryGetNonBossMitigation(flags, ref action))
+                    return true;
+            }
 
             return false;
         }

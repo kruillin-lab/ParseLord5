@@ -168,14 +168,11 @@ internal partial class PLD
 
         #endregion
 
-        if (ParseLord5Experiments.SmartMitigation)
-        {
-            var mitAnchor = actionID;
-            if (TrySmartNonBossMits(rotationFlags, ref actionID))
-                return true;
+        var mitAnchor = actionID;
+        if (TrySmartNonBossMits(rotationFlags, ref actionID))
+            return true;
 
-            actionID = mitAnchor;
-        }
+        actionID = mitAnchor;
 
         #region Hallowed Ground Invulnerability
 
@@ -293,14 +290,11 @@ internal partial class PLD
 
         #endregion
 
-        if (ParseLord5Experiments.SmartMitigation)
-        {
-            var mitAnchor = actionID;
-            if (TrySmartBossMits(rotationFlags, ref actionID))
-                return true;
+        var mitAnchor = actionID;
+        if (TrySmartBossMits(rotationFlags, ref actionID))
+            return true;
 
-            actionID = mitAnchor;
-        }
+        actionID = mitAnchor;
 
         #region Sentinel
 
@@ -606,11 +600,7 @@ internal partial class PLD
                 return true;
             }
 
-            // ParseLord5 experiment: swap Circle of Scorn / Spirits Within priority.
-            // Baseline (flag off): Circle of Scorn first, then Spirits Within (upstream order).
-            var spiritsWithinFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (spiritsWithinFirst && spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
+            if (spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
                 (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
             {
                 actionID = OriginalHook(SpiritsWithin);
@@ -621,13 +611,6 @@ internal partial class PLD
                 (!fightOrFlightEnabled && !poolCircleForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
             {
                 actionID = CircleOfScorn;
-                return true;
-            }
-
-            if (!spiritsWithinFirst && spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
-                (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
-            {
-                actionID = OriginalHook(SpiritsWithin);
                 return true;
             }
         }

@@ -19,7 +19,7 @@ internal partial class PLD : Tank
 
     private static void TraceParseLord5Pld(uint anchorActionId, uint selectedActionId, string source)
     {
-        if (!ParseLord5Experiments.SmartMitigation || !InCombat() || !HasBattleTarget())
+        if (!InCombat() || !HasBattleTarget())
             return;
 
         var now = Environment.TickCount64;

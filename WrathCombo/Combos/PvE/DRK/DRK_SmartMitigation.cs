@@ -536,9 +536,6 @@ internal partial class DRK
         uint currentHp = 0,
         uint maxHp = 0)
     {
-        if (!ParseLord5Experiments.SmartMitigation)
-            return;
-
         var now = Environment.TickCount64;
         if (now < _nextParseLord5DrkSmartMitTraceAt)
             return;

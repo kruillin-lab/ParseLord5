@@ -74,9 +74,6 @@ internal partial class AST : Healer
                 if (ActionReady(OriginalHook(AstralDraw)) && HasNoDPSCard)
                     return OriginalHook(AstralDraw);
 
-                // ParseLord5 experiment: swap Divination / Earthly Star priority.
-                // Baseline (flag off): Divination first, then Earthly Star.
-                var earthlyStarFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canEarthlyStar =
                     !HasStatusEffect(Buffs.EarthlyDominance) &&
                     ActionReady(EarthlyStar) && StandStill &&
@@ -89,16 +86,12 @@ internal partial class AST : Healer
                     StandStill;
 
                 //Earthly Star
-                if (earthlyStarFirst && canEarthlyStar)
+                if (canEarthlyStar)
                     return EarthlyStar.Retarget(replacedActions, SimpleTarget.Self);
 
                 //Divination
                 if (canDivination)
                     return Divination;
-
-                //Earthly Star
-                if (!earthlyStarFirst && canEarthlyStar)
-                    return EarthlyStar.Retarget(replacedActions, SimpleTarget.Self);
 
                 //Oracle
                 if (HasStatusEffect(Buffs.Divining))
@@ -168,9 +161,6 @@ internal partial class AST : Healer
                 if (ActionReady(OriginalHook(AstralDraw)) && HasNoDPSCard)
                     return OriginalHook(AstralDraw);
 
-                // ParseLord5 experiment (AoE): swap Divination / Earthly Star priority.
-                // Baseline (flag off): Divination first, then Earthly Star.
-                var earthlyStarFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canEarthlyStar =
                     LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
                     !HasStatusEffect(Buffs.EarthlyDominance) && StandStill &&
@@ -181,16 +171,12 @@ internal partial class AST : Healer
                     (GetTargetHPPercent() >= 10 || InBossEncounter());
 
                 //Earthly Star
-                if (earthlyStarFirst && canEarthlyStar)
+                if (canEarthlyStar)
                     return EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self);
 
                 //Divination
                 if (canDivination)
                     return Divination;
-
-                //Earthly Star
-                if (!earthlyStarFirst && canEarthlyStar)
-                    return EarthlyStar.Retarget(actions, SimpleTarget.Self);
 
                 //Oracle
                 if (HasStatusEffect(Buffs.Divining))
@@ -326,9 +312,6 @@ internal partial class AST : Healer
                     !HasStatusEffect(Buffs.Lightspeed) && DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                // ParseLord5 experiment: swap Divination / Earthly Star priority.
-                // Baseline (flag off): Divination first, then Earthly Star.
-                var earthlyStarFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canEarthlyStar =
                     IsEnabled(Preset.AST_ST_DPS_EarthlyStar) && IsOffCooldown(EarthlyStar) &&
                     LevelChecked(EarthlyStar) && !HasStatusEffect(Buffs.EarthlyDominance) &&
@@ -341,7 +324,7 @@ internal partial class AST : Healer
                     (WaitGCDs || StandStill);
 
                 //Earthly Star
-                if (earthlyStarFirst && canEarthlyStar)
+                if (canEarthlyStar)
                     return AST_ST_DPS_EarthlyStarSubOption == 1
                         ? EarthlyStar.Retarget(replacedActions, SimpleTarget.Self)
                         : EarthlyStar.Retarget(replacedActions, SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
@@ -349,12 +332,6 @@ internal partial class AST : Healer
                 //Divination
                 if (canDivination)
                     return Divination;
-
-                //Earthly Star
-                if (!earthlyStarFirst && canEarthlyStar)
-                    return AST_ST_DPS_EarthlyStarSubOption == 1
-                        ? EarthlyStar.Retarget(replacedActions, SimpleTarget.Self)
-                        : EarthlyStar.Retarget(replacedActions, SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
 
                 //Stellar Detonation
                 if (IsEnabled(Preset.AST_ST_DPS_StellarDetonation) &&
@@ -479,9 +456,6 @@ internal partial class AST : Healer
                     DivinationCD < 5 && WaitGCDs)
                     return Lightspeed;
 
-                // ParseLord5 experiment (AoE): swap Divination / Earthly Star priority.
-                // Baseline (flag off): Divination first, then Earthly Star.
-                var earthlyStarFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canEarthlyStar =
                     IsEnabled(Preset.AST_AOE_DPS_EarthlyStar) &&
                     LevelChecked(EarthlyStar) && IsOffCooldown(EarthlyStar) &&
@@ -495,7 +469,7 @@ internal partial class AST : Healer
                     (WaitGCDs || StandStill);
 
                 //Earthly Star
-                if (earthlyStarFirst && canEarthlyStar)
+                if (canEarthlyStar)
                     return AST_AOE_DPS_EarthlyStarSubOption == 1
                         ? EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self)
                         : EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
@@ -503,12 +477,6 @@ internal partial class AST : Healer
                 //Divination
                 if (canDivination)
                     return Divination;
-
-                //Earthly Star
-                if (!earthlyStarFirst && canEarthlyStar)
-                    return AST_AOE_DPS_EarthlyStarSubOption == 1
-                        ? EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.Self)
-                        : EarthlyStar.Retarget(GravityList.ToArray(), SimpleTarget.HardTarget.IfHostile() ?? SimpleTarget.Stack.Allies);
 
                 //Stellar Detonation
                 if (IsEnabled(Preset.AST_AOE_DPS_StellarDetonation) &&
@@ -580,7 +548,7 @@ internal partial class AST : Healer
             if (ActionReady(Exaltation) && InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Exaltation.RetargetIfEnabled(actionID);
 
-            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd)
             {
                 if (ActionReady(OriginalHook(CelestialOpposition)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CelestialOpposition);

@@ -22,18 +22,11 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
-                // Baseline (flag off): Amplifier first, then Ley Lines.
-                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (leyLinesFirst && CanStLeyLinesWeave(minCharges: 1, allowMoving: false, timeStillSeconds: 2.5))
+                if (CanStLeyLinesWeave(minCharges: 1, allowMoving: false, timeStillSeconds: 2.5))
                     return LeyLines;
 
                 if (CanStAmplifierWeave())
                     return Amplifier;
-
-                if (!leyLinesFirst && CanStLeyLinesWeave(minCharges: 1, allowMoving: false, timeStillSeconds: 2.5))
-                    return LeyLines;
 
                 if (TryEndOfFireWeave(fallbackWhenNoTranspose: Blizzard) is var endOfFireWeave and not 0)
                     return endOfFireWeave;
@@ -107,11 +100,7 @@ internal partial class BLM : Caster
                 if (CanAoETransposeWeave())
                     return Transpose;
 
-                // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
-                // Baseline (flag off): Amplifier first, then Ley Lines.
-                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (leyLinesFirst && CanAoELeyLinesWeave(
+                if (CanAoELeyLinesWeave(
                     allowMoving: false,
                     timeStillSeconds: BLM_AoE_LeyLinesTimeStill,
                     hpThreshold: 40))
@@ -119,12 +108,6 @@ internal partial class BLM : Caster
 
                 if (CanAoEAmplifierWeave())
                     return Amplifier;
-
-                if (!leyLinesFirst && CanAoELeyLinesWeave(
-                    allowMoving: false,
-                    timeStillSeconds: BLM_AoE_LeyLinesTimeStill,
-                    hpThreshold: 40))
-                    return LeyLines;
             }
 
             if (TryAoEPolyglotOvercap() is var polyglotOvercap and not 0)
@@ -176,11 +159,7 @@ internal partial class BLM : Caster
 
             if (CanWeave())
             {
-                // ParseLord5 experiment: swap Amplifier / Ley Lines priority.
-                // Baseline (flag off): Amplifier first, then Ley Lines.
-                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (leyLinesFirst && CanStLeyLinesWeave(
+                if (CanStLeyLinesWeave(
                     IsEnabled(Preset.BLM_ST_LeyLines),
                     BLM_ST_LeyLinesCharges,
                     BLM_ST_LeyLinesMovement == 1,
@@ -190,14 +169,6 @@ internal partial class BLM : Caster
 
                 if (CanStAmplifierWeave(IsEnabled(Preset.BLM_ST_Amplifier)))
                     return Amplifier;
-
-                if (!leyLinesFirst && CanStLeyLinesWeave(
-                    IsEnabled(Preset.BLM_ST_LeyLines),
-                    BLM_ST_LeyLinesCharges,
-                    BLM_ST_LeyLinesMovement == 1,
-                    BLM_ST_LeyLinesTimeStill,
-                    LeyLinesHPThreshold))
-                    return LeyLines;
 
                 if (TryEndOfFireWeave(
                     IsEnabled(Preset.BLM_ST_Manafont),
@@ -292,11 +263,7 @@ internal partial class BLM : Caster
                 if (CanAoETransposeWeave(IsEnabled(Preset.BLM_AoE_Transpose)))
                     return Transpose;
 
-                // ParseLord5 experiment (AoE): swap Amplifier / Ley Lines priority.
-                // Baseline (flag off): Amplifier first, then Ley Lines.
-                var leyLinesFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (leyLinesFirst && CanAoELeyLinesWeave(
+                if (CanAoELeyLinesWeave(
                     IsEnabled(Preset.BLM_AoE_LeyLines),
                     BLM_AoE_LeyLinesCharges,
                     BLM_AoE_LeyLinesMovement == 1,
@@ -306,14 +273,6 @@ internal partial class BLM : Caster
 
                 if (CanAoEAmplifierWeave(IsEnabled(Preset.BLM_AoE_Amplifier)))
                     return Amplifier;
-
-                if (!leyLinesFirst && CanAoELeyLinesWeave(
-                    IsEnabled(Preset.BLM_AoE_LeyLines),
-                    BLM_AoE_LeyLinesCharges,
-                    BLM_AoE_LeyLinesMovement == 1,
-                    BLM_AoE_LeyLinesTimeStill,
-                    BLM_AoE_LeyLinesOption))
-                    return LeyLines;
             }
 
             if (TryAoEPolyglotOvercap(IsEnabled(Preset.BLM_AoE_UsePolyglot)) is var polyglotOvercap and not 0)

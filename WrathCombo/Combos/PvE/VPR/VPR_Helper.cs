@@ -355,14 +355,12 @@ internal partial class VPR
 
         if (onAoE)
         {
-            // ParseLord5 experiment: swap Fellhunter's / Fellskin's venom priority.
-            var fellskinFirst = ParseLord5Experiments.JobRotationExperiments;
             var canFellhuntersVenom = HasStatusEffect(Buffs.FellhuntersVenom) &&
                                        (ignoreRange || InActionRange(TwinfangThresh));
             var canFellskinsVenom = HasStatusEffect(Buffs.FellskinsVenom) &&
                                      (ignoreRange || InActionRange(TwinbloodThresh));
 
-            if (fellskinFirst && canFellskinsVenom)
+            if (canFellskinsVenom)
             {
                 action = OriginalHook(Twinblood);
                 return true;
@@ -374,22 +372,13 @@ internal partial class VPR
                 return true;
             }
 
-            if (!fellskinFirst && canFellskinsVenom)
-            {
-                action = OriginalHook(Twinblood);
-                return true;
-            }
-
             return false;
         }
 
         if (requireMelee && !InMeleeRange())
             return false;
 
-        // ParseLord5 experiment: swap Hunter's / Swiftskin's venom priority.
-        var swiftskinFirst = ParseLord5Experiments.JobRotationExperiments;
-
-        if (swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
+        if (HasStatusEffect(Buffs.SwiftskinsVenom))
         {
             action = OriginalHook(Twinblood);
             return true;
@@ -398,12 +387,6 @@ internal partial class VPR
         if (HasStatusEffect(Buffs.HuntersVenom))
         {
             action = OriginalHook(Twinfang);
-            return true;
-        }
-
-        if (!swiftskinFirst && HasStatusEffect(Buffs.SwiftskinsVenom))
-        {
-            action = OriginalHook(Twinblood);
             return true;
         }
 

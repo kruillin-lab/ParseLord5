@@ -47,21 +47,15 @@ internal partial class SCH : Healer
                 if (HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
 
-                // ParseLord5 experiment: swap Chain Stratagem / Energy Drain priority.
-                // Baseline (flag off): Chain Stratagem first, then Energy Drain.
-                var energyDrainFirst = ParseLord5Experiments.JobRotationExperiments;
                 var canEnergyDrain =
                     ActionReady(EnergyDrain) && AetherflowCD <= 10 &&
                     (ChainStrategemCD > 10 || !LevelChecked(ChainStratagem));
 
-                if (energyDrainFirst && canEnergyDrain)
+                if (canEnergyDrain)
                     return EnergyDrain;
 
                 if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
                     return ChainStratagem;
-
-                if (!energyDrainFirst && canEnergyDrain)
-                    return EnergyDrain;
 
                 if (Role.CanLucidDream(6500))
                     return Role.LucidDreaming;
@@ -109,20 +103,13 @@ internal partial class SCH : Healer
             if (HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem) && CanWeave())
                 return BanefulImpaction;
 
-            // ParseLord5 experiment (AoE): swap Chain Stratagem / Energy Drain priority.
-            // Baseline (flag off): Chain Stratagem first, then Energy Drain.
             if (CanWeave())
             {
-                var energyDrainFirst = ParseLord5Experiments.JobRotationExperiments;
-
-                if (energyDrainFirst && ActionReady(EnergyDrain) && AetherflowCD <= 10)
+                if (ActionReady(EnergyDrain) && AetherflowCD <= 10)
                     return EnergyDrain;
 
                 if (ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem)
                     return ChainStratagem;
-
-                if (!energyDrainFirst && ActionReady(EnergyDrain) && AetherflowCD <= 10)
-                    return EnergyDrain;
             }
 
             var dotAction = OriginalHook(Bio);
@@ -188,7 +175,7 @@ internal partial class SCH : Healer
                 GetTargetHPPercent(healTarget) <= 50)
                 return Lustrate.RetargetIfEnabled(actionID);
             
-            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) &&
+            if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return SacredSoil.Retarget(actionID, SimpleTarget.Self);
             
@@ -198,7 +185,7 @@ internal partial class SCH : Healer
             if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Aetherpact) && !FairyBusy && ActionReady(Aetherpact))
                 return Aetherpact.RetargetIfEnabled(actionID);
 
-            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments) && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && HasPetPresent() && !FairyBusy)
             {
                 if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
@@ -216,7 +203,7 @@ internal partial class SCH : Healer
                     return Seraphism;
             }
 
-            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) && (!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments))
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient))
                 return Expedient;
 
 
@@ -348,10 +335,6 @@ internal partial class SCH : Healer
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem))
                     return BanefulImpaction;
 
-                // ParseLord5 experiment: swap Chain Stratagem / Energy Drain priority.
-                // Baseline (flag off): Chain Stratagem first, then Energy Drain.
-                var energyDrainFirst = ParseLord5Experiments.JobRotationExperiments;
-
                 Svc.Log.Debug($"{IsEnabled(Preset.SCH_ST_ADV_DPS_ChainStrat)} {ActionWatching.NumberOfGcdsUsed > 3} {CanChainStrategem} {GetTargetHPPercent()} {chainThreshold}");
                 var canEnergyDrain =
                     IsEnabled(Preset.SCH_ST_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
@@ -363,14 +346,11 @@ internal partial class SCH : Healer
                     IsEnabled(Preset.SCH_ST_ADV_DPS_ChainStrat) && ActionWatching.NumberOfGcdsUsed > 3 && CanChainStrategem &&
                     GetTargetHPPercent() > chainThreshold;
 
-                if (energyDrainFirst && canEnergyDrain)
+                if (canEnergyDrain)
                     return EnergyDrain;
 
                 if (canChainStratagem)
                     return ChainStratagem;
-
-                if (!energyDrainFirst && canEnergyDrain)
-                    return EnergyDrain;
 
                 if (IsEnabled(Preset.SCH_ST_ADV_DPS_Lucid) && Role.CanLucidDream(SCH_ST_DPS_LucidOption))
                     return Role.LucidDreaming;
@@ -438,9 +418,6 @@ internal partial class SCH : Healer
             if (IsEnabled(Preset.SCH_AoE_ADV_DPS_BanefulImpact) && HasStatusEffect(Buffs.ImpactImminent) && !JustUsed(ChainStratagem) && CanWeave())
                 return BanefulImpaction;
 
-            // ParseLord5 experiment (AoE): swap Chain Stratagem / Energy Drain priority.
-            // Baseline (flag off): Chain Stratagem first, then Energy Drain.
-            var energyDrainFirst = ParseLord5Experiments.JobRotationExperiments;
             var canEnergyDrain =
                 IsEnabled(Preset.SCH_AoE_ADV_DPS_EnergyDrain) && ActionReady(EnergyDrain) &&
                 AetherflowCD <= SCH_AoE_DPS_EnergyDrain && CanWeave() &&
@@ -452,14 +429,11 @@ internal partial class SCH : Healer
                 GetTargetHPPercent() > chainThreshold && CanWeave() &&
                 (LevelChecked(BanefulImpaction) || !SCH_AoE_DPS_ChainStratagemBanefulOption);
 
-            if (energyDrainFirst && canEnergyDrain)
+            if (canEnergyDrain)
                 return EnergyDrain;
 
             if (canChainStratagem)
                 return ChainStratagem;
-
-            if (!energyDrainFirst && canEnergyDrain)
-                return EnergyDrain;
 
             var dotAction = OriginalHook(Bio);
             BioList.TryGetValue(dotAction, out var dotDebuffID);

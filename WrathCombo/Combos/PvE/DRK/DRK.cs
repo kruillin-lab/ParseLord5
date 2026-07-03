@@ -130,27 +130,15 @@ internal partial class DRK : Tank
             var cdBossRequirementMet = !cdBossRequirement ||
                                        (cdBossRequirement && InBossEncounter());
 
-            // ParseLord5 experiment: swap CDs / Spenders priority.
-            // Baseline (flag off): Spenders first, then CDs.
-            // Lazy ladder: TryGetAction<Cooldown> mutates static cooldown-tracking state
-            // (e.g. DRK's ShouldDeliriumNext), so each call must stay inline and only fire
-            // in branch order — never hoisted into an unconditionally-evaluated bool.
-            var cdsFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (cdsFirst &&
-                IsEnabled(Preset.DRK_ST_CDs) &&
+            // Order matters: TryGetAction<Cooldown> mutates static cooldown-tracking
+            // state (e.g. DRK's ShouldDeliriumNext), so CDs must be checked before Spenders.
+            if (IsEnabled(Preset.DRK_ST_CDs) &&
                 cdBossRequirementMet &&
                 TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
             if (IsEnabled(Preset.DRK_ST_Spenders) &&
                 TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
-
-            if (!cdsFirst &&
-                IsEnabled(Preset.DRK_ST_CDs) &&
-                cdBossRequirementMet &&
-                TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
@@ -196,19 +184,12 @@ internal partial class DRK : Tank
             if (TryGetAction<Cooldown>(comboFlags, ref newAction, true))
                 return newAction;
 
-            // ParseLord5 experiment: swap Spender / Cooldown priority.
-            // Baseline (flag off): Spender first, then Cooldown.
-            // Lazy ladder: see ST_Advanced above — TryGetAction<Cooldown> has cooldown-tracking
-            // side effects, so it must only run in branch order, never unconditionally.
-            var cooldownFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (cooldownFirst && TryGetAction<Cooldown>(comboFlags, ref newAction))
+            // Order matters: see ST_Advanced above — TryGetAction<Cooldown> has
+            // cooldown-tracking side effects, so Cooldown must be checked before Spender.
+            if (TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Spender>(comboFlags, ref newAction))
-                return newAction;
-
-            if (!cooldownFirst && TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
@@ -245,22 +226,11 @@ internal partial class DRK : Tank
                 TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
             
-            // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
-            // Baseline (flag off): Mitigation first, then Spender.
-            // Lazy ladder: see ST_Advanced above.
-            var spenderFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (spenderFirst &&
-                IsEnabled(Preset.DRK_AoE_Spenders) &&
+            if (IsEnabled(Preset.DRK_AoE_Spenders) &&
                 TryGetAction<Spender>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                return newAction;
-
-            if (!spenderFirst &&
-                IsEnabled(Preset.DRK_AoE_Spenders) &&
-                TryGetAction<Spender>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
@@ -296,18 +266,10 @@ internal partial class DRK : Tank
             if (TryGetAction<Cooldown>(comboFlags, ref newAction))
                 return newAction;
 
-            // ParseLord5 experiment (AoE): swap Spender / Mitigation priority.
-            // Baseline (flag off): Mitigation first, then Spender.
-            // Lazy ladder: see ST_Advanced above.
-            var spenderFirst = ParseLord5Experiments.JobRotationExperiments;
-
-            if (spenderFirst && TryGetAction<Spender>(comboFlags, ref newAction))
+            if (TryGetAction<Spender>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Mitigation>(comboFlags, ref newAction))
-                return newAction;
-
-            if (!spenderFirst && TryGetAction<Spender>(comboFlags, ref newAction))
                 return newAction;
 
             if (TryGetAction<Core>(comboFlags, ref newAction))
