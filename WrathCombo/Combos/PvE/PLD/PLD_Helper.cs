@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.JobGauge.Types;
+using Dalamud.Game.ClientState.JobGauge.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -572,17 +572,23 @@ internal partial class PLD
                 return true;
             }
             
-            if (fightOrFlightEnabled && !HasWeaved() && CombatEngageDuration().TotalSeconds >= 8 && //Time to hold buffing for non opener pulls.
-                OriginalHook(FightOrFlight) is FightOrFlight && ActionReady(FightOrFlight) && //To make sure it doesnt try to weave gcd Goring Blade
-                (!LevelChecked(Requiescat) || hasRequiescatMp) && //Must Have Enough Mana to combo
-                (InMeleeRange() || LevelChecked(Imperator) && InActionRange(Imperator) && IsOffCooldown(Imperator)) && // in melee or ready to start ranged combo with imperator
-                GetTargetHPPercent() >= fightOrFlightStopThreshold) //Health Threshold Check, boss check built into config
+            bool fofWillBeUsed = fightOrFlightEnabled &&
+                                 ActionReady(FightOrFlight) &&
+                                 OriginalHook(FightOrFlight) is FightOrFlight &&
+                                 (!LevelChecked(Requiescat) || hasRequiescatMp) &&
+                                 (InMeleeRange() || (LevelChecked(Imperator) && InActionRange(Imperator) && IsOffCooldown(Imperator))) &&
+                                 GetTargetHPPercent() >= fightOrFlightStopThreshold &&
+                                 (!InBossEncounter() || CombatEngageDuration().TotalSeconds >= 8);
+
+            if (fofWillBeUsed && !HasWeaved())
             {
                 actionID = FightOrFlight;
                 return true;
             }
             
-            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) && GetCooldownRemainingTime(FightOrFlight) > 50 && InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
+            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) && 
+                 (GetCooldownRemainingTime(FightOrFlight) > 50 || (GetCooldownRemainingTime(FightOrFlight) == 0 && !fofWillBeUsed)) && 
+                 InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
                 (bladeOfHonorEnabled && LevelChecked(BladeOfHonor) && OriginalHook(Requiescat) == BladeOfHonor)) //Blade of Honor Logic since it shares the button
             {
                 actionID = OriginalHook(Requiescat);
@@ -590,7 +596,9 @@ internal partial class PLD
             }
                 
             if (interveneEnabled && ActionReady(Intervene) && !JustUsed(Intervene, 2f) && 
-                (!fightOrFlightEnabled && !poolInterveneForManual || GetCooldownRemainingTime(FightOrFlight) > 40) && //Buff Window Check
+                (!fightOrFlightEnabled && !poolInterveneForManual || 
+                 GetCooldownRemainingTime(FightOrFlight) > 40 || 
+                 (GetCooldownRemainingTime(FightOrFlight) == 0 && !fofWillBeUsed)) && //Buff Window Check
                 GetRemainingCharges(Intervene) > interveneChargeThreshold && //Charge Check
                 GetTargetDistance() <= interveneDistanceThreshold && //Distance Check
                 (interveneMovement == 1 || //Time Standing Still Check
@@ -601,14 +609,18 @@ internal partial class PLD
             }
 
             if (spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
-                (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+                (!fightOrFlightEnabled && !poolSpiritsForManual || 
+                 GetCooldownRemainingTime(FightOrFlight) > 15 || 
+                 (GetCooldownRemainingTime(FightOrFlight) == 0 && !fofWillBeUsed)))
             {
                 actionID = OriginalHook(SpiritsWithin);
                 return true;
             }
 
             if (circleOfScornEnabled && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0 && //Enemy Check as it requires no target to fire
-                (!fightOrFlightEnabled && !poolCircleForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+                (!fightOrFlightEnabled && !poolCircleForManual || 
+                 GetCooldownRemainingTime(FightOrFlight) > 15 || 
+                 (GetCooldownRemainingTime(FightOrFlight) == 0 && !fofWillBeUsed)))
             {
                 actionID = CircleOfScorn;
                 return true;

@@ -50,13 +50,13 @@
     <!-- Path Overrides for Linux -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
         <DalamudLibPath>$(HOME)/.xlcore/dalamud/Hooks/dev/</DalamudLibPath>
-        <DalamudDevPlugins>$(HOME)/.xlcore/devPlugins/</DalamudDevPlugins>
+        <DalamudDevPlugins>$(HOME)/.xlcore/devPlugins/ParseLord5/</DalamudDevPlugins>
     </PropertyGroup>
 
     <!-- Path Overrides for Mac -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
         <DalamudLibPath>$(HOME)/Library/Application Support/XIV on Mac/dalamud/Hooks/dev/</DalamudLibPath>
-        <DalamudDevPlugins>$(HOME)/Library/Application Support/XIV on Mac/devPlugins/</DalamudDevPlugins>
+        <DalamudDevPlugins>$(HOME)/Library/Application Support/XIV on Mac/devPlugins/ParseLord5/</DalamudDevPlugins>
     </PropertyGroup>
 
     <!-- Deploy Debug and Release builds directly to Dalamud devPlugins -->
