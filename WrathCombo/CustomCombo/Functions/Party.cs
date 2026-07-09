@@ -156,7 +156,7 @@ internal abstract partial class CustomComboFunctions
             }
         }
 
-        return count == 0 ? 0 : totalHP / count;
+        return count == 0 ? 100 : totalHP / count;
     }
 
     public static float GetPartyBuffPercent(ushort buff)

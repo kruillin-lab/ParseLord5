@@ -120,6 +120,9 @@ internal partial class GNB : Tank
     /// </summary>
     private static bool TryGetNonBossMitigation(RotationMode rotationFlags, ref uint actionID)
     {
+        if (UsedGnbMitigationThisGcd)
+            return false; // smart path already spent this GCD's mitigation slot
+
         #region Variables
         var mitigationRunning =
             HasStatusEffect(Role.Buffs.ArmsLength) ||
@@ -254,6 +257,9 @@ internal partial class GNB : Tank
     /// </summary>
     private static bool TryGetBossMitigation(RotationMode rotationFlags, ref uint actionID)
     {
+        if (UsedGnbMitigationThisGcd)
+            return false; // smart path already spent this GCD's mitigation slot
+
         #region Nebula
         var nebulaFirst = rotationFlags.HasFlag(RotationMode.simple)
             ? false

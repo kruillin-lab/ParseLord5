@@ -302,6 +302,9 @@ internal partial class BRD : PhysicalRanged
         {
             if (actionID is not RainOfDeath)
                 return actionID;
+            if (!CustomComboNS.Functions.CustomComboFunctions.CanWeave() &&
+                !CustomComboNS.Functions.CustomComboFunctions.CanDelayedWeave())
+                return actionID;
 
             if (IsEnabled(Preset.BRD_AoE_oGCD_Songs) && (gauge.SongTimer < 1 || SongArmy))
             {
@@ -337,6 +340,9 @@ internal partial class BRD : PhysicalRanged
         protected override uint Invoke(uint actionID)
         {
             if (actionID is not (Bloodletter or HeartbreakShot))
+                return actionID;
+            if (!CustomComboNS.Functions.CustomComboFunctions.CanWeave() &&
+                !CustomComboNS.Functions.CustomComboFunctions.CanDelayedWeave())
                 return actionID;
 
             if (IsEnabled(Preset.BRD_ST_oGCD_Songs) && (gauge.SongTimer < 1 || SongArmy))

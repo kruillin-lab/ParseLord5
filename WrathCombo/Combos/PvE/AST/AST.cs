@@ -46,10 +46,6 @@ internal partial class AST : Healer
                 return contentAction;
             #endregion
 
-            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
-                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
-                return priorityHeal;
-
             #region OGCDs
 
             if (ActionReady(Lightspeed) && InCombat() && IsMoving() &&
@@ -132,11 +128,6 @@ internal partial class AST : Healer
                 return contentAction;
 
             #endregion
-
-            var replacedActions = GravityList.ToArray();
-            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
-                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
-                return priorityHeal;
 
             #region OGCDs
             if (ActionReady(Lightspeed) && IsMoving() &&
@@ -242,10 +233,6 @@ internal partial class AST : Healer
                     return OriginalHook(AstralDraw);
             }
             #endregion
-
-            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
-                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
-                return priorityHeal;
 
             #region Opener
             if (IsEnabled(Preset.AST_ST_DPS_Opener) &&
@@ -404,10 +391,6 @@ internal partial class AST : Healer
             #endregion
 
             var replacedActions = GravityList.ToArray();
-            if (TryDpsSingleTargetHealPriority(replacedActions, out uint priorityHeal) ||
-                TryDpsAoEHealPriority(replacedActions, out priorityHeal))
-                return priorityHeal;
-
             #region Healing Helper
 
             if (RaidwideCollectiveUnconscious())
@@ -548,7 +531,7 @@ internal partial class AST : Healer
             if (ActionReady(Exaltation) && InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && GetTargetHPPercent(healTarget) <= 90 && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
                 return Exaltation.RetargetIfEnabled(actionID);
 
-            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd)
+            if (InCombat() && CanAstWeave && !UsedAstHealingSetupOgcdThisGcd && !InBossEncounter())
             {
                 if (ActionReady(OriginalHook(CelestialOpposition)) && GetTargetHPPercent(healTarget) <= 90)
                     return OriginalHook(CelestialOpposition);

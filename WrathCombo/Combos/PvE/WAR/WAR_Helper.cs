@@ -555,6 +555,9 @@ internal partial class WAR : Tank
     /// </summary>
     private static bool TryGetNonBossMitigation(RotationMode rotationFlags, ref uint actionID)
     {
+        if (UsedWarMitigationThisGcd)
+            return false; // smart path already spent this GCD's mitigation slot
+
         #region Variables
         var numberOfEnemies = NumberOfEnemiesInRange(Role.Reprisal);
         var pre56Mitigation = !LevelChecked(RawIntuition) && numberOfEnemies >= 3;
@@ -684,6 +687,9 @@ internal partial class WAR : Tank
     /// </summary>
     private static bool TryGetBossMitigation(RotationMode rotationFlags, ref uint actionID)
     {
+        if (UsedWarMitigationThisGcd)
+            return false; // smart path already spent this GCD's mitigation slot
+
         #region Vengeance
         var vengeanceFirst = rotationFlags.HasFlag(RotationMode.simple)
             ? false

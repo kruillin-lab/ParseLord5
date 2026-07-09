@@ -401,7 +401,8 @@ public static class ActionWatching
 
         if (AutoRotationController.AutorotRaidwiding && AutoRotationController.RaidwideActions.Any(x => x.Action == actionId))
         {
-            AutoRotationController.BlacklistedRaidwides.Add(actionId);
+            if (!AutoRotationController.BlacklistedRaidwides.Contains(actionId))
+                AutoRotationController.BlacklistedRaidwides.Add(actionId);
             if (actionId != SGE.Eukrasia)
                 AutoRotationController.AutorotRaidwides++;
         }
@@ -412,6 +413,8 @@ public static class ActionWatching
     /// <summary> Handles logic when an action is sent. </summary>
     private unsafe static void SendActionDetour(ulong targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9)
     {
+        var originalCalled = false;
+
         try
         {
             if (P.IPC.OnActionUsedProvider.SubscriptionCount > 0)
@@ -464,6 +467,7 @@ public static class ActionWatching
 #endif
             }
             SendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
+            originalCalled = true;
 
             OverrideTarget = null;
             AutoRotationController.AutorotHealTarget = null;
@@ -471,9 +475,19 @@ public static class ActionWatching
         }
         catch (Exception ex)
         {
-            Service.ActionReplacer.EnableActionReplacingIfRequired();
+            try
+            {
+                Service.ActionReplacer.EnableActionReplacingIfRequired();
+            }
+            catch (Exception enableEx)
+            {
+                Svc.Log.Error(enableEx, "SendActionDetour: failed to re-enable action replacing");
+            }
+
             Svc.Log.Error(ex, "SendActionDetour");
-            SendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
+
+            if (!originalCalled)
+                SendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
         }
     }
 

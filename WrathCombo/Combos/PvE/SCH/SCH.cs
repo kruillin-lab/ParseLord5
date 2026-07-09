@@ -176,6 +176,7 @@ internal partial class SCH : Healer
                 return Lustrate.RetargetIfEnabled(actionID);
             
             if (ActionReady(SacredSoil) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(SacredSoil) &&
+                !InBossEncounter() &&
                 TimeStoodStill >= TS.FromSeconds(5))
                 return SacredSoil.Retarget(actionID, SimpleTarget.Self);
             
@@ -185,7 +186,7 @@ internal partial class SCH : Healer
             if (Gauge.FairyGauge >= 50 && IsOriginal(Aetherpact) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Aetherpact) && !FairyBusy && ActionReady(Aetherpact))
                 return Aetherpact.RetargetIfEnabled(actionID);
 
-            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && HasPetPresent() && !FairyBusy)
+            if (InCombat() && CanWeave() && !UsedSchHealingSetupOgcdThisGcd && !InBossEncounter() && HasPetPresent() && !FairyBusy)
             {
                 if (ActionReady(WhisperingDawn) && GetPartyAvgHPPercent() <= 90)
                     return WhisperingDawn;
@@ -203,7 +204,8 @@ internal partial class SCH : Healer
                     return Seraphism;
             }
 
-            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient))
+            if (ActionReady(Expedient) && InCombat() && CanWeave() && CanUseSchHealingSetupOgcd(Expedient) &&
+                !InBossEncounter())
                 return Expedient;
 
 
