@@ -57,6 +57,11 @@ aliases: []
     ParseLord5 is regularly updated to include new features and to keep
     up-to-date with the latest job changes in Final Fantasy XIV.
     <br><br>
+    <strong>Patch 7.5 ready</strong> — verified against The Balance FFXIV
+    guidance on 2026-05-26 (see <code>docs/ParseLord5_Balance_75_Survey_20260526.md</code>).
+    Patch 7.5 is a pure numerical-tuning patch; no opener or rotation changes
+    are required.
+    <br><br>
     <img src="/res/readme_images/demo.gif" width="450" />
     <br>
     In that clip, the plugin is configured to condense the entire rotation of a 
