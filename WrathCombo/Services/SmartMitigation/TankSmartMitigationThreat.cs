@@ -28,7 +28,12 @@ internal static class TankSmartMitigationThreat
             confirmedTankbuster = true;
         }
 
-        var softTankbuster = !confirmedTankbuster && isBoss && IsPlayerTargeted();
+        // Targeting alone isn't evidence of an incoming spike -- a tank holds
+        // aggro (and thus IsPlayerTargeted()) for the entire pull. Require a
+        // recent real hit (rolling MaxSingleHit window) so this only fires
+        // when damage is actually landing, not just "boss fight in progress".
+        var softTankbuster = !confirmedTankbuster && isBoss && IsPlayerTargeted() &&
+            pressure.MaxSingleHit > 0f;
         var raidwide = GroupDamageIncoming();
 
         var mechanicSpikeFraction = 0f;

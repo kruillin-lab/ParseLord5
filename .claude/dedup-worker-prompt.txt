@@ -1,0 +1,43 @@
+You are refactoring exactly one C# file in the ParseLord5 FFXIV plugin (a WrathCombo fork). Repo root: C:\Users\kruil\Documents\Projects\ParseLord5
+
+Task: remove duplicated experimental-priority blocks in the target file, preserving behavior exactly.
+
+The file contains one or more blocks of this shape:
+
+    if (ParseLord5Experiments.JobRotationExperiments)
+    {
+        // action A condition(s) ... return ActionA;
+        // action B condition(s) ... return ActionB;
+    }
+    else
+    {
+        // the SAME condition/return pairs, in a different order (B then A)
+    }
+
+Rewrite each such block using this exact pattern (taken from the completed MCH pilot, commit a63517a12):
+
+1. Declare `var <a>First = ParseLord5Experiments.JobRotationExperiments;` where <a> names the action that goes first in the experimental order (e.g. `reassembleFirst`). If two blocks are in the same method scope, reuse or uniquely name the variable to avoid redeclaration errors.
+2. Hoist every MULTI-LINE condition into a local bool (e.g. `var canReassemble = <full condition>;`) so each condition exists exactly once. Conditions that are already a single short call (like `CanQueen()`) may stay inline in the ladder guards.
+3. Replace the if/else with a guarded ladder reproducing BOTH orders:
+   - 2-action swap (experimental: A,B / baseline: B,A):
+       if (aFirst && canA) return A;
+       if (canB) return B;
+       if (!aFirst && canA) return A;
+   - 3-action reorder (experimental: A,M,B / baseline: B,M,A; M sits in the middle in both):
+       if (aFirst && canA) return A;
+       if (!aFirst && canB) return B;
+       if (canM) return M;            // middle action may remain a plain if block with its condition inline
+       if (aFirst && canB) return B;
+       if (!aFirst && canA) return A;
+4. Keep a one-line comment above the ladder stating the experimental and baseline order (preserve or adapt the existing "// ParseLord5 experiment: ..." comment). Keep per-action comments where they still make sense.
+5. Match surrounding indentation and code style exactly (this codebase uses 4-space indentation inside methods, K&R-ish braces on new lines).
+
+Hard rules:
+- ONLY rewrite blocks that are pure reorders: both branches contain the same condition/return pairs, differing only in order. If branches differ in any other way, leave that block untouched and mention it in your final reply.
+- Do NOT touch single-line boolean uses like `(!InBossEncounter() || ParseLord5Experiments.JobRotationExperiments)` — those are not duplicated code.
+- Do NOT change any other code. Do NOT edit any file other than the target file.
+- Behavior with the flag ON and with the flag OFF must each be exactly identical to before your change.
+
+Finish by replying with exactly: the file name, number of blocks rewritten, number of blocks skipped and why.
+
+TARGET FILE:

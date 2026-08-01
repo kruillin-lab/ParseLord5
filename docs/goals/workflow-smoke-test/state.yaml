@@ -1,0 +1,131 @@
+version: 2
+runtime: cursor
+
+goal:
+  title: "Goal-workflow smoke test (ParseLord5)"
+  slug: workflow-smoke-test
+  kind: audit
+  tranche: "Validate goal-workflow + visual board; read-only Scout; optional bounded follow-up"
+  status: done
+  oracle:
+    signal: "Board URL live; Scout receipt documents repo map and dotnet build verification"
+    cadence: "after Scout (T001) and at final audit (T999)"
+    final_proof: "Clickable board + Scout receipt in state.yaml; build command documented with pass or documented blocker"
+  intake:
+    original_request: "Run goal prep + visual board in ParseLord5 as a test"
+    interpreted_outcome: "Prove goal-workflow and GoalBuddy board work in this repo"
+    input_shape: specific
+    audience: operator
+    authority: requested
+    proof_type: artifact
+    completion_proof: "Board live; Scout receipt complete; T999 full_outcome_complete"
+    likely_misfire: "Board files created but server never started from project root"
+    blind_spots_considered:
+      - "No in-game Dalamud verification in this smoke test"
+    existing_plan_facts:
+      - "Build: dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release (AGENTS.md)"
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  continuous_until_full_outcome: false
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+
+agents:
+  scout: cursor_task_explore_readonly
+  judge: cursor_main_thread
+  worker: cursor_main_thread
+  pm: cursor_main_thread
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/workflow-smoke-test/"
+    command: "npx goalbuddy board \"C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\docs\\goals\\workflow-smoke-test\""
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Map ParseLord5 purpose, layout, verification commands, and 1–3 improvement candidates (read-only)."
+    inputs:
+      - AGENTS.md
+      - docs/AGENTS_FULL.md
+      - WrathCombo/WrathCombo.csproj
+      - scripts/sync-dev-build.ps1
+    constraints:
+      - "Read-only."
+      - "Do not edit WrathCombo or plugin code."
+    expected_output:
+      - "Repo map"
+      - "Build/verify commands"
+      - "Improvement candidates"
+    receipt:
+      result: done
+      summary: "ParseLord5 is a Dalamud rotation plugin (WrathCombo fork, .NET 10, API 15). Release build succeeded in 9s with 8 nullable warnings, 0 errors."
+      evidence:
+        - AGENTS.md
+        - docs/AGENTS_FULL.md
+        - WrathCombo/WrathCombo.csproj
+        - scripts/sync-dev-build.ps1
+        - WrathCombo/bin/Release/ParseLord5.dll
+      facts:
+        - "Layout: WrathCombo/ (plugin), WrathCombo.API/, ECommons/, PunishLib/ submodules"
+        - "IPC prefix ParseLord5; commands /pl5, /wrath, /scombo"
+        - "Primary verify: dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release"
+        - "Windows dev loop: .\\scripts\\sync-dev-build.ps1 (pull, build devPlugins, rotation-evals)"
+        - "Domain evals: scripts/rotation-evals.ps1 (no dotnet test suite)"
+      commands:
+        - cmd: dotnet build .\WrathCombo\WrathCombo.csproj -c Release
+          status: pass
+      spawned_tasks: []
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Confirm smoke-test oracle met or queue a single bounded follow-up Worker task."
+    inputs:
+      - "T001 receipt"
+      - "visual board status"
+    constraints:
+      - "No implementation unless operator approved follow-up."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Board server still running; Scout documented build pass. No Worker needed for smoke test — audit tranche only."
+      blocked_tasks: []
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Final audit: board + Scout receipt satisfy smoke-test oracle; set full_outcome_complete."
+    inputs:
+      - "All done receipts"
+    constraints:
+      - "No implementation."
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      rationale: "Oracle satisfied: visual board live at goalbuddy.localhost; Scout receipt includes repo map, verify commands, build pass, and improvement candidates. Smoke test complete."
+      missing_evidence: []
+
+checks:
+  last_verification:
+    result: pass
+    task: T001
+    commands:
+      - cmd: dotnet build .\WrathCombo\WrathCombo.csproj -c Release
+        status: pass

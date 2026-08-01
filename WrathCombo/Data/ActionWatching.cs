@@ -481,17 +481,24 @@ public static class ActionWatching
 
     private static unsafe bool CanQueueActionDetour(ActionManager* actionManager, ActionType actionType, uint actionID)
     {
-        float threshold = Service.Configuration.QueueAdjust ? Service.Configuration.QueueAdjustThreshold : 0.5f;
+        if (!Service.Configuration.QueueAdjust)
+            return CanQueueAction.Original(actionManager, actionType, actionID);
+
+        float threshold = Service.Configuration.QueueAdjustThreshold;
 
         return GetRemainingActionRecast(actionManager, actionType, actionID) is { } remaining && remaining <= threshold;
 
         unsafe float? GetRemainingActionRecast(ActionManager* actionManager, ActionType actionType, uint actionID)
         {
-            var recastGroupDetail = actionManager->GetRecastGroupDetail(actionManager->GetRecastGroup((int)actionType, actionID));
+            var group = actionManager->GetRecastGroup((int)actionType, actionID);
+            var recastGroupDetail = actionManager->GetRecastGroupDetail(group);
             if (recastGroupDetail == null) return null;
 
             var additionalRecastGroupDetail = actionManager->GetRecastGroupDetail(actionManager->GetAdditionalRecastGroup(actionType, actionID));
             var additionalRecastRemaining = additionalRecastGroupDetail != null && additionalRecastGroupDetail->IsActive ? additionalRecastGroupDetail->Total - additionalRecastGroupDetail->Elapsed : 0;
+
+            // Group 57 = GCDs, follows the game's tight queue window. All other groups (oGCDs) can be queued throughout the weave window.
+            if (group != 57 && !recastGroupDetail->IsActive) return 0;
 
             if (!recastGroupDetail->IsActive) return additionalRecastRemaining;
 
