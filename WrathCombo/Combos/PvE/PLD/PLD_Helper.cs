@@ -559,15 +559,15 @@ internal partial class PLD
                 return true;
             }
             
-            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) && GetCooldownRemainingTime(FightOrFlight) > 50 && InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
+            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) && (!fightOrFlightEnabled || !ActionReady(FightOrFlight)) && InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
                 (bladeOfHonorEnabled && LevelChecked(BladeOfHonor) && OriginalHook(Requiescat) == BladeOfHonor)) //Blade of Honor Logic since it shares the button
             {
                 actionID = OriginalHook(Requiescat);
                 return true;
             }
                 
-            if (interveneEnabled && ActionReady(Intervene) && !JustUsed(Intervene, 2f) && 
-                (!fightOrFlightEnabled && !poolInterveneForManual || GetCooldownRemainingTime(FightOrFlight) > 40) && //Buff Window Check
+            if (interveneEnabled && ActionReady(Intervene) && !JustUsed(Intervene, 2f) &&
+                (!fightOrFlightEnabled && !poolInterveneForManual || !ActionReady(FightOrFlight)) && //Buff Window Check
                 GetRemainingCharges(Intervene) > interveneChargeThreshold && //Charge Check
                 GetTargetDistance() <= interveneDistanceThreshold && //Distance Check
                 (interveneMovement == 1 || //Time Standing Still Check
@@ -578,14 +578,14 @@ internal partial class PLD
             }
 
             if (circleOfScornEnabled && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0 && //Enemy Check as it requires no target to fire
-                (!fightOrFlightEnabled && !poolCircleForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+                (!fightOrFlightEnabled && !poolCircleForManual || !ActionReady(FightOrFlight)))
             {
                 actionID = CircleOfScorn;
                 return true;
             }
             
-            if (spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) && 
-                (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+            if (spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
+                (!fightOrFlightEnabled && !poolSpiritsForManual || !ActionReady(FightOrFlight)))
             {
                 actionID = OriginalHook(SpiritsWithin);
                 return true;

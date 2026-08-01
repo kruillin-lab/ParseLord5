@@ -270,10 +270,7 @@ internal partial class SAM
     private static bool CanTsubame() =>
         ActionReady(OriginalHook(TsubameGaeshi)) &&
         (HasStatusEffect(Buffs.TendoKaeshiSetsugekkaReady) ||
-         HasStatusEffect(Buffs.TsubameReady)) &&
-        (SenCount is 3 ||
-         EnhancedSenei && GetCooldownRemainingTime(Senei) > 33 ||
-         GetStatusEffectRemainingTime(Buffs.TsubameReady) < 5);
+         HasStatusEffect(Buffs.TsubameReady));
 
     private static bool CanShoha() =>
         ActionReady(Shoha) &&
