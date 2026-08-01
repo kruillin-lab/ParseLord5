@@ -60,6 +60,7 @@ internal partial class GNB
             !ActionReady(OriginalHook(HeartOfStone)) ||
             !CanWeave() ||
             UsedGnbMitigationThisGcd ||
+            GetGnbActiveMitigationState(isBoss: false).ShortMitigationActive ||
             HasStatusEffect(Buffs.Superbolide))
             return false;
 
@@ -94,6 +95,9 @@ internal partial class GNB
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
         if (UsedGnbMitigationThisGcd)
+            return false;
+
+        if (GetGnbActiveMitigationState(isBoss: false).ShortMitigationActive)
             return false;
 
         if (!TrashMitigationOrdering.ShouldPrioritizeTrashReprisalFirst(
@@ -153,7 +157,7 @@ internal partial class GNB
             ? BuildGnbBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp)
             : BuildGnbNonBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp);
 
-        var active = GetGnbActiveMitigationState();
+        var active = GetGnbActiveMitigationState(isBoss);
         options = FilterGnbMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
 
         if (options.Count == 0)
@@ -213,6 +217,7 @@ internal partial class GNB
         if (UsedGnbMitigationThisGcd)
             return false;
 
+        var active = GetGnbActiveMitigationState(isBoss);
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         if (!isBoss && enemyCount < 3)
             return false;
@@ -225,6 +230,7 @@ internal partial class GNB
             if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_Boss_Reprisal, rotationFlags) &&
                 Role.CanReprisal(enemyCount: 1) &&
                 reprisalInContent &&
+                !active.ShortMitigationActive &&
                 !JustUsed(HeartOfLight, 10f) &&
                 threat.Raidwide &&
                 pressure.DangerRatio >= 1.0f)
@@ -240,7 +246,7 @@ internal partial class GNB
             if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_Boss_HeartOfLight, rotationFlags) &&
                 holInContent &&
                 ActionReady(HeartOfLight) &&
-                !IsGnbLongMitigationActive() &&
+                !active.LongMitigationActive &&
                 !JustUsed(Role.Reprisal, 10f) &&
                 pressure.DangerRatio >= 1.5f)
             {
@@ -255,6 +261,7 @@ internal partial class GNB
         if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_Reprisal, rotationFlags) &&
             ActionReady(Role.Reprisal) &&
             enemyCount >= 3 &&
+            !active.ShortMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             pressure.DangerRatio >= 1.2f)
         {
@@ -265,7 +272,7 @@ internal partial class GNB
 
         if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_HeartOfLight, rotationFlags) &&
             ActionReady(HeartOfLight) &&
-            !IsGnbLongMitigationActive() &&
+            !active.LongMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             (enemyCount >= 5 || pressure.DangerRatio >= 1.2f))
         {
@@ -438,10 +445,23 @@ internal partial class GNB
         return options;
     }
 
-    private static ActiveMitigationState GetGnbActiveMitigationState()
+    private static ActiveMitigationState GetGnbActiveMitigationState(bool isBoss)
     {
         var reduction = 0f;
         var shield = 0f;
+
+        var longActive =
+            HasStatusEffect(Role.Buffs.Rampart) ||
+            (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength)) ||
+            HasStatusEffect(Buffs.Camouflage) ||
+            HasStatusEffect(Buffs.Nebula) ||
+            HasStatusEffect(Buffs.GreatNebula) ||
+            HasStatusEffect(Buffs.HeartOfLight) ||
+            HasStatusEffect(Buffs.Superbolide);
+
+        var shortActive =
+            HasAnyStatusEffects([Buffs.HeartOfStone, Buffs.HeartOfCorundum]) ||
+            HasStatusEffect(Role.Debuffs.Reprisal, CurrentTarget);
 
         if (HasStatusEffect(Buffs.Superbolide))
             return new ActiveMitigationState(1f, 0f, 0f, true);
@@ -449,7 +469,7 @@ internal partial class GNB
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
-        if (HasStatusEffect(Role.Buffs.ArmsLength))
+        if (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
         if (HasStatusEffect(Buffs.Camouflage))
@@ -464,7 +484,7 @@ internal partial class GNB
         if (HasAnyStatusEffects([Buffs.HeartOfStone, Buffs.HeartOfCorundum]) && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longActive, shortActive);
     }
 
     private static bool PassesGnbSmartMitigationGuards(uint selectedActionId)

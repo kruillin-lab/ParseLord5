@@ -21,6 +21,8 @@
   <ItemGroup>
     <Compile Include="..\WrathCombo\Services\SmartMitigation\MitigationModels.cs" Link="Sources\MitigationModels.cs" />
     <Compile Include="..\WrathCombo\Services\SmartMitigation\MitigationCoverageCalculator.cs" Link="Sources\MitigationCoverageCalculator.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\TankMitigationSelection.cs" Link="Sources\TankMitigationSelection.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\TrashMitigationOrdering.cs" Link="Sources\TrashMitigationOrdering.cs" />
     <Compile Include="..\WrathCombo\Services\SmartMitigation\CombatEventBuffer.cs" Link="Sources\CombatEventBuffer.cs" />
     <Compile Include="..\WrathCombo\Services\HealDelayCurve.cs" Link="Sources\HealDelayCurve.cs" />
   </ItemGroup>

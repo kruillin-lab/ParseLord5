@@ -21,7 +21,9 @@ internal readonly record struct ActiveMitigationState(
     float CombinedDamageReduction,
     float ActiveShield,
     float ActiveMaxHpBonusFraction,
-    bool InvulnActive);
+    bool InvulnActive,
+    bool LongMitigationActive = false,
+    bool ShortMitigationActive = false);
 
 internal readonly record struct MitigationCoverageRequest(
     uint CurrentHp,

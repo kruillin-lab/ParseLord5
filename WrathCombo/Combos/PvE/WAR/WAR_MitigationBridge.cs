@@ -113,25 +113,15 @@ internal partial class WAR
         if (option.ActionId == Holmgang && active.InvulnActive)
             return false;
 
-        if (option.Tier == MitigationTier.Invuln)
-            return true;
-
         if (active.InvulnActive)
             return false;
 
-        // Long mitigation: no second long while another long buff is active (shorts may still fire).
-        // A "long" mit is any cooldown over 60s — driven by the option's recast, not a hardcoded list,
-        // so e.g. Rampart (90s) will not overwrite an active Vengeance/Damnation/Holmgang/Shake (>60s).
-        if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                IsWarLongMitigationActive(),
-                IsWarLongMitigationAction(option.ActionId) || IsWarLongMitigationRecast(option.CooldownSeconds)))
-        {
-            if (IsWarVengeanceOrDamnationAction(option.ActionId) &&
-                ShouldOfferDamnation(threat, pressure, currentHp, maxHp))
-                return true;
-
+        // Only one mitigation from each recast category may be active at once.
+        if (TankMitigationSelection.ShouldExcludeActiveCategory(option, active))
             return false;
-        }
+
+        if (option.Tier == MitigationTier.Invuln)
+            return true;
 
         return true;
     }

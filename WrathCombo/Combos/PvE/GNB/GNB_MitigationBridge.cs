@@ -64,26 +64,15 @@ internal partial class GNB
             if (option.ActionId == Superbolide && active.InvulnActive)
                 continue;
 
-            if (option.Tier == MitigationTier.Invuln)
-            {
-                filtered.Add(option);
-                continue;
-            }
-
             if (active.InvulnActive)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsGnbLongMitigationActive(),
-                    IsGnbLongMitigationAction(option.ActionId)))
-            {
-                if (IsGnbHeavyMitigationAction(option.ActionId) &&
-                    TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))
-                {
-                    filtered.Add(option);
-                    continue;
-                }
+            if (TankMitigationSelection.ShouldExcludeActiveCategory(option, active))
+                continue;
 
+            if (option.Tier == MitigationTier.Invuln)
+            {
+                filtered.Add(option);
                 continue;
             }
 
