@@ -1,0 +1,14 @@
+scripts/sync-dev-build.ps1
+  h_fcb949597f374a 1-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3a0a37cb08d13e118dbf7c32341ce12cc7009147",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
