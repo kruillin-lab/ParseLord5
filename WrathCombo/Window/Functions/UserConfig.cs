@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
@@ -53,7 +53,6 @@ public static class UserConfig
             IsSubBox = true,
             ContentsFunc = () =>
             {
-                bool inputChanged = false;
                 Vector2 currentPos = ImGui.GetCursorPos();
                 ImGui.SetCursorPosX(currentPos.X + itemWidth);
                 ImGui.PushTextWrapPos(wrapPos);
