@@ -1,0 +1,14 @@
+scripts/rotation-evals.ps1
+  h_fcb949597f374a 101-102,106-128,130-131,134,138-150,153,233-234,242,246-247,251-252,255-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "74c4ee3510d53cebdfb2d3a0ec3ca2746131b6af",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
