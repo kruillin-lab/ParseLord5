@@ -1,0 +1,22 @@
+WrathCombo.Tests/TankMitigationSelectionTests.cs
+  h_fcb949597f374a 68-105
+WrathCombo/Services/SmartMitigation/CombatTelemetryService.cs
+  h_fcb949597f374a 43-48
+WrathCombo/Services/SmartMitigation/MitigationModels.cs
+  h_fcb949597f374a 60-68
+WrathCombo/Services/SmartMitigation/TankSmartMitigationThreat.cs
+  h_fcb949597f374a 102
+WrathCombo/Services/TankCooldownHelperIPC/TankCooldownHelperIpcClient.cs
+  h_fcb949597f374a 93-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "aafddadd5e966d23081eb25a16639c8580b101e1",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
