@@ -1,0 +1,28 @@
+docs/goals/smart-mit-tank-cd-helper/goal.md
+  h_fcb949597f374a 1-75
+docs/goals/smart-mit-tank-cd-helper/notes/T001-scout.md
+  h_fcb949597f374a 1-48
+docs/goals/smart-mit-tank-cd-helper/notes/T005-tch-ipc.md
+  h_fcb949597f374a 1-67
+docs/goals/smart-mit-tank-cd-helper/notes/T006-war-signoff.md
+  h_fcb949597f374a 1-49
+docs/goals/smart-mit-tank-cd-helper/notes/T007-multi-tank-port.md
+  h_fcb949597f374a 1-120
+docs/goals/smart-mit-tank-cd-helper/notes/parallel-batch-example.md
+  h_fcb949597f374a 1-67
+docs/goals/smart-mit-tank-cd-helper/notes/scenario-matrix.md
+  h_fcb949597f374a 1-23
+docs/goals/smart-mit-tank-cd-helper/state.yaml
+  h_fcb949597f374a 1-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a26849f93cc0d89a99ae146c0b02621ff2045f84",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
