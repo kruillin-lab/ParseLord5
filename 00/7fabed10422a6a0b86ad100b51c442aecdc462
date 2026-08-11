@@ -1,0 +1,16 @@
+WrathCombo/Native/CustomActionManager.cs
+  h_fcb949597f374a 1,343,345
+WrathCombo/Window/Functions/UserConfig.cs
+  h_fcb949597f374a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "007fabed10422a6a0b86ad100b51c442aecdc462",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
