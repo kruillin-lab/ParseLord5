@@ -1,0 +1,16 @@
+docs/AGENTS_FULL.md
+  h_fcb949597f374a 71-73
+quality-gate.json
+  h_fcb949597f374a 24-25,29-30,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "84be9f5829c28583b605a06ff8e148d051a62306",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
