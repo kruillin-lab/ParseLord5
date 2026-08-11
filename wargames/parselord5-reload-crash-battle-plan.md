@@ -24,7 +24,7 @@ Executable by a mid-tier model without follow-up questions. Every move: proof-be
 - **Branch:** `parselord5-wc-base` (one-branch rule, `AGENTS.md:32`). Do not create branches.
 - **Build (verified):** `export PATH="$HOME/.dotnet:$PATH" && dotnet build WrathCombo/WrathCombo.csproj -c Release` → baseline **0 errors, 3 warnings** (CS0219/CS0169/CS0649, benign).
 - **Test:** `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj` → baseline **34–37 pass**.
-- **Deploy (Debug, for the repro):** build `-c Debug`, then copy `ParseLord5.{dll,json,pdb,deps.json}` from `~/.xlcore/devPlugins/ParseLord5/` to `~/.xlcore/devPlugins/` (per `BUILD_RECHECK.txt`).
+- **Deploy (Debug, for the repro):** build `-c Debug`, then copy `ParseLord5.{dll,json,pdb,deps.json}` from `~/.xlcore/devPlugins/ParseLord5/` to `~/.xlcore/devPlugins/` (per `wargames/evidence/BUILD_RECHECK.txt`).
 - **Forbidden:** the 3 protected user files `WrathCombo/Combos/PvE/{BRD,DRK,RDM}.cs`; the logic of the 9 uncommitted fixes; anything outside the files named below.
 
 ### Targets

@@ -11,3 +11,7 @@ WrathCombo.Tests/bin/
 *.v2
 /WrathCombo/packages.lock.json
 *.csproj.user
+
+# Quality gate artifacts (generated evidence, not source)
+.quality-gate/
+icm/stages/04-verify/output/

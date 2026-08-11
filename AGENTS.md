@@ -16,7 +16,7 @@ Active Parse Lord successor (ParseLord3/4 archived). Dalamud plugin on WrathComb
 - **Full guide / executor format:** `docs/AGENTS_FULL.md`
 - **Cursor Cloud / Linux CI:** `docs/AGENTS_FULL.md` → *Cursor Cloud specific instructions*
 - **Windows sync after agent push:** `.\scripts\sync-dev-build.ps1` (pull + build devPlugins + evals)
-- **Automated Recall / Shared Context:** If local files do not provide needed prior decisions, project history, or task context, read `C:\Users\kruil\Documents\Projects\CodexBrain\active-context.json`, run `C:\Users\kruil\Documents\Projects\recall.ps1 "<query>"`, and open cited source Markdown before asking questions or proceeding. Use `C:\Users\kruil\Documents\Projects\CodexBrain` as the shared context source.
+- **Automated Recall / Shared Context:** If local files do not provide needed prior decisions, project history, or task context, read `C:\Users\kruil\Documents\Projects\AgentBrain\BOOT.md` and `C:\Users\kruil\Documents\Projects\AgentBrain\state\active-context.md`, run `C:\Users\kruil\Documents\Projects\AgentBrain\recall.ps1 "<query>"`, and open the cited durable pages under `AgentBrain\pages\` before asking questions or proceeding. Use `C:\Users\kruil\Documents\Projects\AgentBrain` as the shared context source (`CodexBrain` is retired).
 - ICM → `icm/CONTEXT.md` + stage `CONTEXT.md` when applicable.
 
 
