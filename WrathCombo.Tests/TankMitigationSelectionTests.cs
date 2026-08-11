@@ -65,6 +65,44 @@ public class TankMitigationSelectionTests
         Assert.Null(result);
     }
 
+    [Fact]
+    public void WithLocalMaxSingleHit_TchPressureMissingTheField_BackfillsFromLocalTelemetry()
+    {
+        // TankCooldownHelper's IPC payload has no max-single-hit field, so it arrives as 0.
+        var fromTch = Pressure(maxSingleHit: 0f, dangerLevel: 1);
+
+        var merged = fromTch.WithLocalMaxSingleHit(9_000f);
+
+        Assert.Equal(9_000f, merged.MaxSingleHit);
+        Assert.True(merged.FromTankCooldownHelper);
+        Assert.Equal(1, merged.TankCooldownDangerLevel);
+    }
+
+    [Fact]
+    public void WithLocalMaxSingleHit_PressureAlreadyHasTheField_KeepsReportedValue()
+    {
+        var local = Pressure(maxSingleHit: 4_000f);
+
+        Assert.Equal(4_000f, local.WithLocalMaxSingleHit(9_000f).MaxSingleHit);
+    }
+
+    [Fact]
+    public void WithLocalMaxSingleHit_NoDamageFromEitherSource_StaysZero()
+    {
+        // No hit landed anywhere, so gates that require one must stay shut.
+        Assert.Equal(0f, Pressure(maxSingleHit: 0f, dangerLevel: 1).WithLocalMaxSingleHit(0f).MaxSingleHit);
+    }
+
+    private static PlayerPressureState Pressure(float maxSingleHit, int? dangerLevel = null) =>
+        new(
+            IncomingDps: 20_000f,
+            IncomingHps: 0f,
+            NetDps: 20_000f,
+            DangerRatio: 0.5f,
+            MaxSingleHit: maxSingleHit,
+            SecondsUntilDeath: null,
+            TankCooldownDangerLevel: dangerLevel);
+
     private static MitigationCoverageRequest Request() =>
         new(
             CurrentHp: 60_000,
