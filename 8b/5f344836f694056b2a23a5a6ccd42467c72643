@@ -1,0 +1,14 @@
+WrathCombo/Services/SmartMitigation/TankSmartMitigationThreat.cs
+  h_fcb949597f374a 31-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8b5f344836f694056b2a23a5a6ccd42467c72643",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
