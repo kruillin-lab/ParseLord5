@@ -21,17 +21,17 @@
   },
   "commands": {
     "build": {
-      "shell": "bash",
-      "command": "distrobox enter dev-arch -- bash -lc 'dotnet build WrathCombo/WrathCombo.csproj -c Release -p:DalamudLibPath=/home/kruillin/.xlcore/dalamud/Hooks/15.0.2.2/'",
+      "shell": "powershell",
+      "command": "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release",
       "timeout_seconds": 240
     },
     "domain-evals": {
-      "shell": "bash",
-      "command": "distrobox enter dev-arch -- bash -lc 'dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --no-restore'",
+      "shell": "powershell",
+      "command": "dotnet test .\\WrathCombo.Tests\\WrathCombo.Tests.csproj -c Release",
       "timeout_seconds": 240
     },
     "markdown-audit": {
-      "shell": "bash",
+      "shell": "powershell",
       "command": "internal-repo-markdown-audit",
       "timeout_seconds": 240
     }

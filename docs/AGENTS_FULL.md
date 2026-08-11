@@ -68,8 +68,9 @@ Release output: `WrathCombo/bin/Release/ParseLord5.dll` and `ParseLord5.json` (`
 
 ### Lint / tests
 
-- No dedicated linter or `dotnet test` projects.
-- Domain checks: `scripts/rotation-evals.ps1` (preset enum, job coverage, unique IDs).
+- No dedicated linter.
+- Unit tests: `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release`.
+- Domain structure checks: `pwsh -File scripts/rotation-evals.ps1` (preset enum, job coverage, unique IDs, and job-specific invariants).
 - Full solution build: `dotnet build WrathCombo.slnx -c Release`.
 
 ### In-game dev loop (not available in Cloud Agent VMs)
