@@ -5,10 +5,8 @@ $PresetFile = Join-Path $RepoRoot "WrathCombo\Combos\CustomComboPreset.cs"
 $CombosDir = Join-Path $RepoRoot "WrathCombo\Combos\PvE"
 $SAMFile = Join-Path $CombosDir "SAM\SAM.cs"
 $SAMHelperFile = Join-Path $CombosDir "SAM\SAM_Helper.cs"
-$VPRFile = Join-Path $CombosDir "VPR\VPR.cs"
 $VPRHelperFile = Join-Path $CombosDir "VPR\VPR_Helper.cs"
 $WHMFile = Join-Path $CombosDir "WHM\WHM.cs"
-$WHMHelperFile = Join-Path $CombosDir "WHM\WHM_Helper.cs"
 $MNKHelperFile = Join-Path $CombosDir "MNK\MNK_Helper.cs"
 
 Write-Host "=== ParseLord5 Domain Evals ==="
@@ -100,38 +98,65 @@ foreach ($dir in $jobDirs) {
 Write-Host "PASS combo-files-exist-for-jobs: all jobs checked"
 $passCount++
 
-# ---- FIXTURE 5: ParseLord5 experimental gating present in SAM and VPR combos ----
-# Call sites use ParseLord5Experiments.<Flag> since the per-feature flag split (212806bdc).
-Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
+# ---- FIXTURE 5: Promoted SAM/VPR priority contracts remain default behavior ----
+Write-Host "--- Fixture: promoted-job-priority-contracts ---"
 $samContent = Get-Content -LiteralPath $SAMFile -Raw
-$vprContent = Get-Content -LiteralPath $VPRFile -Raw
 $vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
 
-$samExpCount = ([regex]::Matches($samContent, 'ParseLord5Experiments\.')).Count
-# VPR's venom priority-swap ladders live in VPR_Helper.cs (UseViceTwinWeaves), not VPR.cs itself.
-$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count +
-    ([regex]::Matches($vprHelperContent, 'ParseLord5Experiments\.')).Count
+$samPriorityBlocks = [ordered]@{
+    "SAM_ST_SimpleMode" = [regex]::Match($samContent, 'internal class SAM_ST_SimpleMode.*?internal class SAM_AoE_SimpleMode', 'Singleline').Value
+    "SAM_AoE_SimpleMode" = [regex]::Match($samContent, 'internal class SAM_AoE_SimpleMode.*?internal class SAM_ST_AdvancedMode', 'Singleline').Value
+    "SAM_ST_AdvancedMode" = [regex]::Match($samContent, 'internal class SAM_ST_AdvancedMode.*?internal class SAM_AoE_AdvancedMode', 'Singleline').Value
+    "SAM_AoE_AdvancedMode" = [regex]::Match($samContent, 'internal class SAM_AoE_AdvancedMode.*?internal class SAM_ST_YukikazeCombo', 'Singleline').Value
+}
+$samPriorityPatterns = [ordered]@{
+    "SAM_ST_SimpleMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+ikishotenAction;.*?if\s*\(CanMeikyo\(\)\)\s*return\s+MeikyoShisui;'
+    "SAM_AoE_SimpleMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+kenkiAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+    "SAM_ST_AdvancedMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+ikishotenAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+    "SAM_AoE_AdvancedMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+kenkiAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+}
+$samPriorityFailures = @()
 
-if ($samExpCount -ge 2) {
-    Write-Host "PASS parselord5-experimental-mode-in-sam: found $samExpCount occurrences in SAM.cs (ST+AoE branches)"
+foreach ($name in $samPriorityBlocks.Keys) {
+    $block = $samPriorityBlocks[$name]
+    $pattern = $samPriorityPatterns[$name]
+    if ([string]::IsNullOrWhiteSpace($block) -or
+        $block -notmatch $pattern -or
+        $block -match 'ParseLord5Experiments\.JobRotationExperiments') {
+        $samPriorityFailures += $name
+    }
+}
+
+if ($samPriorityFailures.Count -eq 0) {
+    Write-Host "PASS sam-promoted-ikishoten-priority: Ikishoten precedes Meikyo in all ST/AoE modes without an experiment gate"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-sam: expected >=2 occurrences in SAM.cs, found $samExpCount"
+    Write-Host "FAIL sam-promoted-ikishoten-priority: priority contract missing in $($samPriorityFailures -join ', ')"
     $failCount++
 }
 
-if ($vprExpCount -ge 2) {
-    Write-Host "PASS parselord5-experimental-mode-in-vpr: found $vprExpCount occurrences in VPR.cs (ST+AoE branches)"
+$vprViceTwinBlock = [regex]::Match(
+    $vprHelperContent,
+    'private static bool UseViceTwinWeaves.*?private static bool CanSerpentsIre',
+    'Singleline'
+).Value
+$vprAoEPriorityPattern = '(?s)if\s*\(canFellskinsVenom\)\s*\{\s*action\s*=\s*OriginalHook\(Twinblood\);\s*return true;\s*\}.*?if\s*\(canFellhuntersVenom\)\s*\{\s*action\s*=\s*OriginalHook\(Twinfang\);\s*return true;\s*\}'
+$vprStPriorityPattern = '(?s)if\s*\(HasStatusEffect\(Buffs\.SwiftskinsVenom\)\)\s*\{\s*action\s*=\s*OriginalHook\(Twinblood\);\s*return true;\s*\}.*?if\s*\(HasStatusEffect\(Buffs\.HuntersVenom\)\)\s*\{\s*action\s*=\s*OriginalHook\(Twinfang\);\s*return true;\s*\}'
+
+if (-not [string]::IsNullOrWhiteSpace($vprViceTwinBlock) -and
+    $vprViceTwinBlock -match $vprAoEPriorityPattern -and
+    $vprViceTwinBlock -match $vprStPriorityPattern -and
+    $vprViceTwinBlock -notmatch 'ParseLord5Experiments\.JobRotationExperiments') {
+    Write-Host "PASS vpr-promoted-venom-priority: Twinblood priority remains promoted in AoE and ST without an experiment gate"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-vpr: expected >=2 occurrences in VPR.cs, found $vprExpCount"
+    Write-Host "FAIL vpr-promoted-venom-priority: UseViceTwinWeaves no longer preserves the promoted Twinblood-first ladders"
     $failCount++
 }
 
 # ---- FIXTURE 6: Critical action IDs mapped (Gyofu for SAM, Twinfang/Twinblood for VPR) ----
 Write-Host "--- Fixture: critical-action-ids-mapped ---"
 $samHelperContent = Get-Content -LiteralPath $SAMHelperFile -Raw
-$vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
 
 # Gyofu must appear as a const assignment in SAM_Helper.cs
 if ($samHelperContent -match 'Gyofu\s*=\s*\d+') {
@@ -205,42 +230,30 @@ if ($samIkishotenCallCount -ge 2 -and $samAdvancedIkishotenCallCount -ge 1 -and 
     $failCount++
 }
 
-# ---- FIXTURE 8: WHM DPS paths honor healing stacks without stalling between queue windows ----
-Write-Host "--- Fixture: whm-dps-healing-interception ---"
+# ---- FIXTURE 8: WHM DPS paths remain isolated from the dedicated healer lane ----
+Write-Host "--- Fixture: whm-dps-healer-lane-isolation ---"
 $whmContent = Get-Content -LiteralPath $WHMFile -Raw
-$whmHelperContent = Get-Content -LiteralPath $WHMHelperFile -Raw
 $whmDpsBlocks = [ordered]@{
     "WHM_ST_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_ST_Simple_DPS.*?internal class WHM_AoE_Simple_DPS', 'Singleline').Value
     "WHM_AoE_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_Simple_DPS.*?internal class WHM_ST_MainCombo', 'Singleline').Value
     "WHM_ST_MainCombo" = [regex]::Match($whmContent, 'internal class WHM_ST_MainCombo.*?internal class WHM_AoE_DPS', 'Singleline').Value
     "WHM_AoE_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_DPS.*?#endregion\s+#region Simple Heals', 'Singleline').Value
 }
-$whmInterceptionFailures = @()
+$whmIsolationFailures = @()
 
 foreach ($entry in $whmDpsBlocks.GetEnumerator()) {
     if ([string]::IsNullOrWhiteSpace($entry.Value) -or
-        $entry.Value -notmatch 'TryDpsSingleTargetHealPriority' -or
-        $entry.Value -notmatch 'TryDpsAoEHealPriority') {
-        $whmInterceptionFailures += $entry.Key
+        $entry.Value -match 'TryDpsSingleTargetHealPriority|TryDpsAoEHealPriority') {
+        $whmIsolationFailures += $entry.Key
     }
 }
 
-$hasPressableHealGate =
-    $whmHelperContent -match 'CanUseDpsHealNow' -and
-    $whmHelperContent -match 'CanWeave\(\)\s*&&\s*!ShouldHoldWhmHealingSetupOgcd' -and
-    $whmHelperContent -match 'CanQueue\(action\)'
-
-if ($whmInterceptionFailures.Count -eq 0 -and $hasPressableHealGate) {
-    Write-Host "PASS whm-dps-healing-interception: all WHM DPS paths check ST/AoE stacks and only select pressable heals"
+if ($whmIsolationFailures.Count -eq 0) {
+    Write-Host "PASS whm-dps-healer-lane-isolation: all WHM DPS paths leave healing to the dedicated healer lane"
     $passCount++
 } else {
-    if ($whmInterceptionFailures.Count -gt 0) {
-        Write-Host "  Missing stack interception in: $($whmInterceptionFailures -join ', ')"
-    }
-    if (-not $hasPressableHealGate) {
-        Write-Host "  Missing weave/queue readiness gate in WHM_Helper.cs"
-    }
-    Write-Host "FAIL whm-dps-healing-interception"
+    Write-Host "  DPS-heal leakage found in: $($whmIsolationFailures -join ', ')"
+    Write-Host "FAIL whm-dps-healer-lane-isolation"
     $failCount++
 }
 
