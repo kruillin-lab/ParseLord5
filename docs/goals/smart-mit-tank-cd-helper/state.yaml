@@ -1,0 +1,186 @@
+version: 2
+runtime: cursor
+
+goal:
+  title: "Smart mitigation + tank cooldown helper integration"
+  slug: smart-mit-tank-cd-helper
+  kind: specific
+  tranche: "All PvE tanks ported (WAR/PLD/GNB/DRK); strict >60s/<=60s category enforcement landed (af010b12a); T999 audit passed 2026-08-11"
+  status: done
+  oracle:
+    signal: "Smart mit uses tank CD helper data to pick subset of CDs per event; build + rotation-evals pass; scenario matrix documented"
+    cadence: "after each Worker package and at T999"
+    final_proof: "Receipt-backed code paths + verify commands + scenario matrix in notes/"
+  intake:
+    original_request: "Integrate tank cooldown helper into smart mitigation so PL5 predicts which CDs to use instead of using all cooldowns"
+    interpreted_outcome: "Selective, helper-informed tank CD usage in smart mitigation"
+    input_shape: specific
+    audience: ParseLord5 tank users
+    authority: requested
+    proof_type: test
+    completion_proof: "Selective CD selection with helper integration; build/evals green; documented scenarios"
+    likely_misfire: "Helper wired but decision logic still casts every CD"
+    blind_spots_considered:
+      - "In-game proof may be operator-run on Windows"
+      - "Per-job CD kits differ"
+    existing_plan_facts: []
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  continuous_until_full_outcome: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+
+agents:
+  scout: cursor_task_explore_readonly
+  judge: cursor_main_thread
+  worker: cursor_main_thread
+  pm: cursor_main_thread
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/smart-mit-tank-cd-helper/"
+    command: "npx goalbuddy board \"C:\\Users\\kruil\\Documents\\Projects\\ParseLord5\\docs\\goals\\smart-mit-tank-cd-helper\""
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Map tank cooldown helper and smart mitigation"
+    receipt:
+      result: done
+      summary: "Helper = Auto Mitigation in *_Helper.cs; smart mit = Services/SmartMitigation + WAR_SmartMitigation (WAR only). Party CDs bypassed calculator; helper bailouts missing."
+      note: notes/T001-scout.md
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Choose first Worker slice"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Slice 1: WAR_MitigationBridge — helper mitigationRunning/trash gates, FilterWarMitigationOptions, party CDs through coverage calculator."
+      worker_spec:
+        objective: "WAR bridge + smart mit integration"
+        allowed_files:
+          - WrathCombo/Combos/PvE/WAR/WAR_MitigationBridge.cs
+          - WrathCombo/Combos/PvE/WAR/WAR_SmartMitigation.cs
+        verify:
+          - "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release"
+        stop_if:
+          - "Need files outside allowed_files"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    objective: "Implement WAR bridge slice"
+    allowed_files:
+      - WrathCombo/Combos/PvE/WAR/WAR_MitigationBridge.cs
+      - WrathCombo/Combos/PvE/WAR/WAR_SmartMitigation.cs
+    verify:
+      - "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release"
+    receipt:
+      result: done
+      summary: "Added WAR_MitigationBridge (helper-aligned guards, option filter, party option builder). Personal/party paths use coverage; trash threshold + stacking bailouts; boss rampart gated on TB/pressure."
+      changed_files:
+        - WrathCombo/Combos/PvE/WAR/WAR_MitigationBridge.cs
+        - WrathCombo/Combos/PvE/WAR/WAR_SmartMitigation.cs
+      commands:
+        - cmd: dotnet build .\WrathCombo\WrathCombo.csproj -c Release
+          status: pass
+      note: "Follow-on WAR work (TCH IPC, Damnation gating, overlap/heals/Bloodwhetting) documented in notes/T005-tch-ipc.md; user sign-off notes/T006-war-signoff.md"
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Phase review: operator in-game sign-off for WAR; decide PLD/GNB next slice or close WAR-only scope."
+    inputs:
+      - "T003 receipt"
+      - "notes/scenario-matrix.md"
+      - "notes/T005-tch-ipc.md"
+      - "notes/T006-war-signoff.md"
+    constraints:
+      - "No implementation until scope decided."
+    receipt:
+      result: done
+      decision: war_phase_complete
+      full_outcome_complete: false
+      rationale: "User sign-off: WAR smart mit + TCH IPC integration accepted for this phase. PLD/GNB port deferred (T005). Full goal oracle awaits T999 or expanded tank scope."
+      operator_signoff: "2026-05-31 — consider the war good and passed"
+      note: notes/T006-war-signoff.md
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    objective: "Port smart mit + TCH pattern to PLD, GNB, DRK (WAR reference)."
+    allowed_files:
+      - WrathCombo/Combos/PvE/PLD/PLD_MitigationBridge.cs
+      - WrathCombo/Combos/PvE/PLD/PLD_SmartMitigation.cs
+      - WrathCombo/Combos/PvE/PLD/PLD_Helper.cs
+      - WrathCombo/Combos/PvE/GNB/GNB_MitigationBridge.cs
+      - WrathCombo/Combos/PvE/GNB/GNB_SmartMitigation.cs
+      - WrathCombo/Combos/PvE/GNB/GNB_Helper.cs
+      - WrathCombo/Combos/PvE/DRK/DRK_MitigationBridge.cs
+      - WrathCombo/Combos/PvE/DRK/DRK_SmartMitigation.cs
+      - WrathCombo/Combos/PvE/DRK/DRK_ActionLogic.cs
+      - WrathCombo/Services/SmartMitigation/TankSmartMitigationThreat.cs
+      - WrathCombo/Services/SmartMitigation/TankMitigationSelection.cs
+    verify:
+      - "dotnet build .\\WrathCombo\\WrathCombo.csproj -c Release"
+    receipt:
+      result: done
+      summary: "PLD/GNB/DRK smart mit + bridge; shared TankSmartMitigationThreat and TankMitigationSelection; experimental entry wired."
+      note: notes/T007-multi-tank-port.md
+      commands:
+        - cmd: dotnet build .\WrathCombo\WrathCombo.csproj -c Release
+          status: pass
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Final audit vs goal oracle (all scoped tanks or documented WAR-only close)"
+    receipt:
+      result: done
+      decision: full_outcome_complete
+      full_outcome_complete: true
+      rationale: "All three oracle signals verified on main (af010b12a, 2026-08-11): (1) dotnet build WrathCombo.csproj -c Release = 0 errors 0 warnings; (2) scripts/rotation-evals.ps1 = 13/13 passed 0 failed; (3) selective CD selection proven by 6/6 TankMitigationSelectionTests — strict >60s/<=60s category boundary, active-long blocks long but allows short, active-short blocks short but allows long, both active returns null (no double-stacking). The likely_misfire (helper wired but casts every CD) is refuted: ShouldExcludeActiveCategory + MitigationCoverageCalculator.SelectMinimumMitigation enforce per-category subset selection across all 4 tanks. Strict category enforcement cherry-picked from origin/merge-rehearsal 80ab2b7b7."
+      audit_date: "2026-08-11"
+      audited_commit: "af010b12a"
+      commands:
+        - cmd: dotnet build WrathCombo/WrathCombo.csproj -c Release
+          status: pass
+          result: "0 errors, 0 warnings"
+        - cmd: pwsh -NoProfile -File scripts/rotation-evals.ps1
+          status: pass
+          result: "passed=13 failed=0 total=13"
+        - cmd: dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --filter TankMitigationSelectionTests
+          status: pass
+          result: "Passed 6/6"
+      note: "T999 final audit; feature code on main at af010b12a; goal docs restored from refs/recovery/merge-rehearsal"
+
+checks:
+  last_verification:
+    result: pass
+    task: T999
+    date: "2026-08-11"
+    commands:
+      - cmd: dotnet build WrathCombo/WrathCombo.csproj -c Release
+        status: pass
+      - cmd: pwsh -NoProfile -File scripts/rotation-evals.ps1
+        status: pass
+      - cmd: dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --filter TankMitigationSelectionTests
+        status: pass
+    note: "T999 final audit passed; full_outcome_complete=true; goal status=done"
