@@ -43,9 +43,9 @@
     },
     "plugin": {
       "patterns": [
-        "WrathCombo/**/*.cs",
-        "WrathCombo/**/*.json",
-        "WrathCombo/**/*.resx",
+        "WrathCombo/*.cs",
+        "WrathCombo/*.json",
+        "WrathCombo/*.resx",
         "**/*.csproj",
         "WrathCombo.slnx",
         "Directory.Build.props",
@@ -55,9 +55,12 @@
     },
     "domain": {
       "patterns": [
-        "WrathCombo/Combos/**/*.cs",
-        "WrathCombo/AutoRotation/**/*.cs",
-        "WrathCombo/CustomComboPreset.cs"
+        "WrathCombo/Combos/*.cs",
+        "WrathCombo/AutoRotation/*.cs",
+        "WrathCombo/Services/SmartMitigation/*.cs",
+        "WrathCombo/Services/IPC_Subscriber/*.cs",
+        "WrathCombo/CustomComboPreset.cs",
+        "WrathCombo.Tests/*.cs"
       ],
       "checks": ["domain-evals-if-domain-changed"],
       "risk": "domain-critical"
