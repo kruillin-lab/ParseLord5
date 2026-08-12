@@ -62,15 +62,15 @@ public static class ActionWatching
     public delegate void ActionSendDelegate();
     public static event ActionSendDelegate? OnActionSend;
 
-    private readonly static Hook<Delegates.Receive>? ReceiveActionEffectHook;
-    private readonly static Hook<ActionManager.Delegates.UseAction>? UseActionHook;
-    private readonly static Hook<ActionManager.Delegates.UseActionLocation>? UseActionLocHook;
+    private static Hook<Delegates.Receive>? ReceiveActionEffectHook;
+    private static Hook<ActionManager.Delegates.UseAction>? UseActionHook;
+    private static Hook<ActionManager.Delegates.UseActionLocation>? UseActionLocHook;
 
     private delegate void SendActionDelegate(ulong targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9);
-    private static readonly Hook<SendActionDelegate>? SendActionHook;
-    public static readonly Hook<ActionManager.Delegates.IsActionOffCooldown> CanQueueAction;
-    public static readonly Hook<PacketDispatcher.Delegates.HandleActorControlPacket> ActorControlPacketHook;
-    public static readonly Hook<PacketDispatcher.Delegates.OnReceivePacket> OnRecievePacketHook;
+    private static Hook<SendActionDelegate>? SendActionHook;
+    public static Hook<ActionManager.Delegates.IsActionOffCooldown> CanQueueAction = null!;
+    public static Hook<PacketDispatcher.Delegates.HandleActorControlPacket> ActorControlPacketHook = null!;
+    public static Hook<PacketDispatcher.Delegates.OnReceivePacket> OnRecievePacketHook = null!;
 
     private static Task UpdateActionTask = null!;
     private static CancellationTokenSource source = new CancellationTokenSource();
@@ -78,18 +78,6 @@ public static class ActionWatching
 
     public static bool UpdatingActions;
 
-    static unsafe ActionWatching()
-    {
-        ReceiveActionEffectHook ??= Svc.Hook.HookFromAddress<Delegates.Receive>(Addresses.Receive.Value, ReceiveActionEffectDetour);
-        SendActionHook ??= Svc.Hook.HookFromSignature<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour);
-        UseActionHook ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.UseAction>(ActionManager.Addresses.UseAction.Value, UseActionDetour);
-        UseActionLocHook ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.UseActionLocation>(ActionManager.Addresses.UseActionLocation.Value, UseActionLocationDetour);
-        CanQueueAction ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.IsActionOffCooldown>(ActionManager.Addresses.IsActionOffCooldown.Value, CanQueueActionDetour);
-        ActorControlPacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.HandleActorControlPacket>(PacketDispatcher.Addresses.HandleActorControlPacket.Value, ActorControlDetour);
-        OnRecievePacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.OnReceivePacket>((nint)PacketDispatcher.StaticVirtualTablePointer->OnReceivePacket, OnReceivePacketDetour);
-        OnCastInterrupted += CancelPendingLastActionUpdate;
-
-    }
 
     private static unsafe void OnReceivePacketDetour(PacketDispatcher* thisPtr, uint targetId, nint packet)
     {
@@ -178,8 +166,21 @@ public static class ActionWatching
         return UseActionLocHook.Original(thisPtr, actionType, actionId, targetId, location, extraParam, a7);
     }
 
-    public static void Enable()
+    public static unsafe void Enable()
     {
+        // Hooks are built here rather than in a static ctor so that a
+        // disable -> re-enable cycle can rebuild them. A static ctor runs only
+        // once per load context; if Dalamud reuses the context, it would not
+        // re-run and these fields would still hold the hooks Dispose() tore
+        // down, so Enable() would fault on disposed hooks.
+        ReceiveActionEffectHook ??= Svc.Hook.HookFromAddress<Delegates.Receive>(Addresses.Receive.Value, ReceiveActionEffectDetour);
+        SendActionHook ??= Svc.Hook.HookFromSignature<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour);
+        UseActionHook ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.UseAction>(ActionManager.Addresses.UseAction.Value, UseActionDetour);
+        UseActionLocHook ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.UseActionLocation>(ActionManager.Addresses.UseActionLocation.Value, UseActionLocationDetour);
+        CanQueueAction ??= Svc.Hook.HookFromAddress<ActionManager.Delegates.IsActionOffCooldown>(ActionManager.Addresses.IsActionOffCooldown.Value, CanQueueActionDetour);
+        ActorControlPacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.HandleActorControlPacket>(PacketDispatcher.Addresses.HandleActorControlPacket.Value, ActorControlDetour);
+        OnRecievePacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.OnReceivePacket>((nint)PacketDispatcher.StaticVirtualTablePointer->OnReceivePacket, OnReceivePacketDetour);
+
         ReceiveActionEffectHook?.Enable();
         SendActionHook?.Enable();
         UseActionHook?.Enable();
@@ -188,12 +189,22 @@ public static class ActionWatching
         ActorControlPacketHook?.Enable();
         OnRecievePacketHook?.Enable();
         Svc.Condition.ConditionChange += ResetActions;
+        OnCastInterrupted += CancelPendingLastActionUpdate;
     }
 
 
     public static void Dispose()
     {
         Disable();
+
+        // Cancel queued RunOnTick work before the hooks go away, so a pending
+        // continuation cannot run against a disposed hook. The replacement
+        // source keeps a later Enable() usable.
+        source.Cancel();
+        source.Dispose();
+        source = new CancellationTokenSource();
+        UpdatingActions = false;
+
         ReceiveActionEffectHook?.Dispose();
         SendActionHook?.Dispose();
         UseActionHook?.Dispose();
@@ -201,7 +212,16 @@ public static class ActionWatching
         CanQueueAction?.Dispose();
         ActorControlPacketHook?.Dispose();
         OnRecievePacketHook?.Dispose();
-        OnCastInterrupted -= CancelPendingLastActionUpdate;
+
+        // Clear the fields so the next Enable() rebuilds real hooks instead of
+        // re-enabling disposed ones.
+        ReceiveActionEffectHook = null;
+        SendActionHook = null;
+        UseActionHook = null;
+        UseActionLocHook = null;
+        CanQueueAction = null!;
+        ActorControlPacketHook = null!;
+        OnRecievePacketHook = null!;
     }
 
 
@@ -547,8 +567,13 @@ public static class ActionWatching
 
     private static void CancelPendingLastActionUpdate(uint interruptedAction)
     {
-        source.Cancel();
+        // Swap first so anything reading `source` during cancellation callbacks
+        // sees the live one, then cancel and dispose the replaced source --
+        // otherwise every interrupted cast leaks a CancellationTokenSource.
+        var interrupted = source;
         source = new CancellationTokenSource();
+        interrupted.Cancel();
+        interrupted.Dispose();
         UpdatingActions = false;
     }
 
@@ -756,7 +781,7 @@ public static class ActionWatching
 
     public static void Disable()
     {
-        ReceiveActionEffectHook.Disable();
+        ReceiveActionEffectHook?.Disable();
         SendActionHook?.Disable();
         UseActionHook?.Disable();
         UseActionLocHook?.Disable();
@@ -764,6 +789,7 @@ public static class ActionWatching
         ActorControlPacketHook?.Disable();
         OnRecievePacketHook?.Disable();
         Svc.Condition.ConditionChange -= ResetActions;
+        OnCastInterrupted -= CancelPendingLastActionUpdate;
     }
 
     [Obsolete("Use CustomComboFunctions.GetActionName instead. This method will be removed in a future update.")]

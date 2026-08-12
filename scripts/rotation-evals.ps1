@@ -278,6 +278,51 @@ if (-not [string]::IsNullOrWhiteSpace($mnkPerfectBalanceStBlock) -and
     $failCount++
 }
 
+# ---- FIXTURE: plugin teardown unsubscribes every long-lived event ----
+# A Dalamud event left subscribed at Dispose keeps calling into the unloaded
+# assembly every frame, which crashes the game on disable -> re-enable. Each
+# entry is a delegate that must be removed by the same file that adds it.
+Write-Host "--- Fixture: teardown-event-subscription-symmetry ---"
+$symmetryTargets = @(
+    @{ File = "WrathCombo\WrathCombo.cs";                       Delegates = @("ws.Draw", "OnOpenMainUi", "OnOpenConfigUi", "OnFrameworkUpdate", "OnErrorToast", "Text.OnLanguageChanged", "ClientState_TerritoryChanged", "PrintLoginMessage") },
+    @{ File = "WrathCombo\Services\IPC\Leasing.cs";             Delegates = @("CheckIfLeaseePluginsUnloaded") },
+    @{ File = "WrathCombo\AutoRotation\AutoRotationController.cs"; Delegates = @("ScanForWarnings", "StatusChanged", "ResetError") },
+    @{ File = "WrathCombo\Data\ActionWatching.cs";               Delegates = @("ResetActions", "CancelPendingLastActionUpdate") },
+    @{ File = "WrathCombo\CustomCombo\Functions\Timer.cs";       Delegates = @("UpdatePartyTimer", "UpdateDeadtionary", "CheckInterruptedCasts", "CheckStatuses", "OnCombat") },
+    @{ File = "WrathCombo\Data\CustomComboCache.cs";             Delegates = @("Framework_Update") }
+)
+
+$unpairedSubscriptions = @()
+foreach ($target in $symmetryTargets) {
+    $targetPath = Join-Path $RepoRoot $target.File
+    if (-not (Test-Path -LiteralPath $targetPath)) {
+        $unpairedSubscriptions += "$($target.File) (missing file)"
+        continue
+    }
+
+    $targetContent = Get-Content -LiteralPath $targetPath -Raw
+    foreach ($handler in $target.Delegates) {
+        $escaped = [regex]::Escape($handler)
+        $subscribes = [regex]::Matches($targetContent, "\+=\s*$escaped\s*;").Count
+        $unsubscribes = [regex]::Matches($targetContent, "-=\s*$escaped\s*;").Count
+
+        if ($subscribes -gt 0 -and $unsubscribes -eq 0) {
+            $unpairedSubscriptions += "$($target.File): $handler subscribed but never unsubscribed"
+        } elseif ($subscribes -eq 0) {
+            $unpairedSubscriptions += "$($target.File): $handler no longer subscribed (stale fixture entry)"
+        }
+    }
+}
+
+if ($unpairedSubscriptions.Count -eq 0) {
+    Write-Host "PASS teardown-event-subscription-symmetry: every tracked delegate is both subscribed and unsubscribed"
+    $passCount++
+} else {
+    foreach ($problem in $unpairedSubscriptions) { Write-Host "  FAIL: $problem" }
+    Write-Host "FAIL teardown-event-subscription-symmetry: $($unpairedSubscriptions.Count) unpaired subscription(s)"
+    $failCount++
+}
+
 Write-Host ""
 Write-Host "=== Summary ==="
 Write-Host "passed=$passCount failed=$failCount negative_controls=1 total=$(($passCount + $failCount))"

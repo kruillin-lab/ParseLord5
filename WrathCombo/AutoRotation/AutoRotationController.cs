@@ -183,6 +183,30 @@ internal unsafe class AutoRotationController
     {
         OnPartyCombatChanged -= ResetError;
         Svc.Chat.ChatMessage -= ScanForWarnings;
+        // OnStatusChanged is a static event, so a missed unsubscribe keeps this
+        // instance -- and the assembly -- alive after the plugin unloads.
+        OnStatusChanged -= StatusChanged;
+        // Static throttle state: without a reset the next enable inherits a
+        // future deadline and StallWatch stays silent for up to 8s.
+        _nextStallWarnAt = 0;
+        // The rest of the mutable statics on this class survive a reused load
+        // context the same way. AutorotHealTarget is the dangerous one: it
+        // holds a game object from the previous session, which the next enable
+        // would read before the first target scan replaces it.
+        AutorotHealTarget = null;
+        AutorotRaidwiding = false;
+        AutorotRaidwides = 0;
+        TankbusterHandled = false;
+        WouldLikeToGroundTarget = false;
+        IsIssuingAutorotAction = false;
+        IsSelectingAutorotAction = false;
+        IsIssuingManualQueuedAction = false;
+        Paused = false;
+        UnpauseSeconds = 0;
+        HealThrottle = 0;
+        TimeToHeal = null;
+        _lockedST = false;
+        _lockedAoE = false;
     }
 
     private void ResetError(bool state)

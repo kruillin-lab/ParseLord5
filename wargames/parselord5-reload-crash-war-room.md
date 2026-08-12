@@ -2,10 +2,10 @@
 tags:
   - type/report
   - project/parselord5
-  - status/active
+  - status/done
 type: report
 project: parselord5
-status: active
+status: done
 aliases: []
 ---
 # War Room — ParseLord5 disable→re-enable crash
@@ -124,8 +124,9 @@ No on-disk crash log captured the actual ParseLord5 disable→re-enable event �
 
 ## 7 · Supervision & after-action
 
-- **Execution log:** *(pending user acceptance of orders — not yet executed)*
-- **Re-convene events:** none yet.
+- **Execution log:** **executed 2026-08-11** (Windows, on `main` at `aafddadd5`). All five moves applied; verification in the battle plan §4 — build 0 errors/0 warnings, 55/55 tests, 14/14 evals, symmetry sweep clean, diff confined to the 5 intended files with BRD/DRK/RDM untouched. All three headline defects were re-confirmed live on `main` immediately before editing: `Draw += ws.Draw` was paired against `-= DrawUI` (a delegate never subscribed, so the unsubscribe was a silent no-op); `Leasing` had **no `Dispose` method at all**, leaving its `Framework.Update` handler permanently registered; and the 7 `ActionWatching` hooks were `static readonly`, so `Dispose()` could not clear them and a reused load context would re-`Enable()` disposed hooks. Two further asymmetries the plan had not named were found by the MOVE 0 sweep and fixed (`OnCastInterrupted` subscribed in a static ctor but unsubscribed in `Dispose`; `ReceiveActionEffectHook.Disable()` missing its `?.`). **M1 (in-game toggle ×5) remains outstanding and is operator-only — the fix is code-proven but not yet game-proven.**
+- **Regression guard added:** `teardown-event-subscription-symmetry` fixture in `scripts/rotation-evals.ps1`, covering every tracked lifecycle delegate across the 6 owning files. Mutation-tested — restoring `-= DrawUI` makes it fail with `ws.Draw subscribed but never unsubscribed` and exit 1 — so the plan's "same asymmetry class will recur as code grows" risk is now enforced by the eval gate rather than by review attention.
+- **Re-convene events:** none.
 - **Reviewer verdict (original pass):** Phase 7 review completed as an explicit fresh-eyes pass (subagents were exhausting the usage-credit budget, so the skill's no-subagent Reviewer-hat fallback was used, not skipped). Found and fixed the MOVE 3 null-only defect (promoted Enable-guarded re-create to primary). **Missed the F6 citation error below** — the same-session self-review did not re-verify the log-line caller attribution, only the reasoning built on top of it.
 - **Correction (2026-07-07, post-hoc):** the skill's own eval loop — an independently-launched baseline agent working the identical crash prompt with no memory of this dossier — re-derived the code-level defects from scratch (F1/F2/F3/F4 all independently confirmed) but flagged that the "corroborating" log lines I cited (F6) don't belong to ParseLord5. Direct re-inspection confirmed the baseline agent was right: `dalamud.log:4219` names `PortraitFixer` as the hook-creation caller, `:4265` is explicitly logged as `[ActionStacksEX]`. F6 is retracted (marked in §2); A2's confidence is downgraded to reflect it; COA-3's kill reasoning was re-derived without depending on it (still fails completeness on F1/F2/F3 alone). **Process lesson:** a same-session "Reviewer hat" sharing context with the Advisor is weaker than a genuinely independent agent for catching citation errors specifically — it tends to re-check reasoning, not re-verify source facts it already believes are settled. Recorded as a durable lesson (see write-back below) rather than silently fixed.
 - **Quality gate:** `quality-gate` build check to run before "done" per `AGENTS.md:31` (note: on Linux only the `build` gate runs; pwsh-based domain-evals are skipped — see the quality-gate-linux-port finding).

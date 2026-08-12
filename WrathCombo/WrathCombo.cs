@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using WrathCombo.API.Enum;
 using WrathCombo.AutoRotation;
@@ -69,6 +70,13 @@ public sealed partial class WrathCombo : IDalamudPlugin
     internal ActionRetargeting ActionRetargeting = null!;
     internal MovementHook MoveHook;
     internal CustomActionSetup CustomActions;
+
+    /// <summary>
+    ///     Cancelled by <see cref="Dispose" />, so deferred
+    ///     <see cref="Svc.Framework.RunOnTick(System.Action,TimeSpan,int,System.Threading.CancellationToken)" />
+    ///     work queued here cannot run against disposed services after unload.
+    /// </summary>
+    private readonly CancellationTokenSource _lifetime = new();
     //private readonly CustomActionListAddon _listAddon;
 
     internal static bool IsAprilFools => DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 4;
@@ -269,7 +277,8 @@ public sealed partial class WrathCombo : IDalamudPlugin
 
         // Starts Retarget list cleaning process after a delay
         Svc.Framework.RunOnTick(ActionRetargeting.ClearOldRetargets,
-            TimeSpan.FromSeconds(60));
+            TimeSpan.FromSeconds(60),
+            cancellationToken: _lifetime.Token);
 
 #if DEBUG
         VfxManager.Logging = true;
@@ -278,7 +287,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         {
             if (Service.Configuration.OpenToCurrentJob && Player.Available)
                 HandleOpenCommand([""], forceOpen: true);
-        });
+        }, cancellationToken: _lifetime.Token);
 #endif
     }
 
@@ -429,12 +438,6 @@ public sealed partial class WrathCombo : IDalamudPlugin
         Service.Configuration.ResetFeatures("1.0.2.3_NINRework", Enumerable.Range(10000, 100).ToArray());
     }
 
-    private void DrawUI()
-    {
-        _majorChangesWindow.Draw();
-        ConfigWindow.Draw();
-    }
-
     private void PrintLoginMessage()
     {
         Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => ResetFeatures());
@@ -480,6 +483,10 @@ public sealed partial class WrathCombo : IDalamudPlugin
     /// <inheritdoc/>
     public void Dispose()
     {
+        // Cancel first: deferred ticks queued in the ctor must not fire against
+        // the services torn down below.
+        _lifetime.Cancel();
+
         ActionRetargeting.Dispose();
         ConfigWindow.Dispose();
         Debug.Dispose();
@@ -500,7 +507,14 @@ public sealed partial class WrathCombo : IDalamudPlugin
         Svc.Framework.Update -= OnFrameworkUpdate;
         Svc.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
         Svc.PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
-        Svc.PluginInterface.UiBuilder.Draw -= DrawUI;
+        Svc.PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUi;
+        // This must remove the delegate that was actually added (ws.Draw). The
+        // old `-= DrawUI` removed a handler that was never subscribed, so it
+        // was a no-op and the WindowSystem stayed registered with Dalamud --
+        // leaving it calling into this assembly every frame after unload.
+        Svc.PluginInterface.UiBuilder.Draw -= ws.Draw;
+        Svc.PluginInterface.LanguageChanged -= Text.OnLanguageChanged;
+        Svc.Toasts.ErrorToast -= OnErrorToast;
 
         Service.ActionReplacer.Dispose();
         Service.ComboCache.Dispose();
@@ -516,6 +530,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
         Svc.ClientState.Login -= PrintLoginMessage;
         ECommonsMain.Dispose();
         P = null;
+        _lifetime.Dispose();
     }
 
     private void OnOpenMainUi() =>

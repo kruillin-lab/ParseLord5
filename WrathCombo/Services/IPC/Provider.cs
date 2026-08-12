@@ -86,7 +86,8 @@ public partial class Provider : IDisposable
         P.UIHelper = new UIHelper(output.Leasing);
 
         // Build Caches of presets
-        Svc.Framework.RunOnTick(BuildCachesAction(output));
+        Svc.Framework.RunOnTick(BuildCachesAction(output),
+            cancellationToken: output._actionToken.Token);
 
         return output;
     }
@@ -96,7 +97,13 @@ public partial class Provider : IDisposable
     /// <summary>
     ///     A token to cancel <see cref="BuildCaches" /> if the IPC is disabled.
     /// </summary>
-    private static readonly CancellationTokenSource ActionToken = new();
+    /// <remarks>
+    ///     Per-instance, not <see langword="static" />: <see cref="Dispose" />
+    ///     cancels it, and a static token would stay cancelled into the next
+    ///     <see cref="Init" /> whenever Dalamud reuses the load context --
+    ///     leaving IPC permanently unready after a disable -> re-enable.
+    /// </remarks>
+    private readonly CancellationTokenSource _actionToken = new();
 
     /// <summary>
     ///     Just provides a signature-compatible way to call <see cref="BuildCaches" />
@@ -117,7 +124,7 @@ public partial class Provider : IDisposable
     private static void BuildCaches(Provider output)
     {
         // Respect the token
-        if (ActionToken.IsCancellationRequested)
+        if (output._actionToken.IsCancellationRequested)
         {
             Logging.Verbose("IPC caches cancelled, IPC disabled");
             return;
@@ -127,7 +134,8 @@ public partial class Provider : IDisposable
         if (!Svc.ClientState.IsLoggedIn || !Player.Available)
         {
             Svc.Framework.RunOnTick(BuildCachesAction(output),
-                TimeSpan.FromSeconds(3));
+                TimeSpan.FromSeconds(3),
+                cancellationToken: output._actionToken.Token);
             Logging.Verbose("IPC caches delayed, waiting for player-ready");
             return;
         }
@@ -149,12 +157,15 @@ public partial class Provider : IDisposable
     }
 
     /// <summary>
-    ///     Disposes of the IPC provider, cancelling all leases.
+    ///     Disposes of the IPC provider, cancelling all leases and unregistering
+    ///     the leasing service's per-frame callback.
     /// </summary>
     public void Dispose()
     {
-        ActionToken.Cancel();
+        _actionToken.Cancel();
         Leasing.SuspendLeases(CancellationReason.WrathPluginDisabled);
+        Leasing.Dispose();
+        _actionToken.Dispose();
     }
 
     #endregion

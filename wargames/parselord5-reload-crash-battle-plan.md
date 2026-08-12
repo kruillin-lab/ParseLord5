@@ -2,16 +2,16 @@
 tags:
   - type/plan
   - project/parselord5
-  - status/active
+  - status/done
 type: plan
 project: parselord5
-status: active
+status: done
 aliases: []
 ---
 # Battle Plan — ParseLord5 disable→re-enable crash fix
 
 **Origin:** [parselord5-reload-crash-war-room.md](parselord5-reload-crash-war-room.md) (COA-1: surgical symmetric teardown + hook re-init).
-**Status:** ORDERS — not executed. Repo read-only until the user accepts.
+**Status:** EXECUTED 2026-08-11 on `main` — all five moves applied, V1–V4 pass. One human step outstanding: **M1** (in-game disable→re-enable repro, §5).
 **Never clobber:** sibling to `parselord5-stability-battle-plan.md` (different mission); do not merge or overwrite it.
 
 Executable by a mid-tier model without follow-up questions. Every move: proof-before-edit → exact edit → expected observation → most-likely failure + cause → counter.
@@ -20,12 +20,12 @@ Executable by a mid-tier model without follow-up questions. Every move: proof-be
 
 ## 0 · Theatre map
 
-- **Source root:** `/home/kruillin/Projects/Projects/ParseLord5` — `[R0]` re-locate if moved: `git -C <root> rev-parse --show-toplevel`.
-- **Branch:** `parselord5-wc-base` (one-branch rule, `AGENTS.md:32`). Do not create branches.
-- **Build (verified):** `export PATH="$HOME/.dotnet:$PATH" && dotnet build WrathCombo/WrathCombo.csproj -c Release` → baseline **0 errors, 3 warnings** (CS0219/CS0169/CS0649, benign).
-- **Test:** `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj` → baseline **34–37 pass**.
-- **Deploy (Debug, for the repro):** build `-c Debug`, then copy `ParseLord5.{dll,json,pdb,deps.json}` from `~/.xlcore/devPlugins/ParseLord5/` to `~/.xlcore/devPlugins/` (per `wargames/evidence/BUILD_RECHECK.txt`).
-- **Forbidden:** the 3 protected user files `WrathCombo/Combos/PvE/{BRD,DRK,RDM}.cs`; the logic of the 9 uncommitted fixes; anything outside the files named below.
+- **Source root:** `C:\Users\kruil\orca\ParseLord5` (Windows). `[R0]` re-locate if moved: `git -C <root> rev-parse --show-toplevel`.
+- **Branch:** `main` (one-branch rule, `AGENTS.md`). Do not create branches. *(The plan was authored against the retired `parselord5-wc-base` on a Linux checkout; both are gone.)*
+- **Build (verified 2026-08-11):** `dotnet build WrathCombo/WrathCombo.csproj -c Release` → baseline **0 errors, 0 warnings** (the 3 CS0219/CS0169/CS0649 warnings this plan cited were removed in `007fabed1`).
+- **Test:** `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release` → baseline **55 passed**. Evals: `pwsh -NoProfile -File scripts/rotation-evals.ps1` → **14/14**.
+- **Deploy:** the Release/Debug build writes straight to `%AppData%\XIVLauncher\devPlugins\ParseLord5\`; no copy step. `.\scripts\sync-dev-build.ps1` does pull + build + evals.
+- **Forbidden:** anything outside the files named below. *(The "9 uncommitted fixes" and the 3 protected user files `WrathCombo/Combos/PvE/{BRD,DRK,RDM}.cs` were committed long ago; the constraint is now just scope discipline.)*
 
 ### Targets
 | # | Defect | Site | Fix |
@@ -132,20 +132,32 @@ sed -n '190,193p' WrathCombo/AutoRotation/AutoRotationController.cs
 - **ABORT-REGRESS** — any edit drops a pending-fix hunk or touches a protected user file. Capture: `git diff` of the offending file. Hand back: revert that hunk; the 9 fixes and BRD/DRK/RDM are untouchable.
 
 ## 4 · Verification runs
-- **V1 build:** `export PATH="$HOME/.dotnet:$PATH" && dotnet build WrathCombo/WrathCombo.csproj -c Release 2>&1 | tail -3` — **PASS: 0 errors, warnings ≤ 3.**
-- **V2 tests:** `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj 2>&1 | tail -5` — **PASS: Failed 0 (Passed ≥ 34).**
-- **V3 symmetry:** re-run MOVE 0's two greps — **PASS: every `+=` in the first list has a matching `-=` in the second (Draw pairs on `ws.Draw`, Leasing Update paired, F4 set paired).**
-- **V4 diff hygiene:** `git diff --stat` — **PASS: only WrathCombo.cs, ActionWatching.cs, Leasing.cs/Provider.cs, AutoRotationController.cs changed; no BRD/DRK/RDM; pending-fix hunks intact.**
+
+> Executed 2026-08-11 on Windows at `aafddadd5` + this fix. Before execution the
+> lines below stated **PASS** as *expected* results while the orders were still
+> unexecuted; V3 in particular asserted a symmetry that did not hold. They now
+> record measured outcomes.
+
+- **V1 build:** `dotnet build WrathCombo/WrathCombo.csproj -c Release` — **PASS: 0 errors, 0 warnings** (exit 0).
+- **V2 tests:** `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release` — **PASS: Failed 0, Passed 55** (exit 0).
+- **V3 symmetry:** re-ran MOVE 0's sweep — **PASS: every tracked `+=` now has a matching `-=`.** Pre-fix this **FAILED**: `Draw` was subscribed as `ws.Draw` but unsubscribed as `DrawUI` (a delegate never subscribed, so a silent no-op), and `Leasing`'s `Framework.Update` had no `-=` anywhere in the repo. Now enforced by the `teardown-event-subscription-symmetry` eval fixture (`scripts/rotation-evals.ps1`), which was mutation-tested: reintroducing `-= DrawUI` makes it report `ws.Draw subscribed but never unsubscribed` and exit 1.
+- **V4 diff hygiene:** `git diff --stat` — **PASS: only `WrathCombo.cs`, `ActionWatching.cs`, `Leasing.cs`, `Provider.cs`, `AutoRotationController.cs` changed** (plus the eval fixture and these docs); no BRD/DRK/RDM; no pending-fix hunks disturbed.
+- **V5 evals:** `pwsh -NoProfile -File scripts/rotation-evals.ps1` — **PASS: passed=14 failed=0** (exit 0).
 
 ## 5 · MANUAL VERIFY (user only)
+
+> Tracked as [#2](https://github.com/kruillin-lab/ParseLord5/issues/2) — this is the only thing standing between the fix and a closed mission.
 - **M1 repro:** deploy Debug build; in-game open `/xllog`; disable ParseLord5 in the plugin installer, wait ~3s, re-enable; repeat **×5** (idle, and once in combat). **Expected:** no game crash, and no `HookVerificationException @0x…` / signature `KeyNotFoundException` / `AccessViolationException` in the log on any cycle. **Rollback:** if it crashes, redeploy the pre-fix DLL (git stash the fix, rebuild Debug, redeploy) and capture the `/xllog` tail for ABORT-SCOPE.
 
 ## 6 · Report skeleton (executor fills on completion)
-- Moves applied / skipped (with R1 + any new-subscriber outcome from the MOVE 0 sweep).
-- V1–V4 results (actual numbers).
-- M1 result (crash? log clean? how many cycles).
-- Files changed (`git diff --stat`).
-- Anything routed to an ABORT.
+- **Moves applied:** F1 (Draw unsubscribed with the delegate actually added, `ws.Draw`; dead `DrawUI` method removed), F2 (`Leasing.Dispose()` added — the class had no `Dispose` at all — and called from `Provider.Dispose()`), F3 (7 hook fields de-`readonly`'d, creation moved from the static ctor into `Enable()` behind `??=`, fields nulled in `Dispose()` so a reused load context rebuilds them), F4 (`OpenMainUi`, `LanguageChanged`, `ErrorToast` unsubscribes added; `OnStatusChanged -= StatusChanged` added to `AutoRotationController.Dispose`), F5 (`source` CTS cancelled + disposed + replaced *before* hooks are torn down).
+- **MOVE 0 sweep outcome:** no new per-frame subscriber beyond the known set. Two extras found and fixed that the plan had not named: `OnCastInterrupted` was subscribed in ActionWatching's *static ctor* but unsubscribed in `Dispose`, so after one disable→re-enable it was silently gone forever — now paired across `Enable`/`Disable`; and `Disable()` called `ReceiveActionEffectHook.Disable()` without `?.` while the other six used `?.`.
+- **Second sweep (independent re-audit, 2026-08-11) — F6, deferred-work and static-state leaks the delegate sweep cannot see:** three more teardown defects found and fixed after the five moves landed. (a) `Provider.ActionToken` was a `static readonly CancellationTokenSource` that `Dispose()` cancelled; a reused load context carries the cancelled token into the next `Init()`, so `BuildCaches` early-returns forever and **IPC never becomes ready after a re-enable** — now a per-instance `_actionToken`, disposed with the provider, and passed to both `RunOnTick` cache-build retries so queued builds die with the plugin. (b) The plugin ctor queued `ActionRetargeting.ClearOldRetargets` on a **60-second** `RunOnTick` with no token — disabling within that minute fires it against a disposed `ActionRetargeting`; now gated on a new `WrathCombo._lifetime` CTS cancelled at the top of `Dispose()` (the `#if DEBUG` open-to-current-job tick too). (c) `AutoRotationController`'s remaining mutable statics were left set at teardown alongside `_nextStallWarnAt`; the dangerous one is `AutorotHealTarget`, which holds an `IGameObject` from the previous session that the next enable can read before the first target scan replaces it — all of them (`Paused`, `UnpauseSeconds`, `AutorotHealTarget`, `AutorotRaidwiding`, `AutorotRaidwides`, `TankbusterHandled`, `WouldLikeToGroundTarget`, `IsIssuingAutorotAction`, `IsSelectingAutorotAction`, `IsIssuingManualQueuedAction`, `HealThrottle`, `TimeToHeal`, `_lockedST`, `_lockedAoE`) now reset in `Dispose()`. Re-verified after: build 0/0, 55 tests, 14 evals.
+- **R1 outcome:** `OnStatusChanged +=` **does** exist (`AutoRotationController.cs:100`, a *static* event holding an instance handler), so the F4 line was **kept**, not dropped per §2.
+- **V1–V5 results:** see §4 — all pass, 0 warnings, 55 tests, 14 evals.
+- **M1 result:** **OUTSTANDING — operator only.** Nothing in this fix is confirmed in-game until §5 runs.
+- **Files changed:** `WrathCombo/WrathCombo.cs`, `WrathCombo/Data/ActionWatching.cs`, `WrathCombo/Services/IPC/Leasing.cs`, `WrathCombo/Services/IPC/Provider.cs`, `WrathCombo/AutoRotation/AutoRotationController.cs`, `scripts/rotation-evals.ps1`.
+- **Aborts:** none triggered.
 
 ## 7 · Residual risk at plan time
 - A fourth/fifth per-frame subscriber not caught by the MOVE 0 greps (regex-bounded) — logged, not eliminated.
