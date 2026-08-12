@@ -2,10 +2,10 @@
 tags:
   - type/report
   - project/parselord5
-  - status/active
+  - status/done
 type: report
 project: parselord5
-status: active
+status: done
 aliases: []
 ---
 # War Room - SGE dummy heal spam third attempt

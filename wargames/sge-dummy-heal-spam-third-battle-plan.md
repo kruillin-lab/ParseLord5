@@ -2,10 +2,10 @@
 tags:
   - type/plan
   - project/parselord5
-  - status/active
+  - status/done
 type: plan
 project: parselord5
-status: active
+status: done
 aliases: []
 ---
 # Battle Plan - SGE dummy heal spam third attempt

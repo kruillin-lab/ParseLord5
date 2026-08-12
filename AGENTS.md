@@ -44,3 +44,13 @@ The five canonical labels are used as-is: `needs-triage`, `needs-info`, `ready-f
 ### Domain docs
 
 Single-context layout: `CONTEXT.md` at the repo root plus `docs/adr/`, created lazily by `/domain-modeling`. See `docs/agents/domain.md`.
+
+<!-- ICM-CODEX-START -->
+## ICM Project Workflow
+
+- Use `$icm-project-workflow` for project tasks in this folder.
+- Before edits, read `icm/CONTEXT.md` and the selected stage `CONTEXT.md`.
+- Load only the references named by that stage contract.
+- Keep existing project-specific build, test, style, and safety rules authoritative.
+- Write durable stage artifacts to `icm/stages/*/output/` when useful.
+<!-- ICM-CODEX-END -->

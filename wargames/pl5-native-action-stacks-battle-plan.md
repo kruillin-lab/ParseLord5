@@ -11,19 +11,57 @@ aliases: []
 # Battle Plan - PL5-native Action Stacks
 
 **Origin:** [pl5-native-action-stacks-war-room.md](pl5-native-action-stacks-war-room.md)
-**Status:** READY
+**Status:** STILL VALID (reconciled 2026-08-11) — no COA-2 target has landed; the plan is unexecuted, not superseded. Execute as written *after* reading the Reconciliation section below, which corrects the theatre map and two PASS criteria that are already false on arrival.
 **Selected COA:** port only ActionStacksEX's Action Stacks behavior into PL5 as a native, disabled-by-default module and tab.
+**Tracking:** [#6](https://github.com/kruillin-lab/ParseLord5/issues/6) — scope call pending.
+
+## Reconciliation — 2026-08-11
+
+Verified read-only against branch `main` @ `aafddadd5`. **Classification: STILL VALID.** Every COA-2 deliverable is absent. The only ActionStacks-related code in PL5 is the sibling COA-1 IPC bridge, which the war room screened as the *losing* option; it targets the opposite code path from this plan and is inert against the checked-out ActionStacksEX source.
+
+### Per-target status
+
+| # | Plan target | Landed? | Evidence |
+|---|-------------|---------|----------|
+| 1 | Module folder `WrathCombo/ActionStacks/` (`ActionStackConfig.cs`, `ActionStackDecision.cs`, `ActionStackRuntimeState.cs`) | No | glob `WrathCombo/ActionStacks/**` → path does not exist |
+| 2 | `Configuration.EnableNativeActionStacks` / `Configuration.NativeActionStacks` | No | grep `NativeActionStacks` over `WrathCombo/Core/Configuration.cs` → 0 matches |
+| 3 | `ActionStackTargetResolver.cs` (Move 2) | No | glob `WrathCombo/ActionStacks/**` → path does not exist |
+| 4 | `ActionStackResolver.cs` (Move 3) | No | glob `WrathCombo/ActionStacks/**` → path does not exist |
+| 5 | Resolver call in `ActionWatching.UseActionDetour` before the manual-queue override | No | grep `ActionStacks` over `WrathCombo/` matches only `WrathCombo/Services/IPC_Subscriber/ActionStacksEXIPC.cs`, `WrathCombo/Services/IPC_Subscriber/AllStaticIPCSubscriptions.cs:11`, and `WrathCombo/AutoRotation/AutoRotationController.cs:336,357` — nothing in `ActionWatching.cs` |
+| 6 | `WrathCombo/Window/Tabs/ActionStacksTab.cs` | No | `WrathCombo/Window/Tabs/` contains only `Settings.cs`, `Debug.cs`, `PvEFeatures.cs`, `PvPFeatures.cs`, `AutoRotationTab.cs`, `CustomActions.cs` |
+| 7 | `OpenWindow.ActionStacks` + sidebar row + body route | No | `WrathCombo/Window/ConfigWindow.cs:373-383` — enum ends at `CustomActions = 7`; sidebar and body switch stop at `CustomActions` (`ConfigWindow.cs:240-241`, `ConfigWindow.cs:310-311`) |
+| 8 | Preset / config toggle surface | No | grep `ActionStacks` over `WrathCombo/Combos/CustomComboPreset.cs` and `WrathCombo/Window/` → 0 matches |
+| 9 | `NativeActionStacks_*` tests in `WrathCombo.Tests/RotationStructureTests.cs` | No | grep `ActionStacks` over `WrathCombo.Tests/` → 0 matches |
+
+### What landed instead
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| COA-1's IPC bridge (the option this war room rejected) | Landed | `WrathCombo/Services/IPC_Subscriber/ActionStacksEXIPC.cs:8-51`; disposed at `WrathCombo/Services/IPC_Subscriber/AllStaticIPCSubscriptions.cs:11`; shipped in commit `76912de5a` |
+| Bridge call sites | Autorotation path only | `WrathCombo/AutoRotation/AutoRotationController.cs:335-341` and `:356-362`, both inside `UseAutorotAction`, i.e. exactly where `IsIssuingAutorotAction` is `true` (`AutoRotationController.cs:332`, `:353`) |
+| Bridge is currently inert | Yes | The subscriber calls the gate `ActionStacksEX.PrepareAction` (`ActionStacksEXIPC.cs:10`). ActionStacksEX @ `2a693f3` registers no such provider — grep for `CallGate`/`GetIpcProvider`/`RegisterFunc` over that repo returns only Hypostasis debug gates (`Hypostasis/Debug/DebugIPC.cs:130-150`). `InvokeFunc` therefore throws and is swallowed at `ActionStacksEXIPC.cs:45-49`, so `TryPrepareAction` always returns `false`. |
+| Move 4 PASS criterion "action replacement does not leave `Service.ActionReplacer` disabled on early returns" | Satisfied independently | commit `76912de5a` on `WrathCombo/Data/ActionWatching.cs` added the `originalCalled` guard and wrapped `EnableActionReplacingIfRequired()` in try/catch on the exception path |
+
+### Corrections a future executor must apply
+
+- **Move 1 PASS criterion "No ActionStacksEX namespace references exist in PL5 code" is already false.** `WrathCombo/Services/IPC_Subscriber/ActionStacksEXIPC.cs` predates this execution. Either scope the criterion to `WrathCombo/ActionStacks/**` or delete the dead bridge as an explicit step in Move 4.
+- **Move 6's `NativeActionStacks_DoesNotReferenceActionStacksEXNamespace` fails on arrival** for the same reason; scope its assertion to the new module folder.
+- **Design Contract rule 3 ("must not run stack replacement for `IsIssuingAutorotAction`") now conflicts with landed code.** The IPC bridge runs *only* on autorotation-issued actions. If both survive and ActionStacksEX ever registers `PrepareAction`, autorotation actions get stack-prepared out-of-process while manual presses resolve natively — two stack engines on two paths. Resolve this explicitly before Move 4.
+- **Sections 0, 4 and 8 were rewritten on 2026-08-11** from the dead Linux theatre (`/home/kruillin/...`, `parselord5-wc-base`) to the current Windows facts. The repo has exactly one branch, `main`.
 
 ## 0. Theatre Map
 
-- **Repo:** `/home/kruillin/Projects/Projects/ParseLord5`
-- **Reference repo:** `/home/kruillin/Projects/Projects/ActionStacksEX`
+- **Repo:** `C:\Users\kruil\orca\ParseLord5` (Windows). Exactly one branch, `main`; `AGENTS.md` forbids creating others. The old Linux checkout `/home/kruillin/Projects/Projects/ParseLord5` and the branch `parselord5-wc-base` are dead — do not abort on their absence.
+- **Reference repo (read-only):** `C:\Users\kruil\Documents\Projects\ActionStacksEX`, HEAD `2a693f3`.
 - **Primary PL5 hook:** `WrathCombo/Data/ActionWatching.cs`
 - **PL5 config:** `WrathCombo/Core/Configuration.cs`
 - **PL5 UI entry:** `WrathCombo/Window/ConfigWindow.cs`
-- **New PL5 module folder:** `WrathCombo/ActionStacks/`
-- **Expected new tab:** `WrathCombo/Window/Tabs/ActionStacksTab.cs`
+- **New PL5 module folder:** `WrathCombo/ActionStacks/` (does not exist yet)
+- **Expected new tab:** `WrathCombo/Window/Tabs/ActionStacksTab.cs` (does not exist yet)
+- **Pre-existing ActionStacksEX seam inside PL5:** `WrathCombo/Services/IPC_Subscriber/ActionStacksEXIPC.cs` — read the Reconciliation section before starting Move 1.
 - **Regression tests:** `WrathCombo.Tests/RotationStructureTests.cs` plus focused pure resolver tests if the resolver can be separated from Dalamud structs.
+- **Baselines to preserve (2026-08-11):** build 0 errors / 0 warnings; `dotnet test` 55 passed / 0 failed; rotation evals passed=14 failed=0 (14 since the teardown-event-subscription-symmetry fixture landed 2026-08-11).
+- **Deploy target:** the Release build writes straight to `C:\Users\kruil\AppData\Roaming\XIVLauncher\devPlugins\ParseLord5\ParseLord5.dll`; no manual copy step.
 - **Manual test target:** SGE on a target dummy with ActionStacksEX disabled and PL5-native stacks enabled.
 
 ## 1. Proof Before Edit
@@ -243,7 +281,7 @@ PASS criteria:
 1. Run focused tests:
 
 ```bash
-dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --no-restore --filter NativeActionStacks
+dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --filter NativeActionStacks
 ```
 
 PASS: all NativeActionStacks tests pass.
@@ -251,31 +289,31 @@ PASS: all NativeActionStacks tests pass.
 2. Run all tests:
 
 ```bash
-dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release --no-restore
+dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release
 ```
 
-PASS: full suite passes.
+PASS: 55 baseline tests plus the new NativeActionStacks tests, 0 failed. Baseline on 2026-08-11 is 55 passed / 0 failed.
 
 3. Build release:
 
 ```bash
-dotnet build WrathCombo/WrathCombo.csproj -c Release -p:DalamudLibPath=/home/kruillin/.xlcore/dalamud/Hooks/15.0.2.2/
+dotnet build WrathCombo/WrathCombo.csproj -c Release
 ```
 
-PASS: release build succeeds with baseline warnings only.
+PASS: 0 errors, 0 warnings. That is the 2026-08-11 baseline — any new warning is a regression, not "baseline warnings". No `DalamudLibPath` override is needed on this machine.
 
-4. Deploy dev plugin:
-
-- Copy `WrathCombo/bin/Release/ParseLord5.dll` and `WrathCombo/bin/Release/ParseLord5.json` to `/home/kruillin/.xlcore/devPlugins/ParseLord5/`.
-- Record timestamp and SHA256.
-
-5. Formal quality gate:
+4. Run rotation evals:
 
 ```bash
-python /home/kruillin/Projects/Projects/quality-gate/gate.py normal --repo /home/kruillin/Projects/Projects/ParseLord5 --task pl5-native-action-stacks
+pwsh -NoProfile -File scripts/rotation-evals.ps1
 ```
 
-PASS if available. If it fails because configured commands require Windows `powershell` or because unrelated pre-existing Markdown metadata issues remain, record that separately from focused tests/build.
+PASS: passed=14 failed=0, matching the 2026-08-11 baseline.
+
+5. Deploy dev plugin:
+
+- The Release build already writes to `C:\Users\kruil\AppData\Roaming\XIVLauncher\devPlugins\ParseLord5\ParseLord5.dll`. Do not hand-copy from `bin/Release`.
+- Record timestamp and SHA256 of the deployed DLL.
 
 ## 5. Manual Verification
 
@@ -329,9 +367,9 @@ Expected:
 - Tests:
   - focused NativeActionStacks tests: `<result>`
   - full `WrathCombo.Tests`: `<result>`
-- Build: `<result>`
-- Deployed DLL: `/home/kruillin/.xlcore/devPlugins/ParseLord5/ParseLord5.dll`, timestamp `<timestamp>`, SHA256 `<hash>`
-- Quality gate: `<result>`
+- Build: `<result>` (baseline 0 errors / 0 warnings)
+- Rotation evals: `<result>` (baseline passed=14 failed=0)
+- Deployed DLL: `C:\Users\kruil\AppData\Roaming\XIVLauncher\devPlugins\ParseLord5\ParseLord5.dll`, timestamp `<timestamp>`, SHA256 `<hash>`
 - Manual ask: disable ActionStacksEX, enable PL5-native stacks, import/recreate the Sage stack, then retest SGE on a dummy.
 
 ## 9. Deferred Items

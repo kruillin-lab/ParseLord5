@@ -1,3 +1,13 @@
+---
+tags:
+  - type/plan
+  - project/parselord5
+  - status/active
+type: plan
+project: parselord5
+status: active
+aliases: []
+---
 # ParseLord5 Stability Wargame Prompt
 
 WARGAME ORDER. You are not executing this mission. You are wargaming it. A cheaper executor runs the brief below later. Your job is to produce the route it will follow.

@@ -13,7 +13,7 @@ aliases: []
 **Status:** DECIDED
 **Date opened:** 2026-07-07
 **Advisor:** Codex session, role-hat AER fallback
-**Battle plan:** [healer-autorot-probe-execution-split-battle-plan.md](healer-autorot-probe-execution-split-battle-plan.md)
+**Battle plan:** [healer-autorot-probe-execution-split-battle-plan.md](healer-autorot-probe-execution-split-battle-plan.md) — authored 2026-08-11 against `main` @ `aafddadd5`, status `PLANNED`.
 
 User added two key observations after the third SGE-only deployment: WHM casts a lone Medica III and WHM uses no oGCD skills, while AST and SCH DPS appear to work. This shifts the decision away from "all healer autorotation is broken" and toward a probe/execution context bug affecting jobs that gate DPS oGCDs behind `!AutoRotationController.IsSelectingAutorotAction`.
 
@@ -118,11 +118,43 @@ User added two key observations after the third SGE-only deployment: WHM casts a
 - **Selected:** COA-2 - split readiness probe context from actual execution.
 - **Why losers lost:** COA-0 ignores new evidence; COA-1 is a per-job patch trap; COA-3 is useful only after the semantic bug is fixed.
 - **Residual risk accepted:** WHM Medica III may remain as a separate heal-lane false positive and would need instrumentation if live retest confirms it.
-- **Orders:** battle plan at `wargames/healer-autorot-probe-execution-split-battle-plan.md`.
+- **Orders:** battle plan at `wargames/healer-autorot-probe-execution-split-battle-plan.md`. Written 2026-08-11 (see §8); the decision sat un-ordered from 2026-07-07 until then.
 
 ## 7. Supervision And After-Action
 
-- **Execution log:** pending.
+- **Execution log:** not started. The 2026-08-11 audit in §8 confirms COA-2 is still unimplemented at `aafddadd5`.
 - **Reviewer verdict:** pending.
 - **Quality gate:** pending.
 - **Written back:** pending.
+
+## 8. Recon Audit - 2026-08-11
+
+The decision above was never turned into orders, so the tree was re-audited before writing the battle plan. **COA-2 has not landed.** A different, explicitly-screened-out course landed instead.
+
+### COA-2 is unimplemented
+
+| Check | Evidence | Result |
+|-------|----------|--------|
+| `InvokeCombo` has no probe parameter | `WrathCombo/AutoRotation/AutoRotationController.cs:1458` — signature is still `(Preset preset, PresetStorage.PresetData attributes, ref uint originalAct, IGameObject? optionalTarget = null)` | No split |
+| The flag is still set for every caller | `AutoRotationController.cs:1466` sets `IsSelectingAutorotAction = true;` unconditionally; `:1487` resets it in `finally` | No split |
+| All three execution paths still get probe semantics | `:1204` (`ExecuteAoE` heal lane), `:1254` (`ExecuteAoE` DPS lane), `:1333` (`ExecuteST`) all call `InvokeCombo` with no context argument | No split |
+| The only true probe is still untagged | `:549`, inside the `actCheck` readiness scan declared at `:546` and consumed only by `canHeal` at `:574-576` | No split |
+| No commit ever attempted it | `git log --oneline -S"selectingAutorotAction"` and `-S"IsSelectingAutorotAction"` each return exactly one commit, `76912de5a`, which *introduced* the flag and added this war room doc in the same squash | No split |
+| Structural tests pin the un-split shape | `WrathCombo.Tests/RotationStructureTests.cs:124` and `:127` assert the four-argument call sites verbatim | No split |
+
+### What landed instead
+
+The reported symptom (WHM using no offensive oGCDs) was closed by **COA-1**, the per-job route this war room killed in §4:
+
+- The `!IsSelectingAutorotAction` guard was removed from WHM's offensive weave blocks. `WrathCombo/Combos/PvE/WHM/WHM.cs:76-92` (`WHM_ST_Simple_DPS`), `:141-156` (`WHM_AoE_Simple_DPS`), `:247-265` (`WHM_ST_MainCombo`), and `:375-389` (`WHM_AoE_DPS`) now return `Assize`, `PresenceOfMind`, and `Role.LucidDreaming` behind a bare `CanWeave()`.
+- That removal is test-locked by `WhmOffensiveWeaves_AreNotSuppressedByAutorotationSelectionFlag`, `WrathCombo.Tests/RotationStructureTests.cs:180-190`.
+
+### Fact F1 is retired
+
+F1 claimed WHM's Assize / Presence of Mind / Lucid Dreaming weaves are guarded by `!AutoRotationController.IsSelectingAutorotAction`. That is false as of `aafddadd5` — see the four line ranges above. The surviving WHM guards cover only Afflatus Rapture lily-overcap (`WHM.cs:116`, `:168`, `:299`, `:403`), the Swiftcast-Holy opener (`:342`), and the raidwide blocks (`:230`, `:358`). Do not re-use F1 as a premise.
+
+Two further guards, `WrathCombo/Combos/PvE/WHM/WHM_Helper.cs:67` and `:101`, sit inside `TryDpsSingleTargetHealPriority` / `TryDpsAoEHealPriority`, which have no callers — `RotationStructureTests.cs:175-176` forbids the WHM and AST DPS combos from invoking them. Those gates are inert.
+
+### Standing residue
+
+Commander's intent from §1 is still unmet: actual autorotation execution continues to run under probe semantics, which keeps SGE's heal-mode raidwide branches (`WrathCombo/Combos/PvE/SGE/SGE.cs:585` in `SGE_ST_Heal_AdvancedMode`, `:661` in `SGE_AoE_Heal_AdvancedMode`) suppressed even during genuine heal execution. The battle plan linked above carries the four moves that close it.
