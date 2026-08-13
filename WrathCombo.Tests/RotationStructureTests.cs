@@ -188,4 +188,17 @@ public class RotationStructureTests
         Assert.DoesNotContain("if (!AutoRotationController.IsSelectingAutorotAction && CanWeave())", source);
         Assert.DoesNotContain("if (!AutoRotationController.IsSelectingAutorotAction && (CanWeave() || IsMoving()))", source);
     }
+
+    [Fact]
+    public void AutorotationProbeContext_IsOptIn()
+    {
+        var controller = Path.Combine(RepoRoot(), "WrathCombo", "AutoRotation", "AutoRotationController.cs");
+        var source = File.ReadAllText(controller);
+
+        Assert.Contains("IGameObject? optionalTarget = null, bool selectingAutorotAction = false)", source);
+        Assert.Contains("IsSelectingAutorotAction = selectingAutorotAction;", source);
+        Assert.DoesNotContain("IsSelectingAutorotAction = true;", source);
+        Assert.Single(Regex.Matches(source, @"selectingAutorotAction:\s*true"));
+        Assert.Matches(@"attr\.AutoAction\?\.IsHeal == true && ActionReady\(AutoRotationHelper\.InvokeCombo\(x\.Key, attr, ref _, selectingAutorotAction: true\)\)", source);
+    }
 }

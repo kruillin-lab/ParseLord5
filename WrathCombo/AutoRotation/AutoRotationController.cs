@@ -570,7 +570,7 @@ internal unsafe class AutoRotationController
         bool actCheck = autoActions.Any(x =>
         {
             var attr = x.Key.Attributes();
-            return attr.AutoAction?.IsHeal == true && ActionReady(AutoRotationHelper.InvokeCombo(x.Key, attr, ref _));
+            return attr.AutoAction?.IsHeal == true && ActionReady(AutoRotationHelper.InvokeCombo(x.Key, attr, ref _, selectingAutorotAction: true));
         });
 
         // ParseLord5: Dynamic linear reaction delay scaled by lowest HP% among heal targets
@@ -1479,7 +1479,7 @@ internal unsafe class AutoRotationController
                 SGE.EukrasianPrognosis2);
         }
 
-        public static uint InvokeCombo(Preset preset, PresetStorage.PresetData attributes, ref uint originalAct, IGameObject? optionalTarget = null)
+        public static uint InvokeCombo(Preset preset, PresetStorage.PresetData attributes, ref uint originalAct, IGameObject? optionalTarget = null, bool selectingAutorotAction = false)
         {
             if (attributes.ReplaceSkill is null) return originalAct;
             var outAct = attributes.ReplaceSkill.ActionIDs.FirstOrDefault();
@@ -1487,7 +1487,7 @@ internal unsafe class AutoRotationController
             var customReplaced = CustomActionHelper.CustomActionEnabled(customReplaceType);
             var customCombo = Service.ActionReplacer.CustomCombos.FirstOrDefault(x => x.Preset == preset);
 
-            IsSelectingAutorotAction = true;
+            IsSelectingAutorotAction = selectingAutorotAction;
             try
             {
                 foreach (var act in attributes.ReplaceSkill.ActionIDs)

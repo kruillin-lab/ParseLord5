@@ -11,7 +11,7 @@ aliases: []
 # Battle Plan - Healer autorotation probe execution split
 
 **Origin:** [healer-autorot-probe-execution-split-war-room.md](healer-autorot-probe-execution-split-war-room.md)
-**Status:** PLANNED — tracked as [#5](https://github.com/kruillin-lab/ParseLord5/issues/5)
+**Status:** EXECUTED — 2026-08-13 on `main` @ working tree; tracked as [#5](https://github.com/kruillin-lab/ParseLord5/issues/5)
 **Plan authored:** 2026-08-11 against `main` @ `aafddadd5`
 **Selected COA:** COA-2 - make `AutoRotationHelper.InvokeCombo` set `IsSelectingAutorotAction` only when the caller explicitly opts into a readiness probe.
 
@@ -178,17 +178,17 @@ Temporarily revert Move 1's `:1466` line to `IsSelectingAutorotAction = true;` a
 - **ABORT-2:** `AutorotationDpsLane_BlocksSgeDefensiveActions` fails — that means the trailing-parameter approach shifted the execution call sites and the deny-list fence is no longer provably on both lanes. Re-do Move 1 with the parameter strictly last.
 - **ABORT-3:** `git status --porcelain` shows files outside this plan's four. Stop and reconcile before deploying; the DLL hash would not be attributable.
 
-## 6. Report skeleton
+## 6. Report
 
 - Files changed:
   - `WrathCombo/AutoRotation/AutoRotationController.cs`
   - `WrathCombo.Tests/RotationStructureTests.cs`
   - `wargames/healer-autorot-probe-execution-split-war-room.md`
   - `wargames/healer-autorot-probe-execution-split-battle-plan.md`
-- Build: `dotnet build WrathCombo/WrathCombo.csproj -c Release` → _errors / warnings_.
-- Tests: `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release` → _passed / failed_.
-- Evals: `pwsh -NoProfile -File scripts/rotation-evals.ps1` → _passed= failed=_.
-- Red check: `AutorotationProbeContext_IsOptIn` failed before Move 1, passed after → _yes / no_.
-- Deployed DLL: `C:\Users\kruil\AppData\Roaming\XIVLauncher\devPlugins\ParseLord5\ParseLord5.dll`, timestamp _..._, SHA256 _..._.
+- Build: `dotnet build WrathCombo/WrathCombo.csproj -c Release` → 0 errors / 0 warnings.
+- Tests: `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release` → 56 passed / 0 failed.
+- Evals: `pwsh -NoProfile -File scripts/rotation-evals.ps1` → passed=14 failed=0.
+- Red check: `AutorotationProbeContext_IsOptIn` failed after temporarily restoring `IsSelectingAutorotAction = true;`, passed after restore → yes.
+- Deployed DLL: `C:\Users\kruil\AppData\Roaming\XIVLauncher\devPlugins\ParseLord5\ParseLord5.dll`, timestamp 2026-08-13T09:06:11-04:00, SHA256 `e954c0096d3338f938da1cd5678086d4462b4edae40bfdf09efb6edc97662d85`.
 - Manual test ask: disable and re-enable ParseLord5, then fight a solo target dummy as WHM and as SGE. Report (a) whether WHM still weaves Assize / Presence of Mind / Lucid Dreaming, (b) whether SGE spends weave slots on Kerachole / Holos / Panhaima, (c) whether the lone Medica III recurs.
-- Write-back: update the war room §7 execution log, reviewer verdict, and quality gate, and flip both docs to `EXECUTED`.
+- Write-back: war room §7 updated; both docs flipped to `EXECUTED`.

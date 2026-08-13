@@ -10,10 +10,10 @@ aliases: []
 ---
 # War Room - Healer autorotation probe execution split
 
-**Status:** DECIDED
+**Status:** EXECUTED
 **Date opened:** 2026-07-07
 **Advisor:** Codex session, role-hat AER fallback
-**Battle plan:** [healer-autorot-probe-execution-split-battle-plan.md](healer-autorot-probe-execution-split-battle-plan.md) — authored 2026-08-11 against `main` @ `aafddadd5`, status `PLANNED`.
+**Battle plan:** [healer-autorot-probe-execution-split-battle-plan.md](healer-autorot-probe-execution-split-battle-plan.md) — authored 2026-08-11 against `main` @ `aafddadd5`, executed 2026-08-13.
 
 User added two key observations after the third SGE-only deployment: WHM casts a lone Medica III and WHM uses no oGCD skills, while AST and SCH DPS appear to work. This shifts the decision away from "all healer autorotation is broken" and toward a probe/execution context bug affecting jobs that gate DPS oGCDs behind `!AutoRotationController.IsSelectingAutorotAction`.
 
@@ -122,10 +122,10 @@ User added two key observations after the third SGE-only deployment: WHM casts a
 
 ## 7. Supervision And After-Action
 
-- **Execution log:** not started. The 2026-08-11 audit in §8 confirms COA-2 is still unimplemented at `aafddadd5`.
-- **Reviewer verdict:** pending.
-- **Quality gate:** pending.
-- **Written back:** pending.
+- **Execution log:** 2026-08-13 — Moves 1–3 landed on `main`. `InvokeCombo` takes `selectingAutorotAction = false`; only `actCheck` opts in. `AutorotationProbeContext_IsOptIn` added. Build 0/0, tests 56/0, evals 14/0. DLL SHA256 `e954c0096d3338f938da1cd5678086d4462b4edae40bfdf09efb6edc97662d85`.
+- **Reviewer verdict:** current-thread review APPROVE. Heal-lane raidwide un-suppression is the accepted TRIGGER-1 risk, not a revert condition.
+- **Quality gate:** PASS_WITH_WARNINGS (`20260813T131511Z-0eabec6a`). WARN is the test-hack detector on the new fence test; expected.
+- **Written back:** 2026-08-13. Commander's intent met in code; live dummy retest still operator-only.
 
 ## 8. Recon Audit - 2026-08-11
 
