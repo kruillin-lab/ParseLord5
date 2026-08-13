@@ -1,0 +1,20 @@
+WrathCombo.Tests/RotationStructureTests.cs
+  h_fcb949597f374a 191-203
+WrathCombo/AutoRotation/AutoRotationController.cs
+  h_fcb949597f374a 573,1482,1490
+wargames/healer-autorot-probe-execution-split-battle-plan.md
+  h_fcb949597f374a 14,181,188-192,194
+wargames/healer-autorot-probe-execution-split-war-room.md
+  h_fcb949597f374a 13,16,125-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e367c82202af06cc1626af817e883cb8a2de13b4",
+  "prompts": {},
+  "humans": {
+    "h_fcb949597f374a": {
+      "author": "kruillin-lab <kruillin@gmail.com>"
+    }
+  }
+}
