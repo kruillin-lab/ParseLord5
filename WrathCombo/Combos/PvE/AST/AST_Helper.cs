@@ -613,7 +613,7 @@ internal partial class AST
                 filter = filter
                     .OrderBy(x =>
                         _cardPriorities.GetValueOrDefault(
-                            (Job)x.RealJob!.Value.RowId, byte.MaxValue))
+                            x.RealJob!.Value.GetJob().GetUpgradedJob(), byte.MaxValue))
                     .ThenByDescending(x => x.BattleChara.MaxHp)
                     .ToList();
                 
@@ -622,6 +622,29 @@ internal partial class AST
                 return true;
             }
         }
+    }
+
+    /// <summary>
+    ///     With "Overwrite non-DPS cards" off, a held heal card (Arrow/Bole/Ewer/Spire)
+    ///     stops <see cref="AstralDraw" />'s replacement from coming back up, because
+    ///     nothing on the DPS buttons spends those cards. This dumps one held heal
+    ///     card so Draw can be re-pressed, instead of the whole hand stalling.
+    /// </summary>
+    internal static bool TryDumpHeldHealCards(uint[] replacedActions, bool autoDrawOn, bool overwriteOn, out uint dumpAction)
+    {
+        dumpAction = 0;
+
+        if (!autoDrawOn || overwriteOn ||
+            !ActionReady(OriginalHook(AstralDraw)) ||
+            HasNoCards || !HasNoDPSCard)
+            return false;
+
+        if (HasArrow || HasBole)
+            dumpAction = OriginalHook(Play2).Retarget(replacedActions, SimpleTarget.AnyLivingTank ?? SimpleTarget.Self);
+        else if (HasEwer || HasSpire)
+            dumpAction = OriginalHook(Play3).Retarget(replacedActions, SimpleTarget.Self);
+
+        return dumpAction != 0;
     }
 
     #region Static Priority Data

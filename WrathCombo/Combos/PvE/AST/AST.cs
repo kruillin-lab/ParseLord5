@@ -236,6 +236,10 @@ internal partial class AST : Healer
             #region Out of Combat
             if (!InCombat())
             {
+                //Clear heal cards that are blocking Draw
+                if (TryDumpHeldHealCards(replacedActions, IsEnabled(Preset.AST_DPS_AutoDraw), AST_ST_DPS_OverwriteHealCards, out uint heldCard))
+                    return heldCard;
+
                 if (IsEnabled(Preset.AST_DPS_AutoDraw) &&
                     ActionReady(OriginalHook(AstralDraw)) &&
                     (HasNoCards || HasNoDPSCard && AST_ST_DPS_OverwriteHealCards))
@@ -301,6 +305,10 @@ internal partial class AST : Healer
                     HasBattleTarget() && LevelChecked(MinorArcana) &&
                     (HasDivination || !lordPooling || !LevelChecked(Divination)))
                     return OriginalHook(MinorArcana);
+
+                //Clear heal cards that are blocking Draw
+                if (TryDumpHeldHealCards(replacedActions, IsEnabled(Preset.AST_DPS_AutoDraw), AST_ST_DPS_OverwriteHealCards, out uint heldCard))
+                    return heldCard;
 
                 //Card Draw
                 if (IsEnabled(Preset.AST_DPS_AutoDraw) && ActionReady(OriginalHook(AstralDraw)) &&
@@ -444,6 +452,10 @@ internal partial class AST : Healer
                     HasBattleTarget() && LevelChecked(MinorArcana) &&
                     (HasDivination || !lordPooling || !LevelChecked(Divination)))
                     return OriginalHook(MinorArcana);
+
+                //Clear heal cards that are blocking Draw
+                if (TryDumpHeldHealCards(replacedActions, IsEnabled(Preset.AST_AOE_AutoDraw), AST_AOE_DPS_OverwriteHealCards, out uint heldCard))
+                    return heldCard;
 
                 //Card Draw
                 if (IsEnabled(Preset.AST_AOE_AutoDraw) && ActionReady(OriginalHook(AstralDraw)) &&

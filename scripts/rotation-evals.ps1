@@ -10,6 +10,8 @@ $VPRHelperFile = Join-Path $CombosDir "VPR\VPR_Helper.cs"
 $WHMFile = Join-Path $CombosDir "WHM\WHM.cs"
 $WHMHelperFile = Join-Path $CombosDir "WHM\WHM_Helper.cs"
 $MNKHelperFile = Join-Path $CombosDir "MNK\MNK_Helper.cs"
+$ASTFile = Join-Path $CombosDir "AST\AST.cs"
+$ASTHelperFile = Join-Path $CombosDir "AST\AST_Helper.cs"
 
 Write-Host "=== ParseLord5 Domain Evals ==="
 Write-Host "Scope: preset enumeration, structure validation, and SAM/VPR/WHM/MNK domain-specific checks"
@@ -100,8 +102,8 @@ foreach ($dir in $jobDirs) {
 Write-Host "PASS combo-files-exist-for-jobs: all jobs checked"
 $passCount++
 
-# ---- FIXTURE 5: ParseLord5 experimental gating present in SAM and VPR combos ----
-# Call sites use ParseLord5Experiments.<Flag> since the per-feature flag split (212806bdc).
+# ---- FIXTURE 5: ParseLord5 experimental gating promoted in SAM and VPR combos ----
+# Call sites promoted to default behaviour (0 occurrences expected).
 Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
 $samContent = Get-Content -LiteralPath $SAMFile -Raw
 $vprContent = Get-Content -LiteralPath $VPRFile -Raw
@@ -112,19 +114,19 @@ $samExpCount = ([regex]::Matches($samContent, 'ParseLord5Experiments\.')).Count
 $vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count +
     ([regex]::Matches($vprHelperContent, 'ParseLord5Experiments\.')).Count
 
-if ($samExpCount -ge 2) {
-    Write-Host "PASS parselord5-experimental-mode-in-sam: found $samExpCount occurrences in SAM.cs (ST+AoE branches)"
+if ($samExpCount -eq 0) {
+    Write-Host "PASS parselord5-experimental-mode-in-sam: verified 0 occurrences (promoted to default)"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-sam: expected >=2 occurrences in SAM.cs, found $samExpCount"
+    Write-Host "FAIL parselord5-experimental-mode-in-sam: expected 0 occurrences (promoted), found $samExpCount"
     $failCount++
 }
 
-if ($vprExpCount -ge 2) {
-    Write-Host "PASS parselord5-experimental-mode-in-vpr: found $vprExpCount occurrences in VPR.cs (ST+AoE branches)"
+if ($vprExpCount -eq 0) {
+    Write-Host "PASS parselord5-experimental-mode-in-vpr: verified 0 occurrences (promoted to default)"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-vpr: expected >=2 occurrences in VPR.cs, found $vprExpCount"
+    Write-Host "FAIL parselord5-experimental-mode-in-vpr: expected 0 occurrences (promoted), found $vprExpCount"
     $failCount++
 }
 
@@ -262,6 +264,51 @@ if (-not [string]::IsNullOrWhiteSpace($mnkPerfectBalanceStBlock) -and
     $passCount++
 } else {
     Write-Host "FAIL mnk-st-perfect-balance-charge-failsafe: ST can hold Perfect Balance at maximum charges"
+    $failCount++
+}
+
+# ---- FIXTURE 10: AST DPS combos dump held heal cards when they block Draw ----
+Write-Host "--- Fixture: ast-dps-heal-card-dump-on-draw-ready ---"
+$astContent = Get-Content -LiteralPath $ASTFile -Raw
+$astHelperContent = Get-Content -LiteralPath $ASTHelperFile -Raw
+$astDpsBlocks = [ordered]@{
+    "AST_ST_DPS" = [regex]::Match($astContent, 'internal class AST_ST_DPS.*?internal class AST_AOE_DPS', 'Singleline').Value
+    "AST_AOE_DPS" = [regex]::Match($astContent, 'internal class AST_AOE_DPS.*?(?=#region Simple Healing Combos)', 'Singleline').Value
+}
+$astDumpFailures = @()
+
+foreach ($entry in $astDpsBlocks.GetEnumerator()) {
+    if ([string]::IsNullOrWhiteSpace($entry.Value) -or
+        $entry.Value -notmatch 'TryDumpHeldHealCards') {
+        $astDumpFailures += $entry.Key
+    }
+}
+
+$astDumpHelperOk =
+    $astHelperContent -match 'internal static bool TryDumpHeldHealCards' -and
+    $astHelperContent -match 'ActionReady\(OriginalHook\(AstralDraw\)\)' -and
+    $astHelperContent -match 'HasNoCards' -and
+    $astHelperContent -match 'OriginalHook\(Play2\)\.Retarget' -and
+    $astHelperContent -match 'OriginalHook\(Play3\)\.Retarget'
+
+# Upstream e8190d63f: card priority must key on upgraded jobs so base-class
+# party members do not fall through to the MaxHp (tank) tiebreak
+$astCardPriorityOk = $astHelperContent -match 'GetUpgradedJob\(\)'
+
+if ($astDumpFailures.Count -eq 0 -and $astDumpHelperOk -and $astCardPriorityOk) {
+    Write-Host "PASS ast-dps-heal-card-dump-on-draw-ready: DPS combos clear blocking heal cards once Draw is ready, priorities use upgraded jobs"
+    $passCount++
+} else {
+    if ($astDumpFailures.Count -gt 0) {
+        Write-Host "  Missing heal-card dump interception in: $($astDumpFailures -join ', ')"
+    }
+    if (-not $astDumpHelperOk) {
+        Write-Host "  Missing/Incomplete TryDumpHeldHealCards helper in AST_Helper.cs (Draw-ready gate, overwrite gate, Play2/Play3 retargets)"
+    }
+    if (-not $astCardPriorityOk) {
+        Write-Host "  Card priority ordering does not use GetUpgradedJob()"
+    }
+    Write-Host "FAIL ast-dps-heal-card-dump-on-draw-ready"
     $failCount++
 }
 
