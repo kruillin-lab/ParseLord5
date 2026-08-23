@@ -570,7 +570,19 @@ internal unsafe class AutoRotationController
         bool actCheck = autoActions.Any(x =>
         {
             var attr = x.Key.Attributes();
-            return attr.AutoAction?.IsHeal == true && ActionReady(AutoRotationHelper.InvokeCombo(x.Key, attr, ref _, selectingAutorotAction: true));
+            uint gameAct = 0;
+            var outAct = AutoRotationHelper.InvokeCombo(x.Key, attr, ref gameAct, selectingAutorotAction: true);
+            uint actionToCheck = outAct;
+            if (ActionStacksEXIPC.TryPeekAction(
+                Service.Configuration.ActionChanging ? gameAct : outAct,
+                Player.Object?.GameObjectId ?? 0xE000_0000,
+                out var asResolvedAction,
+                out var _,
+                out var _))
+            {
+                actionToCheck = asResolvedAction;
+            }
+            return attr.AutoAction?.IsHeal == true && ActionReady(actionToCheck);
         });
 
         // ParseLord5: Dynamic linear reaction delay scaled by lowest HP% among heal targets
@@ -1226,6 +1238,16 @@ internal unsafe class AutoRotationController
                 LockedST = false;
 
                 uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, Player.Object));
+                bool asRedirected = ActionStacksEXIPC.TryPeekAction(
+                    Service.Configuration.ActionChanging ? gameAct : outAct,
+                    player.GameObjectId,
+                    out var asResolvedAction,
+                    out var asResolvedTarget,
+                    out _);
+                if (asRedirected)
+                {
+                    outAct = asResolvedAction;
+                }
                 var canQueue = CanQueue(outAct);
                 var canAoEHeal = HealerTargeting.CanAoEHeal(outAct);
                 TraceWhmHeal(
@@ -1276,7 +1298,23 @@ internal unsafe class AutoRotationController
 
                 OverrideTarget = target ?? OverrideTarget;
                 uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, OverrideTarget));
-                if (!CanUseAutorotDpsAction(outAct))
+                bool asRedirected = ActionStacksEXIPC.TryPeekAction(
+                    Service.Configuration.ActionChanging ? gameAct : outAct,
+                    OverrideTarget?.GameObjectId ?? player.GameObjectId,
+                    out var asResolvedAction,
+                    out var asResolvedTarget,
+                    out _);
+                if (asRedirected)
+                {
+                    outAct = asResolvedAction;
+                    if (asResolvedTarget != (OverrideTarget?.GameObjectId ?? player.GameObjectId))
+                    {
+                        var newTarget = asResolvedTarget.GetObject();
+                        if (newTarget is not null)
+                            OverrideTarget = newTarget;
+                    }
+                }
+                if (!asRedirected && !CanUseAutorotDpsAction(outAct))
                 {
                     OverrideTarget = null;
                     return false;
@@ -1355,7 +1393,26 @@ internal unsafe class AutoRotationController
 
             OverrideTarget = target ?? OverrideTarget;
             var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
-            if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))
+            bool asRedirected = ActionStacksEXIPC.TryPeekAction(
+                Service.Configuration.ActionChanging ? gameAct : outAct,
+                target?.GameObjectId ?? player.GameObjectId,
+                out var asResolvedAction,
+                out var asResolvedTarget,
+                out _);
+            if (asRedirected)
+            {
+                outAct = asResolvedAction;
+                if (asResolvedTarget != (target?.GameObjectId ?? player.GameObjectId))
+                {
+                    var newTarget = asResolvedTarget.GetObject();
+                    if (newTarget is not null)
+                    {
+                        target = newTarget;
+                        OverrideTarget = newTarget;
+                    }
+                }
+            }
+            if (!attributes.AutoAction!.IsHeal && !asRedirected && !CanUseAutorotDpsAction(outAct))
             {
                 OverrideTarget = null;
                 return false;
