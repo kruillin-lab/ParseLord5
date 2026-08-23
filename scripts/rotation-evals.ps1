@@ -5,10 +5,8 @@ $PresetFile = Join-Path $RepoRoot "WrathCombo\Combos\CustomComboPreset.cs"
 $CombosDir = Join-Path $RepoRoot "WrathCombo\Combos\PvE"
 $SAMFile = Join-Path $CombosDir "SAM\SAM.cs"
 $SAMHelperFile = Join-Path $CombosDir "SAM\SAM_Helper.cs"
-$VPRFile = Join-Path $CombosDir "VPR\VPR.cs"
 $VPRHelperFile = Join-Path $CombosDir "VPR\VPR_Helper.cs"
 $WHMFile = Join-Path $CombosDir "WHM\WHM.cs"
-$WHMHelperFile = Join-Path $CombosDir "WHM\WHM_Helper.cs"
 $MNKHelperFile = Join-Path $CombosDir "MNK\MNK_Helper.cs"
 $ASTFile = Join-Path $CombosDir "AST\AST.cs"
 $ASTHelperFile = Join-Path $CombosDir "AST\AST_Helper.cs"
@@ -102,38 +100,65 @@ foreach ($dir in $jobDirs) {
 Write-Host "PASS combo-files-exist-for-jobs: all jobs checked"
 $passCount++
 
-# ---- FIXTURE 5: ParseLord5 experimental gating promoted in SAM and VPR combos ----
-# Call sites promoted to default behaviour (0 occurrences expected).
-Write-Host "--- Fixture: parselord5-experimental-mode-checks ---"
+# ---- FIXTURE 5: Promoted SAM/VPR priority contracts remain default behavior ----
+Write-Host "--- Fixture: promoted-job-priority-contracts ---"
 $samContent = Get-Content -LiteralPath $SAMFile -Raw
-$vprContent = Get-Content -LiteralPath $VPRFile -Raw
 $vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
 
-$samExpCount = ([regex]::Matches($samContent, 'ParseLord5Experiments\.')).Count
-# VPR's venom priority-swap ladders live in VPR_Helper.cs (UseViceTwinWeaves), not VPR.cs itself.
-$vprExpCount = ([regex]::Matches($vprContent, 'ParseLord5Experiments\.')).Count +
-    ([regex]::Matches($vprHelperContent, 'ParseLord5Experiments\.')).Count
+$samPriorityBlocks = [ordered]@{
+    "SAM_ST_SimpleMode" = [regex]::Match($samContent, 'internal class SAM_ST_SimpleMode.*?internal class SAM_AoE_SimpleMode', 'Singleline').Value
+    "SAM_AoE_SimpleMode" = [regex]::Match($samContent, 'internal class SAM_AoE_SimpleMode.*?internal class SAM_ST_AdvancedMode', 'Singleline').Value
+    "SAM_ST_AdvancedMode" = [regex]::Match($samContent, 'internal class SAM_ST_AdvancedMode.*?internal class SAM_AoE_AdvancedMode', 'Singleline').Value
+    "SAM_AoE_AdvancedMode" = [regex]::Match($samContent, 'internal class SAM_AoE_AdvancedMode.*?internal class SAM_ST_YukikazeCombo', 'Singleline').Value
+}
+$samPriorityPatterns = [ordered]@{
+    "SAM_ST_SimpleMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+ikishotenAction;.*?if\s*\(CanMeikyo\(\)\)\s*return\s+MeikyoShisui;'
+    "SAM_AoE_SimpleMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+kenkiAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+    "SAM_ST_AdvancedMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+ikishotenAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+    "SAM_AoE_AdvancedMode" = '(?s)if\s*\(canIkishoten\)\s*return\s+kenkiAction;.*?if\s*\(canMeikyo\)\s*return\s+MeikyoShisui;'
+}
+$samPriorityFailures = @()
 
-if ($samExpCount -eq 0) {
-    Write-Host "PASS parselord5-experimental-mode-in-sam: verified 0 occurrences (promoted to default)"
+foreach ($name in $samPriorityBlocks.Keys) {
+    $block = $samPriorityBlocks[$name]
+    $pattern = $samPriorityPatterns[$name]
+    if ([string]::IsNullOrWhiteSpace($block) -or
+        $block -notmatch $pattern -or
+        $block -match 'ParseLord5Experiments\.JobRotationExperiments') {
+        $samPriorityFailures += $name
+    }
+}
+
+if ($samPriorityFailures.Count -eq 0) {
+    Write-Host "PASS sam-promoted-ikishoten-priority: Ikishoten precedes Meikyo in all ST/AoE modes without an experiment gate"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-sam: expected 0 occurrences (promoted), found $samExpCount"
+    Write-Host "FAIL sam-promoted-ikishoten-priority: priority contract missing in $($samPriorityFailures -join ', ')"
     $failCount++
 }
 
-if ($vprExpCount -eq 0) {
-    Write-Host "PASS parselord5-experimental-mode-in-vpr: verified 0 occurrences (promoted to default)"
+$vprViceTwinBlock = [regex]::Match(
+    $vprHelperContent,
+    'private static bool UseViceTwinWeaves.*?private static bool CanSerpentsIre',
+    'Singleline'
+).Value
+$vprAoEPriorityPattern = '(?s)if\s*\(canFellskinsVenom\)\s*\{\s*action\s*=\s*OriginalHook\(Twinblood\);\s*return true;\s*\}.*?if\s*\(canFellhuntersVenom\)\s*\{\s*action\s*=\s*OriginalHook\(Twinfang\);\s*return true;\s*\}'
+$vprStPriorityPattern = '(?s)if\s*\(HasStatusEffect\(Buffs\.SwiftskinsVenom\)\)\s*\{\s*action\s*=\s*OriginalHook\(Twinblood\);\s*return true;\s*\}.*?if\s*\(HasStatusEffect\(Buffs\.HuntersVenom\)\)\s*\{\s*action\s*=\s*OriginalHook\(Twinfang\);\s*return true;\s*\}'
+
+if (-not [string]::IsNullOrWhiteSpace($vprViceTwinBlock) -and
+    $vprViceTwinBlock -match $vprAoEPriorityPattern -and
+    $vprViceTwinBlock -match $vprStPriorityPattern -and
+    $vprViceTwinBlock -notmatch 'ParseLord5Experiments\.JobRotationExperiments') {
+    Write-Host "PASS vpr-promoted-venom-priority: Twinblood priority remains promoted in AoE and ST without an experiment gate"
     $passCount++
 } else {
-    Write-Host "FAIL parselord5-experimental-mode-in-vpr: expected 0 occurrences (promoted), found $vprExpCount"
+    Write-Host "FAIL vpr-promoted-venom-priority: UseViceTwinWeaves no longer preserves the promoted Twinblood-first ladders"
     $failCount++
 }
 
 # ---- FIXTURE 6: Critical action IDs mapped (Gyofu for SAM, Twinfang/Twinblood for VPR) ----
 Write-Host "--- Fixture: critical-action-ids-mapped ---"
 $samHelperContent = Get-Content -LiteralPath $SAMHelperFile -Raw
-$vprHelperContent = Get-Content -LiteralPath $VPRHelperFile -Raw
 
 # Gyofu must appear as a const assignment in SAM_Helper.cs
 if ($samHelperContent -match 'Gyofu\s*=\s*\d+') {
@@ -207,42 +232,30 @@ if ($samIkishotenCallCount -ge 2 -and $samAdvancedIkishotenCallCount -ge 1 -and 
     $failCount++
 }
 
-# ---- FIXTURE 8: WHM DPS paths honor healing stacks without stalling between queue windows ----
-Write-Host "--- Fixture: whm-dps-healing-interception ---"
+# ---- FIXTURE 8: WHM DPS paths remain isolated from the dedicated healer lane ----
+Write-Host "--- Fixture: whm-dps-healer-lane-isolation ---"
 $whmContent = Get-Content -LiteralPath $WHMFile -Raw
-$whmHelperContent = Get-Content -LiteralPath $WHMHelperFile -Raw
 $whmDpsBlocks = [ordered]@{
     "WHM_ST_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_ST_Simple_DPS.*?internal class WHM_AoE_Simple_DPS', 'Singleline').Value
     "WHM_AoE_Simple_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_Simple_DPS.*?internal class WHM_ST_MainCombo', 'Singleline').Value
     "WHM_ST_MainCombo" = [regex]::Match($whmContent, 'internal class WHM_ST_MainCombo.*?internal class WHM_AoE_DPS', 'Singleline').Value
     "WHM_AoE_DPS" = [regex]::Match($whmContent, 'internal class WHM_AoE_DPS.*?#endregion\s+#region Simple Heals', 'Singleline').Value
 }
-$whmInterceptionFailures = @()
+$whmIsolationFailures = @()
 
 foreach ($entry in $whmDpsBlocks.GetEnumerator()) {
     if ([string]::IsNullOrWhiteSpace($entry.Value) -or
-        $entry.Value -notmatch 'TryDpsSingleTargetHealPriority' -or
-        $entry.Value -notmatch 'TryDpsAoEHealPriority') {
-        $whmInterceptionFailures += $entry.Key
+        $entry.Value -match 'TryDpsSingleTargetHealPriority|TryDpsAoEHealPriority') {
+        $whmIsolationFailures += $entry.Key
     }
 }
 
-$hasPressableHealGate =
-    $whmHelperContent -match 'CanUseDpsHealNow' -and
-    $whmHelperContent -match 'CanWeave\(\)\s*&&\s*!ShouldHoldWhmHealingSetupOgcd' -and
-    $whmHelperContent -match 'CanQueue\(action\)'
-
-if ($whmInterceptionFailures.Count -eq 0 -and $hasPressableHealGate) {
-    Write-Host "PASS whm-dps-healing-interception: all WHM DPS paths check ST/AoE stacks and only select pressable heals"
+if ($whmIsolationFailures.Count -eq 0) {
+    Write-Host "PASS whm-dps-healer-lane-isolation: all WHM DPS paths leave healing to the dedicated healer lane"
     $passCount++
 } else {
-    if ($whmInterceptionFailures.Count -gt 0) {
-        Write-Host "  Missing stack interception in: $($whmInterceptionFailures -join ', ')"
-    }
-    if (-not $hasPressableHealGate) {
-        Write-Host "  Missing weave/queue readiness gate in WHM_Helper.cs"
-    }
-    Write-Host "FAIL whm-dps-healing-interception"
+    Write-Host "  DPS-heal leakage found in: $($whmIsolationFailures -join ', ')"
+    Write-Host "FAIL whm-dps-healer-lane-isolation"
     $failCount++
 }
 
@@ -309,6 +322,51 @@ if ($astDumpFailures.Count -eq 0 -and $astDumpHelperOk -and $astCardPriorityOk) 
         Write-Host "  Card priority ordering does not use GetUpgradedJob()"
     }
     Write-Host "FAIL ast-dps-heal-card-dump-on-draw-ready"
+    $failCount++
+}
+
+# ---- FIXTURE: plugin teardown unsubscribes every long-lived event ----
+# A Dalamud event left subscribed at Dispose keeps calling into the unloaded
+# assembly every frame, which crashes the game on disable -> re-enable. Each
+# entry is a delegate that must be removed by the same file that adds it.
+Write-Host "--- Fixture: teardown-event-subscription-symmetry ---"
+$symmetryTargets = @(
+    @{ File = "WrathCombo\WrathCombo.cs";                       Delegates = @("ws.Draw", "OnOpenMainUi", "OnOpenConfigUi", "OnFrameworkUpdate", "OnErrorToast", "Text.OnLanguageChanged", "ClientState_TerritoryChanged", "PrintLoginMessage") },
+    @{ File = "WrathCombo\Services\IPC\Leasing.cs";             Delegates = @("CheckIfLeaseePluginsUnloaded") },
+    @{ File = "WrathCombo\AutoRotation\AutoRotationController.cs"; Delegates = @("ScanForWarnings", "StatusChanged", "ResetError") },
+    @{ File = "WrathCombo\Data\ActionWatching.cs";               Delegates = @("ResetActions", "CancelPendingLastActionUpdate") },
+    @{ File = "WrathCombo\CustomCombo\Functions\Timer.cs";       Delegates = @("UpdatePartyTimer", "UpdateDeadtionary", "CheckInterruptedCasts", "CheckStatuses", "OnCombat") },
+    @{ File = "WrathCombo\Data\CustomComboCache.cs";             Delegates = @("Framework_Update") }
+)
+
+$unpairedSubscriptions = @()
+foreach ($target in $symmetryTargets) {
+    $targetPath = Join-Path $RepoRoot $target.File
+    if (-not (Test-Path -LiteralPath $targetPath)) {
+        $unpairedSubscriptions += "$($target.File) (missing file)"
+        continue
+    }
+
+    $targetContent = Get-Content -LiteralPath $targetPath -Raw
+    foreach ($handler in $target.Delegates) {
+        $escaped = [regex]::Escape($handler)
+        $subscribes = [regex]::Matches($targetContent, "\+=\s*$escaped\s*;").Count
+        $unsubscribes = [regex]::Matches($targetContent, "-=\s*$escaped\s*;").Count
+
+        if ($subscribes -gt 0 -and $unsubscribes -eq 0) {
+            $unpairedSubscriptions += "$($target.File): $handler subscribed but never unsubscribed"
+        } elseif ($subscribes -eq 0) {
+            $unpairedSubscriptions += "$($target.File): $handler no longer subscribed (stale fixture entry)"
+        }
+    }
+}
+
+if ($unpairedSubscriptions.Count -eq 0) {
+    Write-Host "PASS teardown-event-subscription-symmetry: every tracked delegate is both subscribed and unsubscribed"
+    $passCount++
+} else {
+    foreach ($problem in $unpairedSubscriptions) { Write-Host "  FAIL: $problem" }
+    Write-Host "FAIL teardown-event-subscription-symmetry: $($unpairedSubscriptions.Count) unpaired subscription(s)"
     $failCount++
 }
 

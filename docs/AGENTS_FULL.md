@@ -28,6 +28,21 @@ PunishLib/           — Anti-cheat integration
 - `ParseLord5ExperimentalMode` in `Configuration.cs`
 - See `docs/` for architecture maps, IPC audits, gameplay experiments.
 
+## Build and verify (Windows — primary)
+
+Repo root is `C:\Users\kruil\orca\ParseLord5`.
+
+```powershell
+dotnet build WrathCombo\WrathCombo.csproj -c Release
+dotnet test WrathCombo.Tests\WrathCombo.Tests.csproj -c Release
+pwsh -NoProfile -File scripts\rotation-evals.ps1
+pwsh -NoProfile -File C:\Users\kruil\Documents\Projects\quality-gate\gate.ps1 normal --repo C:\Users\kruil\orca\ParseLord5 --task "<task>"
+```
+
+Baselines at `aafddadd5` + teardown fix: **0 errors / 0 warnings**, **55 tests passed**, **evals 14/14**, gate `PASS_WITH_WARNINGS` (the warnings are the test-hack detector's "gate-critical file changed" notices).
+
+> **Two checkouts exist on this machine.** `C:\Users\kruil\Documents\Projects\ParseLord5` is a *stale* second clone: branch `merge-rehearsal`, `origin` pointed at upstream `PunishXIV/WrathCombo` (not `kruillin-lab/ParseLord5`), large dirty tree. **Both checkouts write Debug *and* Release output to the same `%AppData%\XIVLauncher\devPlugins\ParseLord5\`** (`WrathCombo.csproj:46,63-64`), so building the wrong one silently replaces the live dev plugin. Always build from `orca\ParseLord5`.
+
 ## Executor prompt format
 
 Build-mode executor prompts — single markdown block, sections in order:
@@ -64,12 +79,13 @@ dotnet build WrathCombo/WrathCombo.csproj -c Release
 pwsh -File scripts/rotation-evals.ps1
 ```
 
-Release output: `WrathCombo/bin/Release/ParseLord5.dll` and `ParseLord5.json` (`InternalName` / `DalamudApiLevel` 15).
+Output (all platforms, Debug *and* Release) goes straight to the Dalamud dev-plugin folder, **not** `bin/` — `WrathCombo.csproj:46,51-64` sets `OutputPath` to `$(appdata)\XIVLauncher\devPlugins\ParseLord5\` on Windows and `$HOME/.xlcore/devPlugins/ParseLord5/` on Linux. Artifacts: `ParseLord5.dll` + `ParseLord5.json` (`InternalName` / `DalamudApiLevel` 15).
 
 ### Lint / tests
 
-- No dedicated linter or `dotnet test` projects.
-- Domain checks: `scripts/rotation-evals.ps1` (preset enum, job coverage, unique IDs).
+- No dedicated linter.
+- Unit tests: `dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release`.
+- Domain structure checks: `pwsh -File scripts/rotation-evals.ps1` (preset enum, job coverage, unique IDs, and job-specific invariants).
 - Full solution build: `dotnet build WrathCombo.slnx -c Release`.
 
 ### In-game dev loop (not available in Cloud Agent VMs)
@@ -91,7 +107,7 @@ On a Windows machine with XIVLauncher: build Debug (outputs to devPlugins), add 
 One-shot script:
 
 ```powershell
-cd C:\Users\kruil\Documents\Projects\ParseLord5
+cd C:\Users\kruil\orca\ParseLord5
 .\scripts\sync-dev-build.ps1 -Notify
 ```
 

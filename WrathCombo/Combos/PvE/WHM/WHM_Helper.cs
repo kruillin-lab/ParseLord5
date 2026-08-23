@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using System.Collections.Generic;
 using ECommons.GameFunctions;
+using WrathCombo.AutoRotation;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
@@ -63,6 +64,9 @@ internal partial class WHM
     {
         healAction = 0;
 
+        if (AutoRotationController.IsSelectingAutorotAction)
+            return false;
+
         if (!PartyInCombat())
             return false;
 
@@ -93,6 +97,9 @@ internal partial class WHM
     internal static bool TryDpsAoEHealPriority(uint[] replacedActions, out uint healAction)
     {
         healAction = 0;
+
+        if (AutoRotationController.IsSelectingAutorotAction)
+            return false;
 
         if (!PartyInCombat())
             return false;

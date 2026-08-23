@@ -1,4 +1,4 @@
-﻿using Dalamud.Hooking;
+using Dalamud.Hooking;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Plugin.Services;
@@ -340,7 +340,9 @@ public sealed unsafe class CustomActionSetup : IDisposable
     public (int Hotbar, int Slot)? HoveredSlot = null;
 
     [EzHook("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 48 8B 7C 24 ?? 48 8B D9", false)]
+#pragma warning disable CS0649 // Initialized via EzSignatureHelper.Initialize through [EzHook] attribute
     private EzHook<AddonActionBarBase.Delegates.ReceiveEvent>? AddonActionBarBase_ReceiveEventHook;
+#pragma warning restore CS0649
 
     private unsafe void AddonActionBarBase_ReceiveEventDetour(AddonActionBarBase* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData)
     {

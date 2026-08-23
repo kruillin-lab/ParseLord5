@@ -73,7 +73,8 @@ internal partial class DRK
         if (!IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_BlackestNight, flags) ||
             !ActionReady(BlackestNight) ||
             !CanWeave ||
-            UsedDrkMitigationThisGcd)
+            UsedDrkMitigationThisGcd ||
+            GetDrkActiveMitigationState(isBoss: false).ShortMitigationActive)
             return false;
 
         if (HasAnyTBN && GetCooldownRemainingTime(LivingShadow) >= 30)
@@ -108,6 +109,9 @@ internal partial class DRK
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
         if (UsedDrkMitigationThisGcd)
+            return false;
+
+        if (GetDrkActiveMitigationState(isBoss: false).ShortMitigationActive)
             return false;
 
         if (!TrashMitigationOrdering.ShouldPrioritizeTrashReprisalFirst(
@@ -156,7 +160,7 @@ internal partial class DRK
             ? BuildDrkBossMitigationOptions(flags, threat, pressure, currentHp, maxHp)
             : BuildDrkNonBossMitigationOptions(flags, threat, pressure, currentHp, maxHp);
 
-        var active = GetDrkActiveMitigationState();
+        var active = GetDrkActiveMitigationState(isBoss);
         options = FilterDrkMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
 
         if (options.Count == 0)
@@ -216,6 +220,7 @@ internal partial class DRK
         if (UsedDrkMitigationThisGcd)
             return false;
 
+        var active = GetDrkActiveMitigationState(isBoss);
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         if (!isBoss && enemyCount < 3)
             return false;
@@ -229,6 +234,7 @@ internal partial class DRK
 
             if (IsSmartMitEnabled(Preset.DRK_Mitigation_Boss_Reprisal, flags) &&
                 reprisalInContent &&
+                !active.ShortMitigationActive &&
                 !JustUsed(DarkMissionary, 10f) &&
                 Role.CanReprisal(enemyCount: 1) &&
                 threat.Raidwide &&
@@ -247,7 +253,7 @@ internal partial class DRK
             if (IsSmartMitEnabled(Preset.DRK_Mitigation_Boss_DarkMissionary, flags) &&
                 dmInContent &&
                 ActionReady(DarkMissionary) &&
-                !IsDrkLongMitigationActive() &&
+                !active.LongMitigationActive &&
                 !JustUsed(Role.Reprisal, 10f) &&
                 pressure.DangerRatio >= 1.5f)
             {
@@ -262,6 +268,7 @@ internal partial class DRK
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_Reprisal, flags) &&
             ActionReady(Role.Reprisal) &&
             enemyCount >= 3 &&
+            !active.ShortMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             pressure.DangerRatio >= 1.2f)
         {
@@ -272,7 +279,7 @@ internal partial class DRK
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_DarkMissionary, flags) &&
             ActionReady(DarkMissionary) &&
-            !IsDrkLongMitigationActive() &&
+            !active.LongMitigationActive &&
             !JustUsed(OriginalHook(ShadowWall), 15f) &&
             (enemyCount >= 5 || pressure.DangerRatio >= 1.2f))
         {
@@ -470,10 +477,24 @@ internal partial class DRK
         return options;
     }
 
-    private static ActiveMitigationState GetDrkActiveMitigationState()
+    private static ActiveMitigationState GetDrkActiveMitigationState(bool isBoss)
     {
         var reduction = 0f;
         var shield = 0f;
+
+        var longActive =
+            HasStatusEffect(Role.Buffs.Rampart) ||
+            (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength)) ||
+            HasAnyStatusEffects([Buffs.LivingDead, Buffs.WalkingDead, Buffs.UndeadRebirth]) ||
+            HasStatusEffect(Buffs.ShadowWall) ||
+            HasStatusEffect(Buffs.ShadowedVigil) ||
+            HasStatusEffect(Buffs.DarkMissionary);
+
+        var shortActive =
+            HasStatusEffect(Buffs.DarkMind) ||
+            HasStatusEffect(Buffs.Oblation) ||
+            HasOwnTBN ||
+            HasStatusEffect(Role.Debuffs.Reprisal, CurrentTarget);
 
         if (HasAnyStatusEffects([Buffs.LivingDead, Buffs.WalkingDead, Buffs.UndeadRebirth]))
             return new ActiveMitigationState(1f, 0f, 0f, true);
@@ -481,7 +502,7 @@ internal partial class DRK
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
-        if (HasStatusEffect(Role.Buffs.ArmsLength))
+        if (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
         if (HasStatusEffect(Buffs.DarkMind))
@@ -496,7 +517,7 @@ internal partial class DRK
         if (HasOwnTBN && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.25f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longActive, shortActive);
     }
 
     private static bool PassesDrkSmartMitigationGuards(uint selectedActionId)

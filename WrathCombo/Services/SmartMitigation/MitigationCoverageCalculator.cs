@@ -61,6 +61,9 @@ internal static class MitigationCoverageCalculator
         {
             var option = available[i];
 
+            if (TankMitigationSelection.ShouldExcludeActiveCategory(option, active))
+                continue;
+
             if (option.Tier == MitigationTier.Invuln)
             {
                 if (reductionGap >= InvulnRequiredReduction || hpAfterHit <= 0f)
@@ -114,6 +117,9 @@ internal static class MitigationCoverageCalculator
             for (int i = 0; i < available.Count; i++)
             {
                 var option = available[i];
+                if (TankMitigationSelection.ShouldExcludeActiveCategory(option, active))
+                    continue;
+
                 if ((option.Tier == MitigationTier.Small || option.Tier == MitigationTier.Medium)
                     && (int)option.Tier < lowestTier)
                 {

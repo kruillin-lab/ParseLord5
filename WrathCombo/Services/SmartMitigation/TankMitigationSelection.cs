@@ -4,6 +4,16 @@ namespace WrathCombo.Services.SmartMitigation;
 
 internal static class TankMitigationSelection
 {
+    internal static bool IsLongMitigation(MitigationOption option) =>
+        TrashMitigationOrdering.IsLongMitigationRecast(option.CooldownSeconds);
+
+    internal static bool ShouldExcludeActiveCategory(
+        MitigationOption option,
+        ActiveMitigationState active) =>
+        IsLongMitigation(option)
+            ? active.LongMitigationActive
+            : active.ShortMitigationActive;
+
     internal static bool TryPickLowestTier(
         List<MitigationOption> options,
         bool longMitigationBuffActive,
@@ -43,7 +53,7 @@ internal static class TankMitigationSelection
 
             if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
                     longMitigationBuffActive,
-                    isLongMitigationAction(option.ActionId)))
+                    IsLongMitigation(option) || isLongMitigationAction(option.ActionId)))
                 continue;
 
             if (preferHighestTier)

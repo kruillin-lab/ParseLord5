@@ -124,7 +124,7 @@ internal partial class WAR
             JustUsed(Holmgang))
             return false;
 
-        var active = GetWarActiveMitigationState();
+        var active = GetWarActiveMitigationState(isBoss);
         var options = isBoss
             ? BuildWarBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp)
             : BuildWarNonBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp);
@@ -194,7 +194,9 @@ internal partial class WAR
         TankThreatState threat,
         ref uint actionID)
     {
-        if (IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
+        if (IsWarBloodwhettingDefenseActive() ||
+            GetWarActiveMitigationState(isBoss: false).ShortMitigationActive ||
+            UsedWarMitigationThisGcd)
             return false;
 
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
@@ -223,6 +225,8 @@ internal partial class WAR
         if (IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
             return false;
 
+        var active = GetWarActiveMitigationState(isBoss);
+
         if (!threat.Raidwide && (!isBoss || pressure.DangerRatio < 1.0f))
             return false;
 
@@ -238,6 +242,7 @@ internal partial class WAR
             if (IsSmartMitEnabled(Preset.WAR_Mitigation_Boss_Reprisal, rotationFlags) &&
                 Role.CanReprisal(enemyCount: 1) &&
                 reprisalInMitigationContent &&
+                !active.ShortMitigationActive &&
                 !JustUsed(ShakeItOff, 10f) &&
                 threat.Raidwide &&
                 pressure.DangerRatio >= 1.0f)
@@ -252,7 +257,7 @@ internal partial class WAR
 
             if (IsSmartMitEnabled(Preset.WAR_Mitigation_Boss_ShakeItOff, rotationFlags) &&
                 !JustUsed(Role.Reprisal, 10f) &&
-                !IsWarLongMitigationActive() &&
+                !active.LongMitigationActive &&
                 shakeItOffInMitigationContent &&
                 ActionReady(ShakeItOff) &&
                 threat.Raidwide && // Shake It Off is a party shield — only auto-cast on detected AoE/raidwide
@@ -269,6 +274,7 @@ internal partial class WAR
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_Reprisal, rotationFlags) &&
             ActionReady(Role.Reprisal) &&
             enemyCount >= 3 &&
+            !active.ShortMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             pressure.DangerRatio >= 1.2f)
         {
@@ -279,7 +285,7 @@ internal partial class WAR
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_ShakeItOff, rotationFlags) &&
             ActionReady(ShakeItOff) &&
-            !IsWarLongMitigationActive() &&
+            !active.LongMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             threat.Raidwide && // Shake It Off is a party shield — only auto-cast on detected AoE/raidwide
             pressure.DangerRatio >= 1.5f)
@@ -590,12 +596,25 @@ internal partial class WAR
         return options;
     }
 
-    private static ActiveMitigationState GetWarActiveMitigationState()
+    private static ActiveMitigationState GetWarActiveMitigationState(bool isBoss)
     {
         var reduction = 0f;
         var shield = 0f;
         var maxHpBonus = 0f;
         var invuln = false;
+
+        var longActive =
+            HasStatusEffect(Role.Buffs.Rampart) ||
+            HasStatusEffect(Buffs.Holmgang) ||
+            HasStatusEffect(Buffs.Vengeance) ||
+            HasStatusEffect(Buffs.Damnation) ||
+            HasStatusEffect(Buffs.ShakeItOff) ||
+            (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength));
+
+        var shortActive =
+            HasStatusEffect(Buffs.RawIntuition) ||
+            HasAnyStatusEffects([Buffs.BloodwhettingDefenseLong, Buffs.BloodwhettingDefenseShort, Buffs.BloodwhettingShield]) ||
+            HasStatusEffect(Role.Debuffs.Reprisal, CurrentTarget);
 
         if (HasStatusEffect(Buffs.Holmgang))
             invuln = true;
@@ -603,7 +622,7 @@ internal partial class WAR
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
-        if (HasStatusEffect(Role.Buffs.ArmsLength))
+        if (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
         if (HasStatusEffect(Buffs.Vengeance))
@@ -621,7 +640,7 @@ internal partial class WAR
         if (HasStatusEffect(Buffs.BloodwhettingShield) && LocalPlayer is { } player && player.MaxHp > 0)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, maxHpBonus, invuln);
+        return new ActiveMitigationState(reduction, shield, maxHpBonus, invuln, longActive, shortActive);
     }
 
     private static bool PassesWarSmartMitigationGuards(uint selectedActionId)

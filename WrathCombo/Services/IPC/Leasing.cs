@@ -744,6 +744,21 @@ public partial class Leasing
     }
 
     /// <summary>
+    ///     Unregisters the leasee unloading checks registered in the
+    ///     <see cref="Leasing()">ctor</see>.
+    /// </summary>
+    /// <remarks>
+    ///     Without this the <see cref="Svc.Framework.Update" /> subscription
+    ///     outlives the plugin: Dalamud keeps invoking
+    ///     <see cref="CheckIfLeaseePluginsUnloaded" /> on this instance every
+    ///     frame after unload, pinning the assembly load context.
+    /// </remarks>
+    public void Dispose()
+    {
+        Svc.Framework.Update -= CheckIfLeaseePluginsUnloaded;
+    }
+
+    /// <summary>
     ///     Checks currently loaded plugins against leases.<br />
     ///     Will run every 500 frames and check if the leasees plugin is still
     ///     loaded.<br />

@@ -40,6 +40,12 @@ internal static class CombatTelemetryService
         LastHpValues.Clear();
     }
 
+    /// <summary>
+    ///     Largest single hit taken by <paramref name="objectId"/> inside the rolling window.
+    ///     Exposed so pressure from sources that omit the field (TankCooldownHelper IPC) can be backfilled.
+    /// </summary>
+    internal static float GetMaxSingleHit(uint objectId) => Buffer.GetMaxSingleHit(objectId);
+
     internal static PlayerPressureState GetPlayerPressure(uint objectId)
     {
         var totalDamage = Buffer.GetTotalDamage(objectId);

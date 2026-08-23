@@ -90,6 +90,10 @@ internal static class TankCooldownHelperIpcClient
                 payload.IncomingHps,
                 netDps,
                 payload.DangerRatio,
+                // TCH's payload carries no max-single-hit field. Left 0 here and
+                // backfilled from local HP-delta telemetry by
+                // TankSmartMitigationThreat.GetPlayerPressure -- consumers that gate on
+                // MaxSingleHit must never see a hardcoded 0 just because TCH is the source.
                 MaxSingleHit: 0f,
                 payload.SecondsUntilDeath,
                 payload.DangerLevel);

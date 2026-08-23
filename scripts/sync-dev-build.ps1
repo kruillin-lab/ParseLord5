@@ -13,10 +13,10 @@
   This script does not start the game or toggle plugins.
 
 .PARAMETER Remote
-  Git remote name (default: parselord5).
+  Git remote name (default: origin).
 
 .PARAMETER Branch
-  Branch to track (default: parselord5-wc-base).
+  Branch to track (default: main).
 
 .PARAMETER Configuration
   dotnet build configuration (default: Debug for dev loop).
@@ -40,12 +40,12 @@
   .\scripts\sync-dev-build.ps1 -Notify
 
 .EXAMPLE
-  .\scripts\sync-dev-build.ps1 -Branch cursor/my-agent-branch -Remote parselord5
+  .\scripts\sync-dev-build.ps1 -Branch cursor/my-agent-branch -Remote origin
 #>
 [CmdletBinding()]
 param(
-    [string] $Remote = 'parselord5',
-    [string] $Branch = 'parselord5-wc-base',
+    [string] $Remote = 'origin',
+    [string] $Branch = 'main',
     [ValidateSet('Debug', 'Release')]
     [string] $Configuration = 'Debug',
     [switch] $SkipPull,

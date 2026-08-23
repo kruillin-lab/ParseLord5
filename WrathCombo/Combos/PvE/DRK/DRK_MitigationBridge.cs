@@ -64,26 +64,15 @@ internal partial class DRK
             if (option.ActionId == LivingDead && active.InvulnActive)
                 continue;
 
-            if (option.Tier == MitigationTier.Invuln)
-            {
-                filtered.Add(option);
-                continue;
-            }
-
             if (active.InvulnActive)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsDrkLongMitigationActive(),
-                    IsDrkLongMitigationAction(option.ActionId)))
-            {
-                if (IsDrkHeavyMitigationAction(option.ActionId) &&
-                    TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))
-                {
-                    filtered.Add(option);
-                    continue;
-                }
+            if (TankMitigationSelection.ShouldExcludeActiveCategory(option, active))
+                continue;
 
+            if (option.Tier == MitigationTier.Invuln)
+            {
+                filtered.Add(option);
                 continue;
             }
 

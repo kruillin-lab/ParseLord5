@@ -2,6 +2,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using System.Linq;
+using WrathCombo.AutoRotation;
 using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.Data;
@@ -44,15 +45,18 @@ internal partial class SGE : Healer
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
 
-                // Addersgall Protection
-                if (ActionReady(Druochole) && Addersgall >= 3)
+                // Addersgall Protection (never during the auto-rotation DPS probe —
+                // that pass must return damage, not a heal; see WHM IsSelectingAutorotAction guard)
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    ActionReady(Druochole) && Addersgall >= 3)
                     return Druochole.RetargetIfEnabled(actionID);
-
-                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
 
                 if (ActionReady(Psyche) && InCombat())
                     return Psyche;
+
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia) && InCombat())
+                    return Soteria;
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
@@ -121,19 +125,21 @@ internal partial class SGE : Healer
                 if (Role.CanLucidDream(7500))
                     return Role.LucidDreaming;
 
-                // Addersgall Protection
-                if (ActionReady(Druochole) && Addersgall >= 3)
+                // Addersgall Protection (suppressed during the auto-rotation DPS probe)
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    ActionReady(Druochole) && Addersgall >= 3)
                     return Druochole
                         .RetargetIfEnabled(actionID);
 
                 var canPsyche = ActionReady(Psyche) && HasBattleTarget() &&
                     InActionRange(Psyche);
 
-                if (ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia))
-                    return Soteria;
-
                 if (canPsyche)
                     return Psyche;
+
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia) && InCombat())
+                    return Soteria;
 
                 // Rhizomata
                 if (ActionReady(Rhizomata) && Addersgall < 1)
@@ -212,17 +218,21 @@ internal partial class SGE : Healer
                 return contentAction;
 
             #region Raidwide Feature
+            // Auto-rotation runs its own raidwide handling (HandleRaidwide); the DPS combo
+            // must not also pre-dump mitigation during the auto-rotation probe.
+            if (!AutoRotationController.IsSelectingAutorotAction)
+            {
+                if (RaidwideKerachole())
+                    return Kerachole;
 
-            if (RaidwideKerachole())
-                return Kerachole;
+                if (RaidwideHolos())
+                    return Holos;
 
-            if (RaidwideHolos())
-                return Holos;
-
-            if (RaidwideEprognosis())
-                return HasStatusEffect(Buffs.Eukrasia)
-                    ? OriginalHook(Prognosis)
-                    : Eukrasia;
+                if (RaidwideEprognosis())
+                    return HasStatusEffect(Buffs.Eukrasia)
+                        ? OriginalHook(Prognosis)
+                        : Eukrasia;
+            }
 
             #endregion
 
@@ -233,29 +243,31 @@ internal partial class SGE : Healer
                     Role.CanLucidDream(SGE_ST_DPS_Lucid))
                     return Role.LucidDreaming;
 
-                // Addersgall Protection
-                if (IsEnabled(Preset.SGE_ST_DPS_AddersgallProtect) &&
+                // Addersgall Protection (suppressed during the auto-rotation DPS probe)
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    IsEnabled(Preset.SGE_ST_DPS_AddersgallProtect) &&
                     ActionReady(Druochole) && Addersgall >= SGE_ST_DPS_AddersgallProtect)
                     return Druochole
                         .RetargetIfEnabled(dosisActions);
 
                 var canSoteria =
+                    !AutoRotationController.IsSelectingAutorotAction &&
                     IsEnabled(Preset.SGE_ST_DPS_Soteria) &&
-                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia);
+                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia) && InCombat();
                 var canPsyche =
                     IsEnabled(Preset.SGE_ST_DPS_Psyche) &&
                     ActionReady(Psyche) && InCombat();
 
-                if (canSoteria)
-                    return Soteria;
+                if (canPsyche)
+                    return Psyche;
 
                 // Rhizomata
                 if (IsEnabled(Preset.SGE_ST_DPS_Rhizo) &&
                     ActionReady(Rhizomata) && Addersgall < SGE_ST_DPS_Rhizo)
                     return Rhizomata;
 
-                if (canPsyche)
-                    return Psyche;
+                if (canSoteria)
+                    return Soteria;
             }
 
             if (IsEnabled(Preset.SGE_ST_DPS_EDosis) && PartyInCombat())
@@ -328,17 +340,21 @@ internal partial class SGE : Healer
                 return contentAction;
 
             #region Raidwide Feature
+            // Auto-rotation runs its own raidwide handling (HandleRaidwide); the DPS combo
+            // must not also pre-dump mitigation during the auto-rotation probe.
+            if (!AutoRotationController.IsSelectingAutorotAction)
+            {
+                if (RaidwideKerachole())
+                    return Kerachole;
 
-            if (RaidwideKerachole())
-                return Kerachole;
+                if (RaidwideHolos())
+                    return Holos;
 
-            if (RaidwideHolos())
-                return Holos;
-
-            if (RaidwideEprognosis())
-                return HasStatusEffect(Buffs.Eukrasia)
-                    ? OriginalHook(Prognosis)
-                    : Eukrasia;
+                if (RaidwideEprognosis())
+                    return HasStatusEffect(Buffs.Eukrasia)
+                        ? OriginalHook(Prognosis)
+                        : Eukrasia;
+            }
 
             #endregion
 
@@ -349,30 +365,32 @@ internal partial class SGE : Healer
                     Role.CanLucidDream(SGE_AoE_DPS_Lucid))
                     return Role.LucidDreaming;
 
-                // Addersgall Protection
-                if (IsEnabled(Preset.SGE_AoE_DPS_AddersgallProtect) &&
+                // Addersgall Protection (suppressed during the auto-rotation DPS probe)
+                if (!AutoRotationController.IsSelectingAutorotAction &&
+                    IsEnabled(Preset.SGE_AoE_DPS_AddersgallProtect) &&
                     ActionReady(Druochole) && Addersgall >= SGE_AoE_DPS_AddersgallProtect)
                     return Druochole
                         .RetargetIfEnabled(actionID);
 
                 var canSoteria =
+                    !AutoRotationController.IsSelectingAutorotAction &&
                     IsEnabled(Preset.SGE_AoE_DPS_Soteria) &&
-                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia);
+                    ActionReady(Soteria) && HasStatusEffect(Buffs.Kardia) && InCombat();
                 var canPsyche =
                     IsEnabled(Preset.SGE_AoE_DPS_Psyche) &&
                     ActionReady(Psyche) && HasBattleTarget() &&
                     InActionRange(Psyche);
 
-                if (canSoteria)
-                    return Soteria;
+                if (canPsyche)
+                    return Psyche;
 
                 // Rhizomata
                 if (IsEnabled(Preset.SGE_AoE_DPS_Rhizo) &&
                     ActionReady(Rhizomata) && Addersgall <= SGE_AoE_DPS_Rhizo)
                     return Rhizomata;
 
-                if (canPsyche)
-                    return Psyche;
+                if (canSoteria)
+                    return Soteria;
             }
 
             var hasDotTarget = EnemiesInRange(EukrasianDyskrasia).Count(x => (GetPossessedStatusRemainingTime(Debuffs.EukrasianDyskrasia, x) is <= 4 or float.NaN &&
@@ -449,12 +467,14 @@ internal partial class SGE : Healer
                 CanWeave() && CanUseSgeHealingSetupOgcd(Soteria))
                 return Soteria;
 
-            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90)
+            if (ActionReady(OriginalHook(Physis)) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(OriginalHook(Physis)) && GetTargetHPPercent(healTarget) <= 90 &&
+                !InBossEncounter())
                 return OriginalHook(Physis);
 
             if (ActionReady(Kerachole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Kerachole) && GetTargetHPPercent(healTarget) <= 90 &&
                 TraitLevelChecked(Traits.EnhancedKerachole) &&
-                HasAddersgall())
+                HasAddersgall() &&
+                !InBossEncounter())
                 return Kerachole;
 
             if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && (healTarget.IsInParty() && healTarget.Role is CombatRole.Tank || !IsInParty()))
@@ -470,7 +490,7 @@ internal partial class SGE : Healer
             if (ActionReady(Druochole) && InCombat() && CanWeave() && CanUseSgeHealingSetupOgcd(Druochole) && HasAddersgall() && GetTargetHPPercent(healTarget) <= 75)
                 return Druochole.RetargetIfEnabled(Diagnosis);
 
-            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd)
+            if (InCombat() && CanWeave() && !UsedSgeHealingSetupOgcdThisGcd && !InBossEncounter())
             {
                 if (ActionReady(Holos) && GetTargetHPPercent(healTarget) <= 80)
                     return Holos;
@@ -562,16 +582,19 @@ internal partial class SGE : Healer
 
             #region Raidwide Feature
 
-            if (RaidwideKerachole())
-                return Kerachole;
+            if (!AutoRotationController.IsSelectingAutorotAction)
+            {
+                if (RaidwideKerachole())
+                    return Kerachole;
 
-            if (RaidwideHolos())
-                return Holos;
+                if (RaidwideHolos())
+                    return Holos;
 
-            if (RaidwideEprognosis())
-                return HasStatusEffect(Buffs.Eukrasia)
-                    ? OriginalHook(Prognosis)
-                    : Eukrasia;
+                if (RaidwideEprognosis())
+                    return HasStatusEffect(Buffs.Eukrasia)
+                        ? OriginalHook(Prognosis)
+                        : Eukrasia;
+            }
 
             #endregion
 
@@ -635,16 +658,19 @@ internal partial class SGE : Healer
 
             #region Raidwide Feature
 
-            if (RaidwideKerachole())
-                return Kerachole;
+            if (!AutoRotationController.IsSelectingAutorotAction)
+            {
+                if (RaidwideKerachole())
+                    return Kerachole;
 
-            if (RaidwideHolos())
-                return Holos;
+                if (RaidwideHolos())
+                    return Holos;
 
-            if (RaidwideEprognosis())
-                return HasStatusEffect(Buffs.Eukrasia)
-                    ? OriginalHook(Prognosis)
-                    : Eukrasia;
+                if (RaidwideEprognosis())
+                    return HasStatusEffect(Buffs.Eukrasia)
+                        ? OriginalHook(Prognosis)
+                        : Eukrasia;
+            }
 
             #endregion
 

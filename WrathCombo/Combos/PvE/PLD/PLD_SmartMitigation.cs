@@ -66,6 +66,7 @@ internal partial class PLD
             IsMoving() ||
             HasStatusEffect(Buffs.Sheltron) ||
             HasStatusEffect(Buffs.HallowedGround) ||
+            GetPldActiveMitigationState(isBoss: false).ShortMitigationActive ||
             Gauge.OathGauge < 50)
             return false;
 
@@ -100,6 +101,9 @@ internal partial class PLD
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
         if (UsedPldMitigationThisGcd)
+            return false;
+
+        if (GetPldActiveMitigationState(isBoss: false).ShortMitigationActive)
             return false;
 
         if (!TrashMitigationOrdering.ShouldPrioritizeTrashReprisalFirst(
@@ -159,7 +163,7 @@ internal partial class PLD
             ? BuildPldBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp)
             : BuildPldNonBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp);
 
-        var active = GetPldActiveMitigationState();
+        var active = GetPldActiveMitigationState(isBoss);
         options = FilterPldMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
 
         if (options.Count == 0)
@@ -219,6 +223,7 @@ internal partial class PLD
         if (UsedPldMitigationThisGcd)
             return false;
 
+        var active = GetPldActiveMitigationState(isBoss);
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         if (!isBoss && enemyCount < 3)
             return false;
@@ -231,6 +236,7 @@ internal partial class PLD
             if (IsSmartMitEnabled(Preset.PLD_Mitigation_Boss_Reprisal, rotationFlags) &&
                 Role.CanReprisal(enemyCount: 1) &&
                 reprisalInContent &&
+                !active.ShortMitigationActive &&
                 !JustUsed(DivineVeil, 10f) &&
                 threat.Raidwide &&
                 pressure.DangerRatio >= 1.0f)
@@ -246,7 +252,7 @@ internal partial class PLD
             if (IsSmartMitEnabled(Preset.PLD_Mitigation_Boss_DivineVeil, rotationFlags) &&
                 veilInContent &&
                 ActionReady(DivineVeil) &&
-                !IsPldLongMitigationActive() &&
+                !active.LongMitigationActive &&
                 !JustUsed(Role.Reprisal, 10f) &&
                 pressure.DangerRatio >= 1.5f)
             {
@@ -261,6 +267,7 @@ internal partial class PLD
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_NonBoss_Reprisal, rotationFlags) &&
             ActionReady(Role.Reprisal) &&
             enemyCount >= 3 &&
+            !active.ShortMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             pressure.DangerRatio >= 1.2f)
         {
@@ -271,7 +278,7 @@ internal partial class PLD
 
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_NonBoss_DivineVeil, rotationFlags) &&
             ActionReady(DivineVeil) &&
-            !IsPldLongMitigationActive() &&
+            !active.LongMitigationActive &&
             !JustUsed(Role.Reprisal, 10f) &&
             PlayerHealthPercentageHp() <= (rotationFlags.HasFlag(RotationMode.Simple) ? 80 : PLD_Mitigation_NonBoss_DivineVeil_Health))
         {
@@ -442,10 +449,22 @@ internal partial class PLD
         return options;
     }
 
-    private static ActiveMitigationState GetPldActiveMitigationState()
+    private static ActiveMitigationState GetPldActiveMitigationState(bool isBoss)
     {
         var reduction = 0f;
         var shield = 0f;
+
+        var longActive =
+            HasStatusEffect(Role.Buffs.Rampart) ||
+            HasStatusEffect(Buffs.Bulwark) ||
+            HasStatusEffect(Buffs.HallowedGround) ||
+            HasStatusEffect(Buffs.Sentinel) ||
+            HasStatusEffect(Buffs.Guardian) ||
+            (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength));
+
+        var shortActive =
+            HasStatusEffect(Buffs.Sheltron) ||
+            HasStatusEffect(Role.Debuffs.Reprisal, CurrentTarget);
 
         if (HasStatusEffect(Buffs.HallowedGround))
             return new ActiveMitigationState(1f, 0f, 0f, true);
@@ -453,7 +472,7 @@ internal partial class PLD
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
-        if (HasStatusEffect(Role.Buffs.ArmsLength))
+        if (!isBoss && HasStatusEffect(Role.Buffs.ArmsLength))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
         if (HasStatusEffect(Buffs.Bulwark))
@@ -468,7 +487,7 @@ internal partial class PLD
         if (HasStatusEffect(Buffs.Sheltron) && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longActive, shortActive);
     }
 
     private static bool PassesPldSmartMitigationGuards(uint selectedActionId)

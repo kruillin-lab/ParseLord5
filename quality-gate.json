@@ -27,12 +27,12 @@
     },
     "domain-evals": {
       "shell": "powershell",
-      "command": ".\\scripts\\rotation-evals.ps1",
+      "command": "dotnet test .\\WrathCombo.Tests\\WrathCombo.Tests.csproj -c Release",
       "timeout_seconds": 240
     },
     "markdown-audit": {
       "shell": "powershell",
-      "command": "python C:\\Users\\kruil\\.codex\\skills\\obsidian-markdown-auditor\\scripts\\obsidian_markdown_audit.py validate --root C:\\Users\\kruil\\Documents\\Projects --stage stage2",
+      "command": "internal-repo-markdown-audit",
       "timeout_seconds": 240
     }
   },
@@ -43,9 +43,9 @@
     },
     "plugin": {
       "patterns": [
-        "WrathCombo/**/*.cs",
-        "WrathCombo/**/*.json",
-        "WrathCombo/**/*.resx",
+        "WrathCombo/*.cs",
+        "WrathCombo/*.json",
+        "WrathCombo/*.resx",
         "**/*.csproj",
         "WrathCombo.slnx",
         "Directory.Build.props",
@@ -55,9 +55,12 @@
     },
     "domain": {
       "patterns": [
-        "WrathCombo/Combos/**/*.cs",
-        "WrathCombo/AutoRotation/**/*.cs",
-        "WrathCombo/CustomComboPreset.cs"
+        "WrathCombo/Combos/*.cs",
+        "WrathCombo/AutoRotation/*.cs",
+        "WrathCombo/Services/SmartMitigation/*.cs",
+        "WrathCombo/Services/IPC_Subscriber/*.cs",
+        "WrathCombo/CustomComboPreset.cs",
+        "WrathCombo.Tests/*.cs"
       ],
       "checks": ["domain-evals-if-domain-changed"],
       "risk": "domain-critical"

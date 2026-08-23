@@ -8,6 +8,7 @@ public static class AllStaticIPCSubscriptions
     {
         OrbwalkerIPC.Dispose();
         PingPluginIPC.Dispose();
+        ActionStacksEXIPC.Dispose();
         TankCooldownHelperIpcClient.Dispose();
     }
 }

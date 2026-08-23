@@ -288,6 +288,9 @@ internal partial class DRK : Tank
         protected override uint Invoke(uint actionID)
         {
             if (actionID is not (CarveAndSpit or AbyssalDrain)) return actionID;
+            if (!CustomComboNS.Functions.CustomComboFunctions.CanWeave() &&
+                !CustomComboNS.Functions.CustomComboFunctions.CanDelayedWeave())
+                return actionID;
 
             if (IsEnabled(Preset.DRK_oGCD_Interrupt) &&
                 Role.CanInterject())

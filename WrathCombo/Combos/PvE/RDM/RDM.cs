@@ -876,6 +876,9 @@ internal partial class RDM : Caster
         {
             if (actionID is not Fleche)
                 return actionID;
+            if (!CustomComboNS.Functions.CustomComboFunctions.CanWeave() &&
+                !CustomComboNS.Functions.CustomComboFunctions.CanDelayedWeave())
+                return actionID;
 
             if (ActionReady(Fleche))
                 return Fleche;

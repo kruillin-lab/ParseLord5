@@ -99,7 +99,7 @@ internal static class TankSmartMitigationThreat
     internal static PlayerPressureState GetPlayerPressure(uint objectId)
     {
         if (TankCooldownHelperIpcClient.TryGetPlayerPressure(objectId, out var pressure))
-            return pressure;
+            return pressure.WithLocalMaxSingleHit(CombatTelemetryService.GetMaxSingleHit(objectId));
 
         return CombatTelemetryService.GetPlayerPressure(objectId);
     }

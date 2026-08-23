@@ -21,7 +21,9 @@ internal readonly record struct ActiveMitigationState(
     float CombinedDamageReduction,
     float ActiveShield,
     float ActiveMaxHpBonusFraction,
-    bool InvulnActive);
+    bool InvulnActive,
+    bool LongMitigationActive = false,
+    bool ShortMitigationActive = false);
 
 internal readonly record struct MitigationCoverageRequest(
     uint CurrentHp,
@@ -55,6 +57,15 @@ internal readonly record struct PlayerPressureState(
 
     /// <summary>TCH danger level Emergency (3).</summary>
     public bool TankCooldownEmergency => TankCooldownDangerLevel is >= 3;
+
+    /// <summary>
+    ///     TankCooldownHelper's IPC payload carries no max-single-hit field, so pressure from that
+    ///     source always arrives with <see cref="MaxSingleHit"/> at 0. Backfill it from local
+    ///     HP-delta telemetry, which runs every frame regardless of which source supplied the rest.
+    ///     Without this, every gate that requires a landed hit is dead whenever TCH is installed.
+    /// </summary>
+    public PlayerPressureState WithLocalMaxSingleHit(float localMaxSingleHit) =>
+        MaxSingleHit > 0f ? this : this with { MaxSingleHit = localMaxSingleHit };
 }
 
 internal readonly record struct MitigationCoverageResult(

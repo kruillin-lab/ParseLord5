@@ -1,6 +1,7 @@
 using ECommons.DalamudServices;
 using ECommons.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,6 +56,7 @@ public partial class Configuration
         {
             PluginLog.Warning(
                 $"[Saving] Saving attempted when we shouldn't!\n{trace}");
+            _isSaving = false;
             return;
         }
 
@@ -83,6 +85,7 @@ public partial class Configuration
         {
             PluginLog.Warning(
                 $"[Saving] Saving attempted when we shouldn't!\n{trace}");
+            _isSaving = false;
             return;
         }
 
@@ -417,6 +420,24 @@ public partial class Configuration
             // Auto-rotation config
             target.RotationConfig = wrathConfig.RotationConfig;
 
+            // Healing target stack / retargeting settings. These directly affect
+            // healer behavior and are safe to mirror from the source config.
+            target.RetargetHealingActionsToStack =
+                wrathConfig.RetargetHealingActionsToStack;
+            target.AddOutOfPartyNPCsToRetargeting =
+                wrathConfig.AddOutOfPartyNPCsToRetargeting;
+            target.UseUIMouseoverOverridesInDefaultHealStack =
+                wrathConfig.UseUIMouseoverOverridesInDefaultHealStack;
+            target.UseFieldMouseoverOverridesInDefaultHealStack =
+                wrathConfig.UseFieldMouseoverOverridesInDefaultHealStack;
+            target.UseFocusTargetOverrideInDefaultHealStack =
+                wrathConfig.UseFocusTargetOverrideInDefaultHealStack;
+            target.UseLowestHPOverrideInDefaultHealStack =
+                wrathConfig.UseLowestHPOverrideInDefaultHealStack;
+            target.UseCustomHealStack = wrathConfig.UseCustomHealStack;
+            target.CustomHealStack = wrathConfig.CustomHealStack;
+            target.RaiseStack = wrathConfig.RaiseStack;
+
             // Ignored NPCs
             target.IgnoredNPCs.Clear();
             foreach (var (npcId, reason) in wrathConfig.IgnoredNPCs)
@@ -434,9 +455,9 @@ public partial class Configuration
             foreach (var entry in wrathConfig.StatusBlacklist)
                 target.StatusBlacklist.Add(entry);
 
+            ImportCustomValueMaps(json);
+
             // --- Fields intentionally NOT imported ---
-            // CustomFloatValues/CustomIntValues etc.: static fields,
-            //   not deserializable from external config without raw JSON parsing.
             // ParseLord5ExperimentalMode: stays false (user must opt in).
             // Version: uses ParseLord5's own version.
             // AprilFools2026, UI-only settings: plugin-specific, not gameplay.
@@ -458,6 +479,29 @@ public partial class Configuration
                 $"[ParseLord5] Config import failed: {ex.Message}");
             return false;
         }
+    }
+
+    private static void ImportCustomValueMaps(string sourceJson)
+    {
+        var source = JObject.Parse(sourceJson);
+
+        CustomFloatValues =
+            ReadDictionary<float>(source, "CustomFloatValuesV6");
+        CustomIntValues =
+            ReadDictionary<int>(source, "CustomIntValuesV6");
+        CustomIntArrayValues =
+            ReadDictionary<int[]>(source, "CustomIntArrayValuesV6");
+        CustomBoolValues =
+            ReadDictionary<bool>(source, "CustomBoolValuesV6");
+        CustomBoolArrayValues =
+            ReadDictionary<bool[]>(source, "CustomBoolArrayValuesV6");
+    }
+
+    private static Dictionary<string, TValue> ReadDictionary<TValue>(
+        JObject source, string propertyName)
+    {
+        return source[propertyName]?.ToObject<Dictionary<string, TValue>>() ??
+               [];
     }
 
     #endregion
