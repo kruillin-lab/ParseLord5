@@ -9,19 +9,38 @@ internal enum MitigationTier
     Invuln = 4,
 }
 
+/// <summary>Stacking pool for mitigation exclusion. Same-pool mits don't overlap; cross-pool can stack.</summary>
+internal enum MitigationPool
+{
+    /// <summary>Always stacks with everything (Bloodwhetting, Sheltron, TBN, Heart of Corundum).</summary>
+    Exempt = 0,
+
+    /// <summary>Cooldown ≤ 60s. Cannot overlap another active short-pool mit.</summary>
+    Short = 1,
+
+    /// <summary>Cooldown > 60s. Cannot overlap another active long-pool mit.</summary>
+    Long = 2,
+
+    /// <summary>Only offered in trash packs; excluded on bosses (Arm's Length).</summary>
+    TrashOnly = 3,
+}
+
 internal readonly record struct MitigationOption(
     uint ActionId,
     float DamageReduction,
     float ShieldPotency,
     float MaxHpBonusFraction,
     float CooldownSeconds,
-    MitigationTier Tier);
+    MitigationTier Tier,
+    MitigationPool Pool = MitigationPool.Short);
 
 internal readonly record struct ActiveMitigationState(
     float CombinedDamageReduction,
     float ActiveShield,
     float ActiveMaxHpBonusFraction,
-    bool InvulnActive);
+    bool InvulnActive,
+    bool LongPoolActive = false,
+    bool ShortPoolActive = false);
 
 internal readonly record struct MitigationCoverageRequest(
     uint CurrentHp,

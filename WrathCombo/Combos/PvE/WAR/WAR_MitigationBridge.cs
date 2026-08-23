@@ -24,16 +24,20 @@ internal partial class WAR
     private static bool IsWarPersonalMitigationActive() =>
         IsWarShortMitigationActive() || IsWarLongMitigationActive();
 
-    /// <summary>Short CDs that may freely overlap each other and the long mits. Only Arm's Length now —
-    /// Rampart (90s recast) is treated as long, and only stacks with Arm's Length.</summary>
+    /// <summary>Short CDs that may freely overlap the long mits. Raw Intuition upgrades to
+    /// Bloodwhetting at 82, which applies its own statuses — check all of them or this pool is
+    /// permanently inert at endgame.</summary>
     private static bool IsWarShortMitigationActive() =>
-        HasStatusEffect(Role.Buffs.ArmsLength);
+        HasAnyStatusEffects([
+            Buffs.RawIntuition,
+            Buffs.BloodwhettingDefenseLong,
+            Buffs.BloodwhettingDefenseShort,
+        ]);
 
-    /// <summary>Long CDs (&gt;60s recast: Rampart, Holmgang, Shake, Vengeance-Damnation): only one long at a
-    /// time, so no long mit overwrites another. Arm's Length (short) and Reprisal are not included.</summary>
+    /// <summary>Long CDs (&gt;60s recast: Rampart, Shake, Vengeance-Damnation): only one long at a
+    /// time, so no long mit overwrites another. Holmgang is Exempt and excluded.</summary>
     private static bool IsWarLongMitigationActive() =>
         HasStatusEffect(Role.Buffs.Rampart) ||
-        HasStatusEffect(Buffs.Holmgang) ||
         HasStatusEffect(Buffs.Vengeance) ||
         HasStatusEffect(Buffs.Damnation) ||
         HasStatusEffect(Buffs.ShakeItOff);
@@ -119,12 +123,8 @@ internal partial class WAR
         if (active.InvulnActive)
             return false;
 
-        // Long mitigation: no second long while another long buff is active (shorts may still fire).
-        // A "long" mit is any cooldown over 60s — driven by the option's recast, not a hardcoded list,
-        // so e.g. Rampart (90s) will not overwrite an active Vengeance/Damnation/Holmgang/Shake (>60s).
-        if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                IsWarLongMitigationActive(),
-                IsWarLongMitigationAction(option.ActionId) || IsWarLongMitigationRecast(option.CooldownSeconds)))
+        // Pool-based stacking: exclude options whose pool conflicts with active pools.
+        if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
         {
             if (IsWarVengeanceOrDamnationAction(option.ActionId) &&
                 ShouldOfferDamnation(threat, pressure, currentHp, maxHp))
@@ -158,7 +158,7 @@ internal partial class WAR
                 !JustUsed(ShakeItOff, 10f) &&
                 (threat.Raidwide || threat.ConfirmedTankbuster))
             {
-                options.Add(new MitigationOption(Role.Reprisal, 0.10f, 0f, 0f, 60f, MitigationTier.Small));
+                options.Add(new MitigationOption(Role.Reprisal, 0.10f, 0f, 0f, 60f, MitigationTier.Small, MitigationPool.Exempt));
             }
 
             var shakeInContent = rotationFlags.HasFlag(RotationMode.simple) ||
@@ -171,7 +171,7 @@ internal partial class WAR
                 !IsWarLongMitigationActive() &&
                 (threat.Raidwide || threat.ConfirmedTankbuster))
             {
-                options.Add(new MitigationOption(ShakeItOff, 0f, 0f, 0f, 90f, MitigationTier.Medium));
+                options.Add(new MitigationOption(ShakeItOff, 0f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
             }
         }
         else
@@ -182,7 +182,7 @@ internal partial class WAR
                 !JustUsed(Role.Reprisal, 10f) &&
                 (threat.Raidwide || threat.SustainedPressure))
             {
-                options.Add(new MitigationOption(Role.Reprisal, 0.10f, 0f, 0f, 60f, MitigationTier.Small));
+                options.Add(new MitigationOption(Role.Reprisal, 0.10f, 0f, 0f, 60f, MitigationTier.Small, MitigationPool.Exempt));
             }
 
             if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_ShakeItOff, rotationFlags) &&
@@ -192,7 +192,7 @@ internal partial class WAR
                 !IsWarLongMitigationActive() &&
                 threat.Raidwide)
             {
-                options.Add(new MitigationOption(ShakeItOff, 0f, 0f, 0f, 90f, MitigationTier.Medium));
+                options.Add(new MitigationOption(ShakeItOff, 0f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
             }
         }
 

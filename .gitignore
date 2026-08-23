@@ -11,3 +11,5 @@ WrathCombo.Tests/bin/
 *.v2
 /WrathCombo/packages.lock.json
 *.csproj.user
+# Added by code-review-graph
+.code-review-graph/

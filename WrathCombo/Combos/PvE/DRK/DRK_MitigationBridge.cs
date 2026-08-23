@@ -10,10 +10,14 @@ namespace WrathCombo.Combos.PvE;
 internal partial class DRK
 {
     private static bool IsDrkLongMitigationActive() =>
-        HasAnyStatusEffects([Buffs.LivingDead, Buffs.WalkingDead, Buffs.UndeadRebirth]) ||
+        HasStatusEffect(Role.Buffs.Rampart) ||
         HasStatusEffect(Buffs.ShadowWall) ||
         HasStatusEffect(Buffs.ShadowedVigil) ||
         HasStatusEffect(Buffs.DarkMissionary);
+
+    private static bool IsDrkShortMitigationActive() =>
+        HasStatusEffect(Buffs.DarkMind) ||
+        HasStatusEffect(Buffs.Oblation);
 
     private static bool IsDrkLongMitigationAction(uint actionId) =>
         actionId == LivingDead ||
@@ -36,6 +40,7 @@ internal partial class DRK
     private static List<MitigationOption> FilterDrkMitigationOptions(
         List<MitigationOption> options,
         ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         uint currentHp,
         uint maxHp,
@@ -57,6 +62,9 @@ internal partial class DRK
             if (option.ActionId == DarkMind && HasStatusEffect(Buffs.DarkMind))
                 continue;
 
+            if (option.ActionId == Oblation && HasStatusEffect(Buffs.Oblation))
+                continue;
+
             if (IsDrkHeavyMitigationAction(option.ActionId) &&
                 HasAnyStatusEffects([Buffs.ShadowWall, Buffs.ShadowedVigil]))
                 continue;
@@ -73,9 +81,7 @@ internal partial class DRK
             if (active.InvulnActive)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsDrkLongMitigationActive(),
-                    IsDrkLongMitigationAction(option.ActionId)))
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
             {
                 if (IsDrkHeavyMitigationAction(option.ActionId) &&
                     TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))

@@ -1,0 +1,25 @@
+{
+  "mcp": {
+    "code-review-graph": {
+      "type": "local",
+      "command": [
+        "uv",
+        "run",
+        "code-review-graph",
+        "serve",
+        "--repo",
+        "C:\\Users\\kruil\\Documents\\Projects\\ParseLord5"
+      ]
+    },
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}

@@ -9,11 +9,21 @@ namespace WrathCombo.Combos.PvE;
 
 internal partial class GNB
 {
+    /// <summary>Long pool: heavy personal / party CDs that must not overwrite each other.
+    /// Camouflage is GNB's designed stacking partner for Rampart, so it lives in the short pool.</summary>
     private static bool IsGnbLongMitigationActive() =>
-        HasStatusEffect(Buffs.Superbolide) ||
+        HasStatusEffect(Role.Buffs.Rampart) ||
         HasStatusEffect(Buffs.Nebula) ||
         HasStatusEffect(Buffs.GreatNebula) ||
         HasStatusEffect(Buffs.HeartOfLight);
+
+    /// <summary>Short pool: may overlap the long pool. Heart of Stone/Corundum is Exempt, not short.</summary>
+    private static bool IsGnbShortMitigationActive() =>
+        HasStatusEffect(Buffs.Camouflage);
+
+    /// <summary>Heart of Stone / Heart of Corundum mitigation buffs (Exempt pool — always stacks).</summary>
+    private static bool IsGnbCorundumActive() =>
+        HasAnyStatusEffects([Buffs.HeartOfStone, Buffs.HeartOfCorundum, Buffs.ClarityOfCorundum]);
 
     private static bool IsGnbLongMitigationAction(uint actionId) =>
         actionId == Superbolide ||
@@ -36,6 +46,7 @@ internal partial class GNB
     private static List<MitigationOption> FilterGnbMitigationOptions(
         List<MitigationOption> options,
         ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         uint currentHp,
         uint maxHp,
@@ -73,9 +84,7 @@ internal partial class GNB
             if (active.InvulnActive)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsGnbLongMitigationActive(),
-                    IsGnbLongMitigationAction(option.ActionId)))
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
             {
                 if (IsGnbHeavyMitigationAction(option.ActionId) &&
                     TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))

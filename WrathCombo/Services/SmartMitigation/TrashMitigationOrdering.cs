@@ -27,6 +27,30 @@ internal static class TrashMitigationOrdering
         bool optionIsLongMitigation) =>
         longMitigationBuffActive && optionIsLongMitigation;
 
+    public static MitigationPool ClassifyPool(
+        float cooldownSeconds,
+        bool isExemptAction = false,
+        bool isTrashOnly = false)
+    {
+        if (isExemptAction) return MitigationPool.Exempt;
+        if (isTrashOnly) return MitigationPool.TrashOnly;
+        return cooldownSeconds > LongMitigationRecastSeconds
+            ? MitigationPool.Long
+            : MitigationPool.Short;
+    }
+
+    public static bool ShouldExcludeForStacking(
+        MitigationPool pool,
+        ActiveMitigationState active,
+        bool isBoss)
+    {
+        if (pool is MitigationPool.Exempt) return false;
+        if (pool == MitigationPool.TrashOnly && isBoss) return true;
+        if (pool == MitigationPool.Long && active.LongPoolActive) return true;
+        if (pool == MitigationPool.Short && active.ShortPoolActive) return true;
+        return false;
+    }
+
     /// <summary>
     /// Trash packs: fire party Reprisal before personal long CDs when enabled and ready.
     /// Caller must already have validated trash context and mitigation threat.

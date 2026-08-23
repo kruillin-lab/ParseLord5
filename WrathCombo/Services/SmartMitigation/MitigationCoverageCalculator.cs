@@ -18,7 +18,8 @@ internal static class MitigationCoverageCalculator
     internal static MitigationCoverageResult? SelectMinimumMitigation(
         MitigationCoverageRequest request,
         IReadOnlyList<MitigationOption> available,
-        ActiveMitigationState active)
+        ActiveMitigationState active,
+        bool isBoss = false)
     {
         if (request.MaxHp == 0 || available.Count == 0)
             return null;
@@ -76,6 +77,9 @@ internal static class MitigationCoverageCalculator
                 continue;
             }
 
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
+                continue;
+
             var projectedReduction = CombineReduction(active.CombinedDamageReduction, option.DamageReduction);
             var projectedHp = effectiveCurrentHp - incomingBudget * (1f - projectedReduction) + request.MaxHp * option.MaxHpBonusFraction;
 
@@ -114,6 +118,9 @@ internal static class MitigationCoverageCalculator
             for (int i = 0; i < available.Count; i++)
             {
                 var option = available[i];
+                if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
+                    continue;
+
                 if ((option.Tier == MitigationTier.Small || option.Tier == MitigationTier.Medium)
                     && (int)option.Tier < lowestTier)
                 {

@@ -102,8 +102,8 @@ public class MitigationCoverageCalculatorTests
         var request = Request(currentHp: 100_000, maxHp: 100_000, incomingDps: 20_000f);
         var options = new List<MitigationOption>
         {
-            new(ActionId: 10, DamageReduction: 0.40f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 60f, Tier: MitigationTier.Medium),
-            new(ActionId: 20, DamageReduction: 0.60f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 90f, Tier: MitigationTier.Large),
+            new(ActionId: 10, DamageReduction: 0.40f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 60f, Tier: MitigationTier.Medium, Pool: MitigationPool.Exempt),
+            new(ActionId: 20, DamageReduction: 0.60f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 90f, Tier: MitigationTier.Large, Pool: MitigationPool.Exempt),
         };
 
         var result = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, NoActiveMit);
@@ -119,8 +119,8 @@ public class MitigationCoverageCalculatorTests
         var request = Request(currentHp: 100_000, maxHp: 100_000, incomingDps: 20_000f, preferHeavyMitigation: true);
         var options = new List<MitigationOption>
         {
-            new(ActionId: 10, DamageReduction: 0.40f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 60f, Tier: MitigationTier.Medium),
-            new(ActionId: 20, DamageReduction: 0.60f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 90f, Tier: MitigationTier.Large),
+            new(ActionId: 10, DamageReduction: 0.40f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 60f, Tier: MitigationTier.Medium, Pool: MitigationPool.Exempt),
+            new(ActionId: 20, DamageReduction: 0.60f, ShieldPotency: 0f, MaxHpBonusFraction: 0f, CooldownSeconds: 90f, Tier: MitigationTier.Large, Pool: MitigationPool.Exempt),
         };
 
         var result = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, NoActiveMit);
@@ -165,6 +165,62 @@ public class MitigationCoverageCalculatorTests
         Assert.NotNull(result);
         Assert.Equal(11u, result!.Value.ActionId);
         Assert.Equal("tb_guarantee", result.Value.Reason);
+    }
+
+    [Fact]
+    public void SelectMinimumMitigation_ConfirmedTankbusterFallback_ExcludesActiveSamePool()
+    {
+        var request = Request(currentHp: 100_000, maxHp: 100_000, incomingDps: 0f,
+            mechanicSpikeFraction: 0.95f, confirmedTankbuster: true);
+        var options = new List<MitigationOption>
+        {
+            new(ActionId: 11, DamageReduction: 0.10f, ShieldPotency: 0f, MaxHpBonusFraction: 0f,
+                CooldownSeconds: 30f, Tier: MitigationTier.Small, Pool: MitigationPool.Long),
+        };
+        var active = new ActiveMitigationState(0f, 0f, 0f, InvulnActive: false, LongPoolActive: true);
+
+        var result = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active, isBoss: true);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void SelectMinimumMitigation_ConfirmedTankbusterFallback_ExcludesTrashOnlyOnBoss()
+    {
+        var request = Request(currentHp: 100_000, maxHp: 100_000, incomingDps: 0f,
+            mechanicSpikeFraction: 0.95f, confirmedTankbuster: true);
+        var options = new List<MitigationOption>
+        {
+            new(ActionId: 11, DamageReduction: 0.10f, ShieldPotency: 0f, MaxHpBonusFraction: 0f,
+                CooldownSeconds: 30f, Tier: MitigationTier.Small, Pool: MitigationPool.TrashOnly),
+        };
+
+        var result = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, NoActiveMit, isBoss: true);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DrkBossTankbuster_HighHp_SelectsEligiblePersonalMitigation()
+    {
+        var request = Request(
+            currentHp: 95_000,
+            maxHp: 100_000,
+            incomingDps: 0f,
+            mechanicSpikeFraction: 0.80f,
+            confirmedTankbuster: true);
+        var options = new List<MitigationOption>
+        {
+            new(ActionId: 3636, DamageReduction: 0.50f, ShieldPotency: 0f, MaxHpBonusFraction: 0f,
+                CooldownSeconds: 120f, Tier: MitigationTier.Large, Pool: MitigationPool.Long),
+        };
+
+        var result = MitigationCoverageCalculator.SelectMinimumMitigation(
+            request, options, NoActiveMit, isBoss: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(3636u, result!.Value.ActionId);
+        Assert.StartsWith("tier=", result.Value.Reason);
     }
 
     [Fact]

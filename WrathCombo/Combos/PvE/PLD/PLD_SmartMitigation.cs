@@ -96,6 +96,9 @@ internal partial class PLD
         TankThreatState threat,
         ref uint actionID)
     {
+        if (!CanPldWeave)
+            return false;
+
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
@@ -160,7 +163,7 @@ internal partial class PLD
             : BuildPldNonBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp);
 
         var active = GetPldActiveMitigationState();
-        options = FilterPldMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
+        options = FilterPldMitigationOptions(options, active, isBoss, threat, currentHp, maxHp, pressure);
 
         if (options.Count == 0)
             return false;
@@ -178,11 +181,11 @@ internal partial class PLD
             SustainMultiplier: isBoss ? 1f : 1f + Math.Min(enemyCount, 5) * 0.06f,
             PreferHeavyMitigation: preferHeavy);
 
-        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active);
+        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active, isBoss);
         var fallbackAction = 0u;
         if (selected is null &&
-            !TrySelectPldMitigationFallback(options, ref fallbackAction) &&
-            !TrySelectPldTchDangerFallback(options, threat, pressure, currentHp, maxHp, ref fallbackAction))
+            !TrySelectPldMitigationFallback(options, active, isBoss, ref fallbackAction) &&
+            !TrySelectPldTchDangerFallback(options, active, isBoss, threat, pressure, currentHp, maxHp, ref fallbackAction))
         {
             TraceSmartMitigation(0, null, pressure, threat, isBoss, "coverage_skip", currentHp, maxHp);
             return false;
@@ -213,6 +216,11 @@ internal partial class PLD
         PlayerPressureState pressure,
         ref uint actionID)
     {
+        // Party mits are oGCDs too: without this the AoE path fires outside the weave
+        // window and clips the GCD, while the personal path (weave-gated) is skipped.
+        if (!CanPldWeave)
+            return false;
+
         if (!threat.Raidwide && (!isBoss || pressure.DangerRatio < 1.0f))
             return false;
 
@@ -285,6 +293,8 @@ internal partial class PLD
 
     private static bool TrySelectPldTchDangerFallback(
         List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
@@ -294,31 +304,31 @@ internal partial class PLD
         if (!pressure.FromTankCooldownHelper || !pressure.TankCooldownInDanger || options.Count == 0)
             return false;
 
-        if (IsPldLongMitigationActive() &&
-            !TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))
-            return false;
-
         if (TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp) &&
             TryPickHeavyFromOptions(options, ref actionID))
             return true;
 
         return TankMitigationSelection.TryPickLowestTier(
             options,
-            IsPldLongMitigationActive(),
-            IsPldLongMitigationAction,
+            active,
+            isBoss,
             PassesPldSmartMitigationGuards,
             ref actionID);
     }
 
-    private static bool TrySelectPldMitigationFallback(List<MitigationOption> options, ref uint actionID)
+    private static bool TrySelectPldMitigationFallback(
+        List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
+        ref uint actionID)
     {
-        if (options.Count == 0 || IsPldLongMitigationActive() || !HasIncomingTankBusterEffect(out _))
+        if (options.Count == 0 || !HasIncomingTankBusterEffect(out _))
             return false;
 
         return TankMitigationSelection.TryPickLowestTier(
             options,
-            IsPldLongMitigationActive(),
-            IsPldLongMitigationAction,
+            active,
+            isBoss,
             PassesPldSmartMitigationGuards,
             ref actionID);
     }
@@ -357,7 +367,7 @@ internal partial class PLD
             rampartInContent &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         var sentinelInContent = rotationFlags.HasFlag(RotationMode.Simple) ||
@@ -377,7 +387,8 @@ internal partial class PLD
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_Boss_Bulwark, rotationFlags) &&
@@ -386,7 +397,7 @@ internal partial class PLD
              ContentCheck.IsInConfiguredContent(PLD_Mitigation_Boss_Bulwark_Difficulty, PLD_Boss_Mit_DifficultyListSet)) &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster))
         {
-            options.Add(new MitigationOption(Bulwark, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Bulwark, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         return options;
@@ -406,21 +417,21 @@ internal partial class PLD
             Role.CanRampart() &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_NonBoss_ArmsLength, rotationFlags) &&
             ActionReady(Role.ArmsLength) &&
             enemyCount >= 3)
         {
-            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium, MitigationPool.TrashOnly));
         }
 
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_NonBoss_Bulwark, rotationFlags) &&
             ActionReady(Bulwark) &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Bulwark, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Bulwark, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.PLD_Mitigation_NonBoss_Sentinel, rotationFlags) &&
@@ -436,7 +447,8 @@ internal partial class PLD
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         return options;
@@ -446,9 +458,11 @@ internal partial class PLD
     {
         var reduction = 0f;
         var shield = 0f;
+        var longPoolActive = IsPldLongMitigationActive();
+        var shortPoolActive = IsPldShortMitigationActive();
 
         if (HasStatusEffect(Buffs.HallowedGround))
-            return new ActiveMitigationState(1f, 0f, 0f, true);
+            return new ActiveMitigationState(1f, 0f, 0f, true, longPoolActive, shortPoolActive);
 
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
@@ -468,7 +482,7 @@ internal partial class PLD
         if (HasStatusEffect(Buffs.Sheltron) && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longPoolActive, shortPoolActive);
     }
 
     private static bool PassesPldSmartMitigationGuards(uint selectedActionId)

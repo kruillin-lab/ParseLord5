@@ -6,8 +6,8 @@ internal static class TankMitigationSelection
 {
     internal static bool TryPickLowestTier(
         List<MitigationOption> options,
-        bool longMitigationBuffActive,
-        System.Func<uint, bool> isLongMitigationAction,
+        ActiveMitigationState activeState,
+        bool isBoss,
         System.Func<uint, bool> passesGuards,
         ref uint actionId) =>
         TryPickInTierRange(
@@ -15,18 +15,75 @@ internal static class TankMitigationSelection
             MitigationTier.Small,
             MitigationTier.Large,
             preferHighestTier: false,
-            longMitigationBuffActive,
-            isLongMitigationAction,
+            activeState,
+            isBoss,
             passesGuards,
             ref actionId);
+
+    internal static bool TryPickTankMitigationFallback(
+        List<MitigationOption> options,
+        ActiveMitigationState activeState,
+        bool isBoss,
+        bool strictTankbuster,
+        bool softTankbuster,
+        bool sustainedPressure,
+        bool fromTankCooldownHelper,
+        System.Func<uint, bool> passesGuards,
+        ref uint actionId)
+    {
+        if (strictTankbuster)
+        {
+            return TryPickLowestTier(
+                options,
+                activeState,
+                isBoss,
+                passesGuards,
+                ref actionId);
+        }
+
+        return TryPickSustainedSoftTankbusterFallback(
+            options,
+            activeState,
+            isBoss,
+            softTankbuster,
+            sustainedPressure,
+            fromTankCooldownHelper,
+            passesGuards,
+            ref actionId);
+    }
+
+    internal static bool TryPickSustainedSoftTankbusterFallback(
+        List<MitigationOption> options,
+        ActiveMitigationState activeState,
+        bool isBoss,
+        bool softTankbuster,
+        bool sustainedPressure,
+        bool fromTankCooldownHelper,
+        System.Func<uint, bool> passesGuards,
+        ref uint actionId)
+    {
+        if (!isBoss || !softTankbuster || !sustainedPressure || fromTankCooldownHelper ||
+            activeState.InvulnActive || activeState.LongPoolActive || activeState.ShortPoolActive)
+            return false;
+
+        return TryPickInTierRange(
+            options,
+            MitigationTier.Small,
+            MitigationTier.Medium,
+            preferHighestTier: false,
+            activeState,
+            isBoss,
+            passesGuards,
+            ref actionId);
+    }
 
     internal static bool TryPickInTierRange(
         List<MitigationOption> options,
         MitigationTier minTier,
         MitigationTier maxTier,
         bool preferHighestTier,
-        bool longMitigationBuffActive,
-        System.Func<uint, bool> isLongMitigationAction,
+        ActiveMitigationState activeState,
+        bool isBoss,
         System.Func<uint, bool> passesGuards,
         ref uint actionId)
     {
@@ -41,9 +98,7 @@ internal static class TankMitigationSelection
             if (tier < (int)minTier || tier > (int)maxTier)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    longMitigationBuffActive,
-                    isLongMitigationAction(option.ActionId)))
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, activeState, isBoss))
                 continue;
 
             if (preferHighestTier)

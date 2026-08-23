@@ -3,6 +3,7 @@ using Dalamud.Game.ClientState.JobGauge.Types;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
 using System.Collections.Generic;
+using WrathCombo.Core;
 using WrathCombo.CustomComboNS;
 using WrathCombo.CustomComboNS.Functions;
 using WrathCombo.Data;
@@ -82,14 +83,28 @@ internal partial class GNB : Tank
         advanced = 1 << 1
     }
     
-    private static bool TryUseMits(RotationMode rotationFlags, ref uint actionID) => CanUseNonBossMits(rotationFlags, ref actionID) || CanUseBossMits(rotationFlags, ref actionID);
+    private static bool TryUseMits(RotationMode rotationFlags, ref uint actionID)
+    {
+        var replacedActionId = actionID;
+        if (!CanUseNonBossMits(rotationFlags, ref actionID) &&
+            !CanUseBossMits(rotationFlags, ref actionID))
+        {
+            actionID = replacedActionId;
+            return false;
+        }
+
+        if (actionID == Aurora)
+            actionID = actionID.Retarget(replacedActionId, SimpleTarget.Self);
+
+        return true;
+    }
     
     private static bool CanUseNonBossMits(RotationMode rotationFlags, ref uint actionID)
     {
         #region Initial Bailout
         if (!InCombat() ||
             InBossEncounter() ||
-            !IsEnabled(Preset.GNB_Mit_Advanced_NonBoss) ||
+            !(rotationFlags.HasFlag(RotationMode.simple) || IsEnabled(Preset.GNB_Mit_Advanced_NonBoss)) ||
             (CombatEngageDuration().TotalSeconds <= 15 && IsMoving()))
             return false;
         #endregion
@@ -100,7 +115,8 @@ internal partial class GNB : Tank
     private static bool CanUseBossMits(RotationMode rotationFlags, ref uint actionID)
     {
         #region Initial Bailout
-        if (!InCombat() || !CanWeave() || !InBossEncounter() || !IsEnabled(Preset.GNB_Mit_Advanced_Boss)) return false;
+        if (!InCombat() || !CanWeave() || !InBossEncounter() ||
+            !(rotationFlags.HasFlag(RotationMode.simple) || IsEnabled(Preset.GNB_Mit_Advanced_Boss))) return false;
         #endregion
 
         return TrySmartBossMits(rotationFlags, ref actionID);

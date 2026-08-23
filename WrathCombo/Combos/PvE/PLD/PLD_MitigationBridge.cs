@@ -9,10 +9,18 @@ namespace WrathCombo.Combos.PvE;
 
 internal partial class PLD
 {
+    /// <summary>Long pool: heavy personal / party CDs that must not overwrite each other.
+    /// Bulwark is PLD's designed stacking partner for Rampart, so it lives in the short pool.</summary>
     private static bool IsPldLongMitigationActive() =>
-        HasStatusEffect(Buffs.HallowedGround) ||
+        HasStatusEffect(Role.Buffs.Rampart) ||
         HasStatusEffect(Buffs.Sentinel) ||
-        HasStatusEffect(Buffs.Guardian);
+        HasStatusEffect(Buffs.Guardian) ||
+        HasStatusEffect(Buffs.DivineVeil);
+
+    /// <summary>Short pool: may overlap the long pool. Sheltron/Intervention is handled as a
+    /// prepass, not as a pooled option.</summary>
+    private static bool IsPldShortMitigationActive() =>
+        HasStatusEffect(Buffs.Bulwark);
 
     private static bool IsPldLongMitigationAction(uint actionId) =>
         actionId == HallowedGround ||
@@ -35,6 +43,7 @@ internal partial class PLD
     private static List<MitigationOption> FilterPldMitigationOptions(
         List<MitigationOption> options,
         ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         uint currentHp,
         uint maxHp,
@@ -72,9 +81,7 @@ internal partial class PLD
             if (active.InvulnActive)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsPldLongMitigationActive(),
-                    IsPldLongMitigationAction(option.ActionId)))
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
             {
                 if (IsPldHeavyMitigationAction(option.ActionId) &&
                     TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))

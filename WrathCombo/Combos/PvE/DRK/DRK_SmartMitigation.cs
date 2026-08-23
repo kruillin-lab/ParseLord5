@@ -6,6 +6,7 @@ using WrathCombo.Data;
 using WrathCombo.Extensions;
 using WrathCombo.Services;
 using WrathCombo.Services.SmartMitigation;
+using WrathCombo.Services.TankCooldownHelperIPC;
 using static WrathCombo.Combos.PvE.DRK.Config;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 
@@ -14,7 +15,8 @@ namespace WrathCombo.Combos.PvE;
 internal partial class DRK
 {
     private const long ParseLord5DrkSmartMitTraceThrottleMs = 5_000;
-    private static long _nextParseLord5DrkSmartMitTraceAt;
+    private static readonly SmartMitigationTraceThrottle DrkSmartMitTraceThrottle =
+        new(ParseLord5DrkSmartMitTraceThrottleMs);
 
     private static bool TrySmartBossMits(Combo flags, ref uint actionID) =>
         TrySmartMits(flags, isBoss: true, ref actionID);
@@ -43,7 +45,6 @@ internal partial class DRK
 
         // Invoke passes the combo anchor (HardSlash/Unleash); must not treat as a fallback pick.
         actionID = 0;
-        TraceSmartMitigation(0, null, default, default, isBoss, "enter");
 
         if (!isBoss && TrySmartDrkNonBossPrepass(flags, ref actionID))
             return true;
@@ -52,6 +53,7 @@ internal partial class DRK
             return true;
 
         var threat = TankSmartMitigationThreat.Detect(isBoss, pressure);
+        TraceSmartMitigation(0, null, pressure, threat, isBoss, "enter", player.CurrentHp, player.MaxHp);
 
         if (!TankSmartMitigationThreat.HasMitigationThreat(threat, isBoss, pressure))
         {
@@ -65,7 +67,11 @@ internal partial class DRK
         if (TrySelectSmartPersonalMitigation(flags, isBoss, player.CurrentHp, player.MaxHp, pressure, threat, ref actionID))
             return true;
 
-        return TrySelectSmartPartyMitigation(flags, isBoss, threat, pressure, ref actionID);
+        if (TrySelectSmartPartyMitigation(flags, isBoss, threat, pressure, ref actionID))
+            return true;
+
+        TraceSmartMitigation(0, null, pressure, threat, isBoss, "no_selection", player.CurrentHp, player.MaxHp);
+        return false;
     }
 
     private static bool TrySmartDrkNonBossPrepass(Combo flags, ref uint actionID)
@@ -104,6 +110,9 @@ internal partial class DRK
         TankThreatState threat,
         ref uint actionID)
     {
+        if (!CanWeave)
+            return false;
+
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
@@ -157,7 +166,8 @@ internal partial class DRK
             : BuildDrkNonBossMitigationOptions(flags, threat, pressure, currentHp, maxHp);
 
         var active = GetDrkActiveMitigationState();
-        options = FilterDrkMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
+        options = FilterDrkMitigationOptions(options, active, isBoss, threat, currentHp, maxHp, pressure);
+        TraceSmartMitigation(0, null, pressure, threat, isBoss, "options", currentHp, maxHp, options);
 
         if (options.Count == 0)
             return false;
@@ -175,11 +185,11 @@ internal partial class DRK
             SustainMultiplier: isBoss ? 1f : 1f + Math.Min(enemyCount, 5) * 0.06f,
             PreferHeavyMitigation: preferHeavy);
 
-        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active);
+        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active, isBoss);
         var fallbackAction = 0u;
         if (selected is null &&
-            !TrySelectDrkMitigationFallback(options, ref fallbackAction) &&
-            !TrySelectDrkTchDangerFallback(options, threat, pressure, currentHp, maxHp, ref fallbackAction))
+            !TrySelectDrkMitigationFallback(options, active, isBoss, threat, pressure, ref fallbackAction) &&
+            !TrySelectDrkTchDangerFallback(options, active, isBoss, threat, pressure, currentHp, maxHp, ref fallbackAction))
         {
             TraceSmartMitigation(0, null, pressure, threat, isBoss, "coverage_skip", currentHp, maxHp);
             return false;
@@ -210,6 +220,11 @@ internal partial class DRK
         PlayerPressureState pressure,
         ref uint actionID)
     {
+        // Party mits are oGCDs too: without this the AoE path fires outside the weave
+        // window and clips the GCD, while the personal path (weave-gated) is skipped.
+        if (!CanWeave)
+            return false;
+
         if (!threat.Raidwide && (!isBoss || pressure.DangerRatio < 1.0f))
             return false;
 
@@ -286,6 +301,8 @@ internal partial class DRK
 
     private static bool TrySelectDrkTchDangerFallback(
         List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
@@ -295,31 +312,46 @@ internal partial class DRK
         if (!pressure.FromTankCooldownHelper || !pressure.TankCooldownInDanger || options.Count == 0)
             return false;
 
-        if (IsDrkLongMitigationActive() &&
-            !TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))
-            return false;
-
         if (TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp) &&
             TryPickHeavyFromOptions(options, ref actionID))
             return true;
 
         return TankMitigationSelection.TryPickLowestTier(
             options,
-            IsDrkLongMitigationActive(),
-            IsDrkLongMitigationAction,
+            active,
+            isBoss,
             PassesDrkSmartMitigationGuards,
             ref actionID);
     }
 
-    private static bool TrySelectDrkMitigationFallback(List<MitigationOption> options, ref uint actionID)
+    private static bool TrySelectDrkMitigationFallback(
+        List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
+        TankThreatState threat,
+        PlayerPressureState pressure,
+        ref uint actionID)
     {
-        if (options.Count == 0 || IsDrkLongMitigationActive() || !HasIncomingTankBusterEffect(out _))
+        if (options.Count == 0)
             return false;
 
-        return TankMitigationSelection.TryPickLowestTier(
+        if (HasIncomingTankBusterEffect(out _))
+        {
+            return TankMitigationSelection.TryPickLowestTier(
+                options,
+                active,
+                isBoss,
+                PassesDrkSmartMitigationGuards,
+                ref actionID);
+        }
+
+        return TankMitigationSelection.TryPickSustainedSoftTankbusterFallback(
             options,
-            IsDrkLongMitigationActive(),
-            IsDrkLongMitigationAction,
+            active,
+            isBoss,
+            threat.SoftTankbuster,
+            threat.SustainedPressure,
+            pressure.FromTankCooldownHelper,
             PassesDrkSmartMitigationGuards,
             ref actionID);
     }
@@ -360,7 +392,7 @@ internal partial class DRK
             rampartInContent &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         var wallInContent = flags.HasFlag(Combo.Simple) ||
@@ -382,7 +414,8 @@ internal partial class DRK
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_Boss_DarkMind, flags) &&
@@ -391,7 +424,7 @@ internal partial class DRK
              ContentCheck.IsInConfiguredContent(DRK_Mit_Boss_DarkMind_Difficulty, DRK_Boss_Mit_DifficultyListSet)) &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster))
         {
-            options.Add(new MitigationOption(DarkMind, 0.20f, 0f, 0f, 60f, MitigationTier.Medium));
+            options.Add(new MitigationOption(DarkMind, 0.20f, 0f, 0f, 60f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_Boss_Oblation, flags) &&
@@ -400,14 +433,14 @@ internal partial class DRK
              ContentCheck.IsInConfiguredContent(DRK_Mit_Boss_Oblation_TankBuster_Difficulty, DRK_Boss_Mit_DifficultyListSet)) &&
             threat.ConfirmedTankbuster)
         {
-            options.Add(new MitigationOption(Oblation, 0.10f, 0f, 0f, 60f, MitigationTier.Small));
+            options.Add(new MitigationOption(Oblation, 0.10f, 0f, 0f, 60f, MitigationTier.Small, MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_Boss_BlackestNight_TB, flags) &&
             ActionReady(BlackestNight) &&
             threat.ConfirmedTankbuster)
         {
-            options.Add(new MitigationOption(BlackestNight, 0f, 0.25f, 0f, 15f, MitigationTier.Small));
+            options.Add(new MitigationOption(BlackestNight, 0f, 0.25f, 0f, 15f, MitigationTier.Small, MitigationPool.Exempt));
         }
 
         return options;
@@ -427,21 +460,21 @@ internal partial class DRK
             ActionReady(DarkMind) &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(DarkMind, 0.20f, 0f, 0f, 60f, MitigationTier.Medium));
+            options.Add(new MitigationOption(DarkMind, 0.20f, 0f, 0f, 60f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_Rampart, flags) &&
             Role.CanRampart() &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_ArmsLength, flags) &&
             ActionReady(Role.ArmsLength) &&
             enemyCount >= 3)
         {
-            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium, MitigationPool.TrashOnly));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_ShadowWall, flags) &&
@@ -457,14 +490,15 @@ internal partial class DRK
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.DRK_Mitigation_NonBoss_Oblation, flags) &&
             ActionReady(Oblation) &&
             enemyCount >= 4)
         {
-            options.Add(new MitigationOption(Oblation, 0.10f, 0f, 0f, 60f, MitigationTier.Small));
+            options.Add(new MitigationOption(Oblation, 0.10f, 0f, 0f, 60f, MitigationTier.Small, MitigationPool.Short));
         }
 
         return options;
@@ -474,9 +508,11 @@ internal partial class DRK
     {
         var reduction = 0f;
         var shield = 0f;
+        var longPoolActive = IsDrkLongMitigationActive();
+        var shortPoolActive = IsDrkShortMitigationActive();
 
         if (HasAnyStatusEffects([Buffs.LivingDead, Buffs.WalkingDead, Buffs.UndeadRebirth]))
-            return new ActiveMitigationState(1f, 0f, 0f, true);
+            return new ActiveMitigationState(1f, 0f, 0f, true, longPoolActive, shortPoolActive);
 
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
@@ -487,6 +523,9 @@ internal partial class DRK
         if (HasStatusEffect(Buffs.DarkMind))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
 
+        if (HasStatusEffect(Buffs.Oblation))
+            reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.10f);
+
         if (HasStatusEffect(Buffs.ShadowWall))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.30f);
 
@@ -496,7 +535,7 @@ internal partial class DRK
         if (HasOwnTBN && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.25f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longPoolActive, shortPoolActive);
     }
 
     private static bool PassesDrkSmartMitigationGuards(uint selectedActionId)
@@ -534,19 +573,47 @@ internal partial class DRK
         bool isBoss,
         string source,
         uint currentHp = 0,
-        uint maxHp = 0)
+        uint maxHp = 0,
+        IReadOnlyList<MitigationOption>? options = null)
     {
         var now = Environment.TickCount64;
-        if (now < _nextParseLord5DrkSmartMitTraceAt)
+        if (!DrkSmartMitTraceThrottle.ShouldLog(now, source))
             return;
-
-        _nextParseLord5DrkSmartMitTraceAt = now + ParseLord5DrkSmartMitTraceThrottleMs;
 
         var actionLabel = selectedActionId == 0
             ? "none"
             : $"{selectedActionId.ActionName()}({selectedActionId})";
 
+        var active = GetDrkActiveMitigationState();
+        var optionSummary = "-";
+        if (options is { Count: > 0 })
+        {
+            var optionLabels = new string[options.Count];
+            for (var i = 0; i < options.Count; i++)
+            {
+                var option = options[i];
+                optionLabels[i] = $"{option.ActionId.ActionName()}({option.ActionId}):{option.Pool}";
+            }
+
+            optionSummary = string.Join(',', optionLabels);
+        }
+
+        var tchLevel = pressure.TankCooldownDangerLevel?.ToString() ?? "-";
+        var pressureSource = pressure.FromTankCooldownHelper
+            ? "tch"
+            : TankCooldownHelperIpcClient.IsPluginLoaded
+                ? TankCooldownHelperIpcClient.LastPressureSourceFailure ?? "telemetry"
+                : "telemetry";
+        var coverageSuffix = coverage is { } result
+            ? $" reason={result.Reason} budget={result.IncomingDamageBudget:F0} requiredR={result.RequiredReduction:F2} activeR={result.ActiveReduction:F2}"
+            : string.Empty;
+
         Svc.Log.Debug(
-            $"[ParseLord5][DRK_SmartMit] ctx={(isBoss ? "boss" : "trash")} source={source} action={actionLabel} ratio={pressure.DangerRatio:F2}");
+            "[ParseLord5][DRK_SmartMit] " +
+            $"ctx={(isBoss ? "boss" : "trash")} source={source} action={actionLabel}{coverageSuffix} " +
+            $"tb={threat.ConfirmedTankbuster} softTb={threat.SoftTankbuster} raidwide={threat.Raidwide} sustained={threat.SustainedPressure} " +
+            $"spike={threat.MechanicSpikeFraction:F2} netDps={pressure.NetDps:F0} ratio={pressure.DangerRatio:F2} maxHit={pressure.MaxSingleHit:F0} " +
+            $"tchLvl={tchLevel} pressureSrc={pressureSource} hp={currentHp}/{maxHp} weave={CanWeave} justUsed={JustUsedMitigation} " +
+            $"usedThisGcd={UsedDrkMitigationThisGcd} longActive={active.LongPoolActive} shortActive={active.ShortPoolActive} options=[{optionSummary}]");
     }
 }

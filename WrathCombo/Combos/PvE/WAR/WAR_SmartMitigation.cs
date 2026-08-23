@@ -152,11 +152,11 @@ internal partial class WAR
             SustainMultiplier: sustainMultiplier,
             PreferHeavyMitigation: ShouldOfferDamnation(threat, pressure, currentHp, maxHp));
 
-        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active);
+        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active, isBoss);
         var fallbackAction = 0u;
         if (selected is null &&
             !TrySelectWarMitigationFallback(options, threat, isBoss, ref fallbackAction) &&
-            !TrySelectWarTchDangerFallback(options, threat, pressure, currentHp, maxHp, ref fallbackAction))
+            !TrySelectWarTchDangerFallback(options, threat, pressure, currentHp, maxHp, isBoss, ref fallbackAction))
         {
             TraceSmartMitigation(0, null, pressure, threat, isBoss, "coverage_skip", currentHp, maxHp);
             return false;
@@ -194,6 +194,9 @@ internal partial class WAR
         TankThreatState threat,
         ref uint actionID)
     {
+        if (!InWarOgcdWindow)
+            return false;
+
         if (IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
             return false;
 
@@ -220,6 +223,11 @@ internal partial class WAR
         PlayerPressureState pressure,
         ref uint actionID)
     {
+        // Party mits are oGCDs too: without this the AoE path fires outside the oGCD
+        // window and clips the GCD, while the personal path (window-gated) is skipped.
+        if (!InWarOgcdWindow)
+            return false;
+
         if (IsWarBloodwhettingDefenseActive() || UsedWarMitigationThisGcd)
             return false;
 
@@ -302,6 +310,7 @@ internal partial class WAR
         PlayerPressureState pressure,
         uint currentHp,
         uint maxHp,
+        bool isBoss,
         ref uint actionID)
     {
         if (!pressure.FromTankCooldownHelper || !pressure.TankCooldownInDanger)
@@ -310,14 +319,11 @@ internal partial class WAR
         if (options.Count == 0)
             return false;
 
-        if (IsWarLongMitigationActive() && !ShouldOfferDamnation(threat, pressure, currentHp, maxHp))
-            return false;
-
         if (ShouldOfferDamnation(threat, pressure, currentHp, maxHp) &&
             TryPickDamnationFromOptions(options, ref actionID))
             return true;
 
-        return TryPickLowestTierWarMitigation(options, ref actionID);
+        return TryPickLowestTierWarMitigation(options, isBoss, ref actionID);
     }
 
     private static bool TryPickDamnationFromOptions(List<MitigationOption> options, ref uint actionID)
@@ -392,27 +398,29 @@ internal partial class WAR
     {
         _ = threat;
         _ = isBoss;
-        if (options.Count == 0 || IsWarLongMitigationActive())
+        if (options.Count == 0)
             return false;
 
         if (!HasIncomingTankBusterEffect(out _))
             return false;
 
-        return TryPickLowestTierWarMitigation(options, ref actionID);
+        return TryPickLowestTierWarMitigation(options, isBoss, ref actionID);
     }
 
-    private static bool TryPickLowestTierWarMitigation(List<MitigationOption> options, ref uint actionID) =>
-        TryPickWarMitigationInTierRange(options, MitigationTier.Small, MitigationTier.Large, preferHighestTier: false, ref actionID);
+    private static bool TryPickLowestTierWarMitigation(List<MitigationOption> options, bool isBoss, ref uint actionID) =>
+        TryPickWarMitigationInTierRange(options, MitigationTier.Small, MitigationTier.Large, preferHighestTier: false, isBoss, ref actionID);
 
     private static bool TryPickWarMitigationInTierRange(
         List<MitigationOption> options,
         MitigationTier minTier,
         MitigationTier maxTier,
         bool preferHighestTier,
+        bool isBoss,
         ref uint actionID)
     {
         MitigationOption pick = default;
         var bestTier = preferHighestTier ? -1 : int.MaxValue;
+        var active = GetWarActiveMitigationState();
 
         for (var i = 0; i < options.Count; i++)
         {
@@ -422,9 +430,7 @@ internal partial class WAR
             if (tier < (int)minTier || tier > (int)maxTier)
                 continue;
 
-            if (TrashMitigationOrdering.ShouldExcludeLongMitigationOption(
-                    IsWarLongMitigationActive(),
-                    IsWarLongMitigationAction(option.ActionId)))
+            if (TrashMitigationOrdering.ShouldExcludeForStacking(option.Pool, active, isBoss))
                 continue;
 
             if (preferHighestTier)
@@ -470,7 +476,8 @@ internal partial class WAR
                 0.10f,
                 0f,
                 25f,
-                MitigationTier.Small));
+                MitigationTier.Small,
+                MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_Boss_RawIntuition_OnCD, rotationFlags) &&
@@ -485,7 +492,8 @@ internal partial class WAR
                 0.10f,
                 0f,
                 25f,
-                MitigationTier.Small));
+                MitigationTier.Small,
+                MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_Boss_Rampart, rotationFlags) &&
@@ -494,7 +502,7 @@ internal partial class WAR
              ContentCheck.IsInConfiguredContent(WAR_Mitigation_Boss_Rampart_Difficulty, WAR_Boss_Mit_DifficultyListSet)) &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_Boss_Vengeance, rotationFlags) &&
@@ -512,7 +520,8 @@ internal partial class WAR
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mit_Holmgang_Max, rotationFlags) &&
@@ -521,7 +530,7 @@ internal partial class WAR
             (rotationFlags.HasFlag(RotationMode.simple) ||
              ContentCheck.IsInConfiguredContent(WAR_Mit_Holmgang_Max_Difficulty, WAR_Mit_Holmgang_Max_DifficultyListSet)))
         {
-            options.Add(new MitigationOption(Holmgang, 1f, 0f, 0f, 240f, MitigationTier.Invuln));
+            options.Add(new MitigationOption(Holmgang, 1f, 0f, 0f, 240f, MitigationTier.Invuln, MitigationPool.Exempt));
         }
 
         return options;
@@ -547,21 +556,22 @@ internal partial class WAR
                 0.10f,
                 0f,
                 25f,
-                MitigationTier.Small));
+                MitigationTier.Small,
+                MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_Rampart, rotationFlags) &&
             Role.CanRampart() &&
             (enemyCount >= 3 || threat.ConfirmedTankbuster || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_ArmsLength, rotationFlags) &&
             ActionReady(Role.ArmsLength) &&
             enemyCount >= 3)
         {
-            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium, MitigationPool.TrashOnly));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_Vengeance, rotationFlags) &&
@@ -577,14 +587,15 @@ internal partial class WAR
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.WAR_Mitigation_NonBoss_Holmgang, rotationFlags) &&
             ActionReady(Holmgang) &&
             threat.ConfirmedTankbuster)
         {
-            options.Add(new MitigationOption(Holmgang, 1f, 0f, 0f, 240f, MitigationTier.Invuln));
+            options.Add(new MitigationOption(Holmgang, 1f, 0f, 0f, 240f, MitigationTier.Invuln, MitigationPool.Exempt));
         }
 
         return options;
@@ -596,6 +607,8 @@ internal partial class WAR
         var shield = 0f;
         var maxHpBonus = 0f;
         var invuln = false;
+        var longPoolActive = IsWarLongMitigationActive();
+        var shortPoolActive = IsWarShortMitigationActive();
 
         if (HasStatusEffect(Buffs.Holmgang))
             invuln = true;
@@ -621,7 +634,7 @@ internal partial class WAR
         if (HasStatusEffect(Buffs.BloodwhettingShield) && LocalPlayer is { } player && player.MaxHp > 0)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, maxHpBonus, invuln);
+        return new ActiveMitigationState(reduction, shield, maxHpBonus, invuln, longPoolActive, shortPoolActive);
     }
 
     private static bool PassesWarSmartMitigationGuards(uint selectedActionId)

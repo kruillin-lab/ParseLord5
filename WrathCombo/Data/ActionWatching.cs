@@ -89,7 +89,16 @@ public static class ActionWatching
         ActorControlPacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.HandleActorControlPacket>(PacketDispatcher.Addresses.HandleActorControlPacket.Value, ActorControlDetour);
         OnRecievePacketHook ??= Svc.Hook.HookFromAddress<PacketDispatcher.Delegates.OnReceivePacket>((nint)PacketDispatcher.StaticVirtualTablePointer->OnReceivePacket, OnReceivePacketDetour);
         OnCastInterrupted += CancelPendingLastActionUpdate;
+        OnGCDRoll += UpdateWeaves;
 
+    }
+
+    private static void UpdateWeaves(bool rolling)
+    {
+        // Safety net only. The authoritative reset is the GCD action itself (see
+        // ActionEffect: Spell/Weaponskill clear the weave window).
+        if (!rolling)
+            WeaveActions.Clear();
     }
 
     private static unsafe void OnReceivePacketDetour(PacketDispatcher* thisPtr, uint targetId, nint packet)
@@ -203,6 +212,7 @@ public static class ActionWatching
         ActorControlPacketHook?.Dispose();
         OnRecievePacketHook?.Dispose();
         OnCastInterrupted -= CancelPendingLastActionUpdate;
+        OnGCDRoll -= UpdateWeaves;
     }
 
 
@@ -378,6 +388,7 @@ public static class ActionWatching
                     break;
 
                 case 4: // Ability
+                    // Only oGCDs count toward the weave window; a GCD opens a fresh one.
                     LastAbility = actionId;
                     WeaveActions.Add(actionId);
                     break;

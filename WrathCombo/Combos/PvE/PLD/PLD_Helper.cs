@@ -25,6 +25,47 @@ internal partial class PLD
 
     private static bool CanPldWeave => CanWeave() || CanDelayedWeave();
 
+    #region ParseLord5 oGCD diagnostics
+
+    private const long ParseLord5PldOgcdTraceThrottleMs = 3_000;
+    private static long _nextPldOgcdGateTraceAt;
+    private static long _nextPldOgcdFofTraceAt;
+
+    /// <summary>ParseLord5: reports why the oGCD lane never opened (weave gate).</summary>
+    private static void TracePldOgcdGateClosed(Combo flags, bool mitigationTookLane)
+    {
+        if (!InCombat() || !HasBattleTarget())
+            return;
+
+        var now = Environment.TickCount64;
+        if (now < _nextPldOgcdGateTraceAt)
+            return;
+        _nextPldOgcdGateTraceAt = now + ParseLord5PldOgcdTraceThrottleMs;
+
+        ECommons.DalamudServices.Svc.Log.Debug(
+            $"[ParseLord5][PLD_OGCD] gate-closed flags={flags} mitLane={mitigationTookLane} " +
+            $"canWeave={CanWeave()} canDelayWeave={CanDelayedWeave()} weaves={ActionWatching.WeaveActions.Count} " +
+            $"gcdLeft={RemainingGCD:F2}");
+    }
+
+    /// <summary>ParseLord5: reports the Fight or Flight decision inputs inside the weave window.</summary>
+    private static void TracePldOgcdGate(Combo flags, bool fofEnabled, bool hasReqMp, int fofStopThreshold, bool fofWillBeUsed)
+    {
+        var now = Environment.TickCount64;
+        if (now < _nextPldOgcdFofTraceAt)
+            return;
+        _nextPldOgcdFofTraceAt = now + ParseLord5PldOgcdTraceThrottleMs;
+
+        ECommons.DalamudServices.Svc.Log.Debug(
+            $"[ParseLord5][PLD_OGCD] window flags={flags} fofEnabled={fofEnabled} fofWillBeUsed={fofWillBeUsed} " +
+            $"fofReady={ActionReady(FightOrFlight)} fofCd={GetCooldownRemainingTime(FightOrFlight):F1} " +
+            $"reqMp={hasReqMp} mp={LocalPlayer.CurrentMp} melee={InMeleeRange()} hasWeaved={HasWeaved()} " +
+            $"engage={CombatEngageDuration().TotalSeconds:F0} tgtHp={GetTargetHPPercent():F0} stop={fofStopThreshold} " +
+            $"weaves={ActionWatching.WeaveActions.Count} gcdLeft={RemainingGCD:F2}");
+    }
+
+    #endregion
+
     #endregion
 
     #region One Button Mitigation Priority
@@ -162,7 +203,7 @@ internal partial class PLD
 
         if (!InCombat() ||
             InBossEncounter() ||
-            !IsEnabled(Preset.PLD_Mitigation_NonBoss) ||
+            !(rotationFlags.HasFlag(RotationMode.Simple) || IsEnabled(Preset.PLD_Mitigation_NonBoss)) ||
             (CombatEngageDuration().TotalSeconds <= 15 && IsMoving()))
             return false;
 
@@ -286,7 +327,8 @@ internal partial class PLD
     {
         #region Initial Bailout
 
-        if (!InCombat() || !CanPldWeave || !InBossEncounter() || !IsEnabled(Preset.PLD_Mitigation_Boss)) return false;
+        if (!InCombat() || !CanPldWeave || !InBossEncounter() ||
+            !(rotationFlags.HasFlag(RotationMode.Simple) || IsEnabled(Preset.PLD_Mitigation_Boss))) return false;
 
         #endregion
 
@@ -558,7 +600,12 @@ internal partial class PLD
             flags.HasFlag(Combo.ST) ? PLD_ST_InterveneTimeStill : PLD_AoE_InterveneTimeStill;
         #endregion
         
-        if (InCombat() && HasBattleTarget() && CanWeave())
+        if (!(InCombat() && HasBattleTarget() && CanWeave()))
+        {
+            TracePldOgcdGateClosed(flags, false);
+            return false;
+        }
+
         {
             if (interruptEnabled && Role.CanInterject())
             {
@@ -572,25 +619,39 @@ internal partial class PLD
                 return true;
             }
             
-            if (fightOrFlightEnabled && !HasWeaved() && CombatEngageDuration().TotalSeconds >= 8 && //Time to hold buffing for non opener pulls.
-                OriginalHook(FightOrFlight) is FightOrFlight && ActionReady(FightOrFlight) && //To make sure it doesnt try to weave gcd Goring Blade
-                (!LevelChecked(Requiescat) || hasRequiescatMp) && //Must Have Enough Mana to combo
-                (InMeleeRange() || LevelChecked(Imperator) && InActionRange(Imperator) && IsOffCooldown(Imperator)) && // in melee or ready to start ranged combo with imperator
-                GetTargetHPPercent() >= fightOrFlightStopThreshold) //Health Threshold Check, boss check built into config
+            // ParseLord5: a single "will Fight or Flight actually be used?" evaluation.
+            // Every pooling check below keys off this instead of assuming that an
+            // off-cooldown FoF means a burst window is imminent - otherwise a held FoF
+            // (no MP, out of melee, HP threshold) deadlocks the whole oGCD ladder.
+            bool fofWillBeUsed = fightOrFlightEnabled &&
+                                 ActionReady(FightOrFlight) &&
+                                 OriginalHook(FightOrFlight) is FightOrFlight &&
+                                 (!LevelChecked(Requiescat) || hasRequiescatMp) &&
+                                 (InMeleeRange() || (LevelChecked(Imperator) && InActionRange(Imperator) && IsOffCooldown(Imperator))) &&
+                                 GetTargetHPPercent() >= fightOrFlightStopThreshold &&
+                                 (!InBossEncounter() || CombatEngageDuration().TotalSeconds >= 8);
+
+            bool fofPoolingReleased = GetCooldownRemainingTime(FightOrFlight) == 0 && !fofWillBeUsed;
+
+            TracePldOgcdGate(flags, fightOrFlightEnabled, hasRequiescatMp, fightOrFlightStopThreshold, fofWillBeUsed);
+
+            if (fofWillBeUsed && !HasWeaved())
             {
                 actionID = FightOrFlight;
                 return true;
             }
-            
-            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) && GetCooldownRemainingTime(FightOrFlight) > 50 && InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
+
+            if ((requiescatEnabled && ActionReady(OriginalHook(Requiescat)) &&
+                 (GetCooldownRemainingTime(FightOrFlight) > 50 || fofPoolingReleased) &&
+                 InActionRange(OriginalHook(Requiescat))) || //Requiescat Logic, in action range because Imperator gets 25y range
                 (bladeOfHonorEnabled && LevelChecked(BladeOfHonor) && OriginalHook(Requiescat) == BladeOfHonor)) //Blade of Honor Logic since it shares the button
             {
                 actionID = OriginalHook(Requiescat);
                 return true;
             }
-                
+
             if (interveneEnabled && ActionReady(Intervene) && !JustUsed(Intervene, 2f) && 
-                (!fightOrFlightEnabled && !poolInterveneForManual || GetCooldownRemainingTime(FightOrFlight) > 40) && //Buff Window Check
+                (!fightOrFlightEnabled && !poolInterveneForManual || GetCooldownRemainingTime(FightOrFlight) > 40 || fofPoolingReleased) && //Buff Window Check
                 GetRemainingCharges(Intervene) > interveneChargeThreshold && //Charge Check
                 GetTargetDistance() <= interveneDistanceThreshold && //Distance Check
                 (interveneMovement == 1 || //Time Standing Still Check
@@ -601,14 +662,14 @@ internal partial class PLD
             }
 
             if (spiritsWithinEnabled && ActionReady(OriginalHook(SpiritsWithin)) &&
-                (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+                (!fightOrFlightEnabled && !poolSpiritsForManual || GetCooldownRemainingTime(FightOrFlight) > 15 || fofPoolingReleased))
             {
                 actionID = OriginalHook(SpiritsWithin);
                 return true;
             }
 
             if (circleOfScornEnabled && ActionReady(CircleOfScorn) && NumberOfEnemiesInRange(CircleOfScorn) > 0 && //Enemy Check as it requires no target to fire
-                (!fightOrFlightEnabled && !poolCircleForManual || GetCooldownRemainingTime(FightOrFlight) > 15))
+                (!fightOrFlightEnabled && !poolCircleForManual || GetCooldownRemainingTime(FightOrFlight) > 15 || fofPoolingReleased))
             {
                 actionID = CircleOfScorn;
                 return true;
@@ -908,7 +969,8 @@ internal partial class PLD
             Intervention = 2020,
             Guardian = 3829,
             Sentinel = 74,
-            Bulwark = 77;
+            Bulwark = 77,
+            DivineVeil = 2169;
     }
 
     public static class Debuffs

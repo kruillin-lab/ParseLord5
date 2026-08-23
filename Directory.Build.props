@@ -1,5 +1,6 @@
 <Project>
     <PropertyGroup>
+        <RestoreConfigFile>$(MSBuildThisFileDirectory)nuget.config</RestoreConfigFile>
         <ECommonsLocalPath>..\..\ECommons\ECommons\ECommons.csproj</ECommonsLocalPath>
     </PropertyGroup>
 

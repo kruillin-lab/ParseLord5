@@ -31,13 +31,19 @@ internal partial class GNB
 
         actionID = 0;
 
+        var threat = TankSmartMitigationThreat.Detect(isBoss, pressure);
+
+        if (isBoss && TrySmartGnbBossAurora(rotationFlags, player.CurrentHp, player.MaxHp, pressure, threat, ref actionID))
+            return true;
+
         if (!isBoss && TrySmartGnbNonBossPrepass(rotationFlags, ref actionID))
             return true;
 
         if (!isBoss && TrySmartGnbNonBossEmergency(rotationFlags, ref actionID))
             return true;
 
-        var threat = TankSmartMitigationThreat.Detect(isBoss, pressure);
+        if (!isBoss && TrySmartGnbNonBossAurora(rotationFlags, pressure, threat, ref actionID))
+            return true;
 
         if (!TankSmartMitigationThreat.HasMitigationThreat(threat, isBoss, pressure))
         {
@@ -54,12 +60,40 @@ internal partial class GNB
         return TrySelectSmartPartyMitigation(rotationFlags, isBoss, threat, pressure, ref actionID);
     }
 
+    private static bool TrySmartGnbBossAurora(
+        RotationMode rotationFlags,
+        uint currentHp,
+        uint maxHp,
+        PlayerPressureState pressure,
+        TankThreatState threat,
+        ref uint actionID)
+    {
+        if (!GnbAuroraSelection.ShouldUseBossSelfHeal(
+                IsSmartMitEnabled(Preset.GNB_Mit_Advanced_Boss_Aurora, rotationFlags),
+                CanWeave(),
+                UsedGnbMitigationThisGcd,
+                ActionReady(Aurora),
+                currentHp,
+                maxHp,
+                rotationFlags.HasFlag(RotationMode.simple),
+                GNB_Mit_Advanced_Boss_Aurora_Health,
+                HasStatusEffect(Buffs.Aurora),
+                JustUsed(Aurora),
+                HasStatusEffect(Buffs.CatharsisOfCorundum)))
+            return false;
+
+        actionID = Aurora;
+        TraceSmartMitigation(actionID, null, pressure, threat, true, "self_aurora", currentHp, maxHp);
+        return true;
+    }
+
     private static bool TrySmartGnbNonBossPrepass(RotationMode rotationFlags, ref uint actionID)
     {
         if (!IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_HeartOfStone, rotationFlags) ||
             !ActionReady(OriginalHook(HeartOfStone)) ||
             !CanWeave() ||
             UsedGnbMitigationThisGcd ||
+            IsGnbCorundumActive() ||
             HasStatusEffect(Buffs.Superbolide))
             return false;
 
@@ -84,12 +118,43 @@ internal partial class GNB
         return false;
     }
 
+    /// <summary>
+    ///     Trash Aurora self-heal. Restores the behaviour dropped when GNB moved to smart mit,
+    ///     re-wiring the orphaned GNB_Mit_Advanced_NonBoss_Aurora preset (7705).
+    /// </summary>
+    private static bool TrySmartGnbNonBossAurora(
+        RotationMode rotationFlags,
+        PlayerPressureState pressure,
+        TankThreatState threat,
+        ref uint actionID)
+    {
+        if (!IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_Aurora, rotationFlags) ||
+            !CanWeave() ||
+            UsedGnbMitigationThisGcd ||
+            !ActionReady(Aurora) ||
+            HasStatusEffect(Buffs.Aurora) ||
+            JustUsed(Aurora) ||
+            HasStatusEffect(Buffs.Superbolide) ||
+            HasStatusEffect(Buffs.CatharsisOfCorundum))
+            return false;
+
+        if (NumberOfEnemiesInRange(Role.Reprisal) < 3)
+            return false;
+
+        actionID = Aurora;
+        TraceSmartMitigation(actionID, null, pressure, threat, false, "trash_aurora");
+        return true;
+    }
+
     private static bool TrySelectGnbTrashReprisalFirst(
         RotationMode rotationFlags,
         PlayerPressureState pressure,
         TankThreatState threat,
         ref uint actionID)
     {
+        if (!CanWeave())
+            return false;
+
         var enemyCount = NumberOfEnemiesInRange(Role.Reprisal);
         var reprisalReady = ActionReady(Role.Reprisal) && Role.CanReprisal(checkTargetForDebuff: false);
 
@@ -154,7 +219,7 @@ internal partial class GNB
             : BuildGnbNonBossMitigationOptions(rotationFlags, threat, pressure, currentHp, maxHp);
 
         var active = GetGnbActiveMitigationState();
-        options = FilterGnbMitigationOptions(options, active, threat, currentHp, maxHp, pressure);
+        options = FilterGnbMitigationOptions(options, active, isBoss, threat, currentHp, maxHp, pressure);
 
         if (options.Count == 0)
             return false;
@@ -172,11 +237,11 @@ internal partial class GNB
             SustainMultiplier: isBoss ? 1f : 1f + Math.Min(enemyCount, 5) * 0.06f,
             PreferHeavyMitigation: preferHeavy);
 
-        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active);
+        var selected = MitigationCoverageCalculator.SelectMinimumMitigation(request, options, active, isBoss);
         var fallbackAction = 0u;
         if (selected is null &&
-            !TrySelectGnbMitigationFallback(options, ref fallbackAction) &&
-            !TrySelectGnbTchDangerFallback(options, threat, pressure, currentHp, maxHp, ref fallbackAction))
+            !TrySelectGnbMitigationFallback(options, active, isBoss, threat, pressure, ref fallbackAction) &&
+            !TrySelectGnbTchDangerFallback(options, active, isBoss, threat, pressure, currentHp, maxHp, ref fallbackAction))
         {
             TraceSmartMitigation(0, null, pressure, threat, isBoss, "coverage_skip", currentHp, maxHp);
             return false;
@@ -207,6 +272,11 @@ internal partial class GNB
         PlayerPressureState pressure,
         ref uint actionID)
     {
+        // Party mits are oGCDs too: without this the AoE path fires outside the weave
+        // window and clips the GCD, while the personal path (weave-gated) is skipped.
+        if (!CanWeave())
+            return false;
+
         if (!threat.Raidwide && (!isBoss || pressure.DangerRatio < 1.0f))
             return false;
 
@@ -279,6 +349,8 @@ internal partial class GNB
 
     private static bool TrySelectGnbTchDangerFallback(
         List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
         TankThreatState threat,
         PlayerPressureState pressure,
         uint currentHp,
@@ -288,31 +360,37 @@ internal partial class GNB
         if (!pressure.FromTankCooldownHelper || !pressure.TankCooldownInDanger || options.Count == 0)
             return false;
 
-        if (IsGnbLongMitigationActive() &&
-            !TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp))
-            return false;
-
         if (TankSmartMitigationThreat.ShouldOfferHeavyMitigation(threat, pressure, currentHp, maxHp) &&
             TryPickHeavyFromOptions(options, ref actionID))
             return true;
 
         return TankMitigationSelection.TryPickLowestTier(
             options,
-            IsGnbLongMitigationActive(),
-            IsGnbLongMitigationAction,
+            active,
+            isBoss,
             PassesGnbSmartMitigationGuards,
             ref actionID);
     }
 
-    private static bool TrySelectGnbMitigationFallback(List<MitigationOption> options, ref uint actionID)
+    private static bool TrySelectGnbMitigationFallback(
+        List<MitigationOption> options,
+        ActiveMitigationState active,
+        bool isBoss,
+        TankThreatState threat,
+        PlayerPressureState pressure,
+        ref uint actionID)
     {
-        if (options.Count == 0 || IsGnbLongMitigationActive() || !HasIncomingTankBusterEffect(out _))
+        if (options.Count == 0)
             return false;
 
-        return TankMitigationSelection.TryPickLowestTier(
+        return TankMitigationSelection.TryPickTankMitigationFallback(
             options,
-            IsGnbLongMitigationActive(),
-            IsGnbLongMitigationAction,
+            active,
+            isBoss,
+            HasIncomingTankBusterEffect(out _),
+            threat.SoftTankbuster,
+            threat.SustainedPressure,
+            pressure.FromTankCooldownHelper,
             PassesGnbSmartMitigationGuards,
             ref actionID);
     }
@@ -351,7 +429,7 @@ internal partial class GNB
             rampartInContent &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         var nebulaInContent = rotationFlags.HasFlag(RotationMode.simple) ||
@@ -371,8 +449,11 @@ internal partial class GNB
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
+
+        AddGnbBossCorundumOption(options, rotationFlags, threat, currentHp, maxHp);
 
         var camoInContent = rotationFlags.HasFlag(RotationMode.simple) ||
                             ContentCheck.IsInConfiguredContent(GNB_Mit_Advanced_Boss_Camouflage_Difficulty, GNB_Boss_Mit_DifficultyListSet);
@@ -382,10 +463,58 @@ internal partial class GNB
             camoInContent &&
             (threat.ConfirmedTankbuster || threat.SoftTankbuster))
         {
-            options.Add(new MitigationOption(Camouflage, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Camouflage, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         return options;
+    }
+
+    /// <summary>
+    ///     Boss Heart of Stone / Heart of Corundum. Exempt pool: a 25s personal shield+DR that
+    ///     always stacks, so it keeps a usable option available while a long CD is running.
+    ///     Wires the previously-orphaned OnCD (7716) and TankBuster (7717) presets.
+    /// </summary>
+    private static void AddGnbBossCorundumOption(
+        List<MitigationOption> options,
+        RotationMode rotationFlags,
+        TankThreatState threat,
+        uint currentHp,
+        uint maxHp)
+    {
+        var corundum = OriginalHook(HeartOfStone);
+
+        if (!ActionReady(corundum) || IsGnbCorundumActive() || maxHp == 0)
+            return;
+
+        var onCdInContent = rotationFlags.HasFlag(RotationMode.simple) ||
+                            ContentCheck.IsInConfiguredContent(GNB_Mit_Advanced_Boss_HeartOfStone_OnCD_Difficulty, GNB_Boss_Mit_DifficultyListSet);
+
+        var tankBusterInContent = rotationFlags.HasFlag(RotationMode.simple) ||
+                                  ContentCheck.IsInConfiguredContent(GNB_Mit_Advanced_Boss_HeartOfStone_TankBuster_Difficulty, GNB_Boss_Mit_DifficultyListSet);
+
+        var healthThreshold = rotationFlags.HasFlag(RotationMode.simple)
+            ? 80
+            : GNB_Mit_Advanced_Boss_HeartOfStone_Health;
+
+        var onCd = IsSmartMitEnabled(Preset.GNB_Mit_Advanced_Boss_HeartOfStone_OnCD, rotationFlags) &&
+                   onCdInContent &&
+                   (ulong)currentHp * 100 <= (ulong)maxHp * (uint)healthThreshold;
+
+        var onTankBuster = IsSmartMitEnabled(Preset.GNB_Mit_Advanced_Boss_HeartOfStone_TankBuster, rotationFlags) &&
+                           tankBusterInContent &&
+                           (threat.ConfirmedTankbuster || threat.SoftTankbuster);
+
+        if (!onCd && !onTankBuster)
+            return;
+
+        options.Add(new MitigationOption(
+            corundum,
+            0.15f,
+            maxHp * 0.10f,
+            0f,
+            25f,
+            MitigationTier.Small,
+            MitigationPool.Exempt));
     }
 
     private static List<MitigationOption> BuildGnbNonBossMitigationOptions(
@@ -402,21 +531,21 @@ internal partial class GNB
             Role.CanRampart() &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.Rampart, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Long));
         }
 
         if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_ArmsLength, rotationFlags) &&
             ActionReady(Role.ArmsLength) &&
             enemyCount >= 3)
         {
-            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Role.ArmsLength, 0.20f, 0f, 0f, 120f, MitigationTier.Medium, MitigationPool.TrashOnly));
         }
 
         if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_Camouflage, rotationFlags) &&
             ActionReady(Camouflage) &&
             (enemyCount >= 3 || threat.SustainedPressure))
         {
-            options.Add(new MitigationOption(Camouflage, 0.20f, 0f, 0f, 90f, MitigationTier.Medium));
+            options.Add(new MitigationOption(Camouflage, 0.20f, 0f, 0f, 90f, MitigationTier.Medium, MitigationPool.Short));
         }
 
         if (IsSmartMitEnabled(Preset.GNB_Mit_Advanced_NonBoss_Nebula, rotationFlags) &&
@@ -432,7 +561,8 @@ internal partial class GNB
                 0f,
                 0f,
                 120f,
-                MitigationTier.Large));
+                MitigationTier.Large,
+                MitigationPool.Long));
         }
 
         return options;
@@ -442,9 +572,11 @@ internal partial class GNB
     {
         var reduction = 0f;
         var shield = 0f;
+        var longPoolActive = IsGnbLongMitigationActive();
+        var shortPoolActive = IsGnbShortMitigationActive();
 
         if (HasStatusEffect(Buffs.Superbolide))
-            return new ActiveMitigationState(1f, 0f, 0f, true);
+            return new ActiveMitigationState(1f, 0f, 0f, true, longPoolActive, shortPoolActive);
 
         if (HasStatusEffect(Role.Buffs.Rampart))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.20f);
@@ -461,10 +593,14 @@ internal partial class GNB
         if (HasStatusEffect(Buffs.GreatNebula))
             reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.40f);
 
+        // Heart of Corundum's damage-reduction window (Clarity of Corundum), previously uncounted.
+        if (HasStatusEffect(Buffs.ClarityOfCorundum))
+            reduction = MitigationCoverageCalculator.CombineReduction(reduction, 0.15f);
+
         if (HasAnyStatusEffects([Buffs.HeartOfStone, Buffs.HeartOfCorundum]) && LocalPlayer is { MaxHp: > 0 } player)
             shield += player.MaxHp * 0.10f;
 
-        return new ActiveMitigationState(reduction, shield, 0f, false);
+        return new ActiveMitigationState(reduction, shield, 0f, false, longPoolActive, shortPoolActive);
     }
 
     private static bool PassesGnbSmartMitigationGuards(uint selectedActionId)
@@ -485,7 +621,7 @@ internal partial class GNB
         PerGcdActionCaps.AnyUsed(IsGnbMitigationAction);
 
     private static bool IsGnbMitigationAction(uint action) =>
-        action is Camouflage or HeartOfLight or Superbolide or HeartOfStone or HeartOfCorundum or Nebula or GreatNebula ||
+        action is Aurora or Camouflage or HeartOfLight or Superbolide or HeartOfStone or HeartOfCorundum or Nebula or GreatNebula ||
         action == OriginalHook(HeartOfStone) ||
         action == OriginalHook(Nebula) ||
         action == Role.Rampart ||

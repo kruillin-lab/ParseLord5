@@ -22,7 +22,12 @@
     <Compile Include="..\WrathCombo\Services\SmartMitigation\MitigationModels.cs" Link="Sources\MitigationModels.cs" />
     <Compile Include="..\WrathCombo\Services\SmartMitigation\MitigationCoverageCalculator.cs" Link="Sources\MitigationCoverageCalculator.cs" />
     <Compile Include="..\WrathCombo\Services\SmartMitigation\CombatEventBuffer.cs" Link="Sources\CombatEventBuffer.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\TrashMitigationOrdering.cs" Link="Sources\TrashMitigationOrdering.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\TankMitigationSelection.cs" Link="Sources\TankMitigationSelection.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\GnbAuroraSelection.cs" Link="Sources\GnbAuroraSelection.cs" />
+    <Compile Include="..\WrathCombo\Services\SmartMitigation\SmartMitigationTraceThrottle.cs" Link="Sources\SmartMitigationTraceThrottle.cs" />
     <Compile Include="..\WrathCombo\Services\HealDelayCurve.cs" Link="Sources\HealDelayCurve.cs" />
+    <Compile Include="..\WrathCombo\CustomCombo\Functions\GcdCycleTracker.cs" Link="Sources\GcdCycleTracker.cs" />
   </ItemGroup>
 
 </Project>

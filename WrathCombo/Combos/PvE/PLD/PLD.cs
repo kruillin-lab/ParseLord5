@@ -1,4 +1,4 @@
-using Dalamud.Game.ClientState.Objects.Types;
+﻿using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using System;
 using WrathCombo.Core;
@@ -14,7 +14,7 @@ namespace WrathCombo.Combos.PvE;
 
 internal partial class PLD : Tank
 {
-    private const long ParseLord5PldTraceThrottleMs = 15_000;
+    private const long ParseLord5PldTraceThrottleMs = 3_000;
     private static long _nextParseLord5PldTraceAt;
 
     private static void TraceParseLord5Pld(uint anchorActionId, uint selectedActionId, string source)
