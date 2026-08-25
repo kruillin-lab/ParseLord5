@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -25,6 +25,7 @@
     <Compile Include="..\WrathCombo\Services\SmartMitigation\TrashMitigationOrdering.cs" Link="Sources\TrashMitigationOrdering.cs" />
     <Compile Include="..\WrathCombo\Services\SmartMitigation\CombatEventBuffer.cs" Link="Sources\CombatEventBuffer.cs" />
     <Compile Include="..\WrathCombo\Services\HealDelayCurve.cs" Link="Sources\HealDelayCurve.cs" />
+    <Compile Include="..\WrathCombo\Services\AutorotActionPolicy.cs" Link="Sources\AutorotActionPolicy.cs" />
   </ItemGroup>
 
 </Project>

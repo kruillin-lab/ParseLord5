@@ -115,11 +115,9 @@ public class RotationStructureTests
         var source = File.ReadAllText(controllerFile);
 
         Assert.Contains("private static bool CanUseAutorotDpsAction(uint outAct)", source);
-        Assert.Contains("SGE.Rhizomata or", source);
-        Assert.Contains("SGE.Kerachole or", source);
-        Assert.Contains("SGE.EukrasianDiagnosis or", source);
-        Assert.Contains("SGE.EukrasianPrognosis2", source);
-        Assert.DoesNotContain("SGE.Eukrasia or", source);
+        // The blocked ids themselves are locked behaviorally by AutorotActionPolicyTests;
+        // this only locks that the gate delegates to the tested policy.
+        Assert.Contains("AutorotActionPolicy.AllowedInDpsLane(outAct", source);
         // Update me when the execute-path shape changes, do not delete.
         // The blocklist must run on every DPS-lane pass, never short-circuited by an ASEX redirect.
         Assert.Contains("if (!CanUseAutorotDpsAction(outAct))", source);

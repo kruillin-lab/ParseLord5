@@ -572,16 +572,13 @@ internal unsafe class AutoRotationController
             var attr = x.Key.Attributes();
             uint gameAct = 0;
             var outAct = AutoRotationHelper.InvokeCombo(x.Key, attr, ref gameAct, selectingAutorotAction: true);
-            uint actionToCheck = outAct;
-            if (ActionStacksEXIPC.TryPeekAction(
-                Service.Configuration.ActionChanging ? gameAct : outAct,
+            bool peeked = ActionStacksEXIPC.TryPeekAction(
+                AutorotActionPolicy.PeekKey(gameAct, outAct, Service.Configuration.ActionChanging),
                 Player.Object?.GameObjectId ?? 0xE000_0000,
                 out var asResolvedAction,
                 out var _,
-                out var _))
-            {
-                actionToCheck = asResolvedAction;
-            }
+                out var _);
+            uint actionToCheck = AutorotActionPolicy.ResolveAction(outAct, peeked, asResolvedAction);
             return attr.AutoAction?.IsHeal == true && ActionReady(actionToCheck);
         });
 
@@ -1239,15 +1236,12 @@ internal unsafe class AutoRotationController
 
                 uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, Player.Object));
                 bool asRedirected = ActionStacksEXIPC.TryPeekAction(
-                    Service.Configuration.ActionChanging ? gameAct : outAct,
+                    AutorotActionPolicy.PeekKey(gameAct, outAct, Service.Configuration.ActionChanging),
                     player.GameObjectId,
                     out var asResolvedAction,
                     out var asResolvedTarget,
                     out _);
-                if (asRedirected)
-                {
-                    outAct = asResolvedAction;
-                }
+                outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                 var canQueue = CanQueue(outAct);
                 var canAoEHeal = HealerTargeting.CanAoEHeal(outAct);
                 TraceWhmHeal(
@@ -1302,14 +1296,14 @@ internal unsafe class AutoRotationController
                 {
                     uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, OverrideTarget));
                     bool asRedirected = ActionStacksEXIPC.TryPeekAction(
-                        Service.Configuration.ActionChanging ? gameAct : outAct,
+                        AutorotActionPolicy.PeekKey(gameAct, outAct, Service.Configuration.ActionChanging),
                         OverrideTarget?.GameObjectId ?? player.GameObjectId,
                         out var asResolvedAction,
                         out var asResolvedTarget,
                         out _);
+                    outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                     if (asRedirected)
                     {
-                        outAct = asResolvedAction;
                         if (asResolvedTarget != (OverrideTarget?.GameObjectId ?? player.GameObjectId))
                         {
                             var newTarget = asResolvedTarget.GetObject();
@@ -1405,14 +1399,14 @@ internal unsafe class AutoRotationController
             {
                 var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
                 bool asRedirected = ActionStacksEXIPC.TryPeekAction(
-                    Service.Configuration.ActionChanging ? gameAct : outAct,
+                    AutorotActionPolicy.PeekKey(gameAct, outAct, Service.Configuration.ActionChanging),
                     target?.GameObjectId ?? player.GameObjectId,
                     out var asResolvedAction,
                     out var asResolvedTarget,
                     out _);
+                outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                 if (asRedirected)
                 {
-                    outAct = asResolvedAction;
                     if (asResolvedTarget != (target?.GameObjectId ?? player.GameObjectId))
                     {
                         var newTarget = asResolvedTarget.GetObject();
@@ -1530,26 +1524,7 @@ internal unsafe class AutoRotationController
             if (Player.Job is not Job.SGE)
                 return true;
 
-            return outAct is not (
-                SGE.Kardia or
-                SGE.Rhizomata or
-                SGE.Soteria or
-                SGE.Druochole or
-                SGE.Taurochole or
-                SGE.Haima or
-                SGE.Krasis or
-                SGE.Zoe or
-                SGE.Pepsis or
-                SGE.Kerachole or
-                SGE.Ixochole or
-                SGE.Holos or
-                SGE.Panhaima or
-                SGE.Philosophia or
-                SGE.Physis or
-                SGE.Physis2 or
-                SGE.EukrasianDiagnosis or
-                SGE.EukrasianPrognosis or
-                SGE.EukrasianPrognosis2);
+            return AutorotActionPolicy.AllowedInDpsLane(outAct, isSge: true);
         }
 
         public static uint InvokeCombo(Preset preset, PresetStorage.PresetData attributes, ref uint originalAct, IGameObject? optionalTarget = null, bool selectingAutorotAction = false)
