@@ -5,7 +5,7 @@ tags:
   - status/active
 type: experiment
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Gameplay Experiment — RDM — 2026-05-17

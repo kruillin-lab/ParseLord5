@@ -5,7 +5,7 @@ tags:
   - status/active
 type: experiment
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Gameplay Experiments — Batch 2 — 2026-05-19

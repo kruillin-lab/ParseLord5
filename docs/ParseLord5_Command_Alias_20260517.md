@@ -5,7 +5,7 @@ tags:
   - status/active
 type: audit
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Command Alias - 2026-05-17

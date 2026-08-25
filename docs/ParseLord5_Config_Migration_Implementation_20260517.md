@@ -5,7 +5,7 @@ tags:
   - status/active
 type: implementation
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Config Migration Implementation — 2026-05-17

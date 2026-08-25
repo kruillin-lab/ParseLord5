@@ -5,7 +5,7 @@ tags:
   - status/active
 type: policy
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Remaining Identity Policy - 2026-05-17

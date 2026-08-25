@@ -5,7 +5,7 @@ tags:
   - status/active
 type: changelog
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Changelog — 2026-05-17

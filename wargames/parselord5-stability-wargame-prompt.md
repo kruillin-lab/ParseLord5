@@ -5,7 +5,7 @@ tags:
   - status/active
 type: plan
 project: parselord5
-status: active
+status: historical
 aliases: []
 ---
 # ParseLord5 Stability Wargame Prompt

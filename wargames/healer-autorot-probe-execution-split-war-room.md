@@ -5,7 +5,7 @@ tags:
   - status/active
 type: report
 project: parselord5
-status: active
+status: historical
 aliases: []
 ---
 # War Room - Healer autorotation probe execution split

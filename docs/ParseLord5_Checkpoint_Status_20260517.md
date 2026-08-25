@@ -5,7 +5,7 @@ tags:
   - status/active
 type: status
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Checkpoint Status - 2026-05-17

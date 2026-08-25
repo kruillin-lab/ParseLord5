@@ -36,12 +36,12 @@ Repo root is `C:\Users\kruil\orca\ParseLord5`.
 dotnet build WrathCombo\WrathCombo.csproj -c Release
 dotnet test WrathCombo.Tests\WrathCombo.Tests.csproj -c Release
 pwsh -NoProfile -File scripts\rotation-evals.ps1
-pwsh -NoProfile -File C:\Users\kruil\Documents\Projects\quality-gate\gate.ps1 normal --repo C:\Users\kruil\orca\ParseLord5 --task "<task>"
+pwsh -NoProfile -File C:\Users\kruil\Documents\Projects\quality-gate\gate.ps1 normal --repo C:\Users\kruil\Documents\Projects\ffxiv-tools\ParseLord5 --task "<task>"
 ```
 
 Baselines at `aafddadd5` + teardown fix: **0 errors / 0 warnings**, **55 tests passed**, **evals 14/14**, gate `PASS_WITH_WARNINGS` (the warnings are the test-hack detector's "gate-critical file changed" notices).
 
-> **Two checkouts exist on this machine.** `C:\Users\kruil\Documents\Projects\ParseLord5` is a *stale* second clone: branch `merge-rehearsal`, `origin` pointed at upstream `PunishXIV/WrathCombo` (not `kruillin-lab/ParseLord5`), large dirty tree. **Both checkouts write Debug *and* Release output to the same `%AppData%\XIVLauncher\devPlugins\ParseLord5\`** (`WrathCombo.csproj:46,63-64`), so building the wrong one silently replaces the live dev plugin. Always build from `orca\ParseLord5`.
+> **Canonical checkout:** `C:\Users\kruil\Documents\Projects\ffxiv-tools\ParseLord5`. Always build from this tree. A second checkout exists at `C:\Users\kruil\orca\ParseLord5` (uncommitted local work; do not build or edit it without explicit instruction). Both trees write Debug *and* Release output to the same `%AppData%\XIVLauncher\devPlugins\ParseLord5\`, so a cross-tree build silently replaces the live dev plugin. The build now guards against this via a `devplugin-source.txt` stamp: a mismatched tree fails unless you pass `-p:ForceDevPluginOverwrite=true` (or `-ForceDevPluginOverwrite` to sync-dev-build.ps1).
 
 ## Executor prompt format
 

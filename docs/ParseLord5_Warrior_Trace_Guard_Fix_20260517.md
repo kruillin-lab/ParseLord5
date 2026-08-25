@@ -5,7 +5,7 @@ tags:
   - status/active
 type: audit
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Warrior Trace Guard Fix 20260517

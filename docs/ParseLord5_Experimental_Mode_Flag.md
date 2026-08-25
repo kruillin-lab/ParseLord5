@@ -5,7 +5,7 @@ tags:
   - status/active
 type: note
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Experimental Mode Flag

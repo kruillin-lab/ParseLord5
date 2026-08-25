@@ -5,7 +5,7 @@ tags:
   - status/active
 type: evaluation
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 IPC / API Compatibility Evaluation - 2026-05-17

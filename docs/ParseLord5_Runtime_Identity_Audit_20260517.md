@@ -5,7 +5,7 @@ tags:
   - status/active
 type: audit
 project: parselord5
-status: active
+status: archived
 aliases: []
 ---
 # ParseLord5 Runtime Identity Audit - 2026-05-17
