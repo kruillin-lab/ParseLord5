@@ -120,12 +120,11 @@ public class RotationStructureTests
         Assert.Contains("SGE.EukrasianDiagnosis or", source);
         Assert.Contains("SGE.EukrasianPrognosis2", source);
         Assert.DoesNotContain("SGE.Eukrasia or", source);
-        Assert.Matches(
-            @"uint outAct = OriginalHook\(InvokeCombo\(preset, attributes, ref gameAct, OverrideTarget\)\);\s*if \(!CanUseAutorotDpsAction\(outAct\)\)",
-            source);
-        Assert.Matches(
-            @"var outAct = OriginalHook\(InvokeCombo\(preset, attributes, ref gameAct, target\)\);\s*if \(!attributes\.AutoAction!\.IsHeal && !CanUseAutorotDpsAction\(outAct\)\)",
-            source);
+        // Update me when the execute-path shape changes, do not delete.
+        // The blocklist must run on every DPS-lane pass, never short-circuited by an ASEX redirect.
+        Assert.Contains("if (!CanUseAutorotDpsAction(outAct))", source);
+        Assert.Contains("if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))", source);
+        Assert.DoesNotContain("!asRedirected && !CanUseAutorotDpsAction", source);
     }
 
     [Fact]
@@ -199,6 +198,9 @@ public class RotationStructureTests
         Assert.Contains("IsSelectingAutorotAction = selectingAutorotAction;", source);
         Assert.DoesNotContain("IsSelectingAutorotAction = true;", source);
         Assert.Single(Regex.Matches(source, @"selectingAutorotAction:\s*true"));
-        Assert.Matches(@"attr\.AutoAction\?\.IsHeal == true && ActionReady\(AutoRotationHelper\.InvokeCombo\(x\.Key, attr, ref _, selectingAutorotAction: true\)\)", source);
+        // Update me when the healer actCheck shape changes, do not delete.
+        Assert.Contains("selectingAutorotAction: true", source);
+        Assert.Contains("ActionStacksEXIPC.TryPeekAction(", source);
+        Assert.Contains("return attr.AutoAction?.IsHeal == true && ActionReady(actionToCheck);", source);
     }
 }
