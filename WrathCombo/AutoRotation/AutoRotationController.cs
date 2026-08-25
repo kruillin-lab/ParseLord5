@@ -100,15 +100,26 @@ internal unsafe class AutoRotationController
         OnStatusChanged += StatusChanged;
     }
 
-    private static void TraceWhmHeal(string key, string message, TimeSpan? throttle = null)
+    /// <summary>
+    ///     Decision-level Auto-Rotation tracing toggle. Flipped by
+    ///     <c>/pl5 trace</c>; resets on plugin reload.
+    /// </summary>
+    internal static bool AutorotTraceEnabled;
+
+    /// <summary>
+    ///     Job-agnostic decision-level tracing for Auto-Rotation. Emits nothing
+    ///     until <c>/pl5 trace</c> enables it; per-key throttling keeps a tick
+    ///     from flooding the log.
+    /// </summary>
+    private static void TraceAutorot(string key, string message, TimeSpan? throttle = null)
     {
-        if (Player.Job is not Job.WHM)
+        if (!AutorotTraceEnabled)
             return;
 
-        if (!EzThrottler.Throttle($"PL5-WHM-HEAL-{key}", throttle ?? TimeSpan.FromSeconds(1)))
+        if (!EzThrottler.Throttle($"PL5-AUTOROT-{key}", throttle ?? TimeSpan.FromSeconds(1)))
             return;
 
-        Svc.Log.Information($"[PL5-WHM-HEAL] {message}");
+        Svc.Log.Information($"[PL5-AUTOROT] {message}");
     }
 
     private static string DescribeWhmTarget(IGameObject? target)
@@ -610,7 +621,7 @@ internal unsafe class AutoRotationController
 
         var whmSnapshot = GetWhmHealSnapshot();
         var healAge = TimeToHeal is null ? "none" : $"{(DateTime.Now - TimeToHeal.Value).TotalSeconds:0.0}s";
-        TraceWhmHeal(
+        TraceAutorot(
             "decision",
             $"phase=decision target={DescribeWhmTarget(healTarget)} lowestHp={lowestHp:0.0} " +
             $"party={whmSnapshot.party} oopNpc={whmSnapshot.outOfPartyNpc} aoeLowAll={whmSnapshot.aoeLowAll} " +
@@ -1132,25 +1143,25 @@ internal unsafe class AutoRotationController
         var mode = cfg.HealerRotationMode;
         if (Player.Object?.IsCasting() is true)
         {
-            TraceWhmHeal("automate-healing-block", $"phase=automate-healing preset={preset} block=casting");
+            TraceAutorot("automate-healing-block", $"phase=automate-healing preset={preset} block=casting");
             return false;
         }
         if (Environment.TickCount64 < HealThrottle)
         {
-            TraceWhmHeal("automate-healing-block", $"phase=automate-healing preset={preset} block=heal-throttle remainingMs={HealThrottle - Environment.TickCount64}");
+            TraceAutorot("automate-healing-block", $"phase=automate-healing preset={preset} block=heal-throttle remainingMs={HealThrottle - Environment.TickCount64}");
             return false;
         }
 
         if (attributes.AutoAction!.IsAoE)
         {
             var ret = AutoRotationHelper.ExecuteAoE(mode, preset, attributes, gameAct);
-            TraceWhmHeal("automate-healing", $"phase=automate-healing preset={preset} lane=aoe result={ret}");
+            TraceAutorot("automate-healing", $"phase=automate-healing preset={preset} lane=aoe result={ret}");
             return ret;
         }
         else
         {
             var ret = AutoRotationHelper.ExecuteST(mode, preset, attributes, gameAct);
-            TraceWhmHeal("automate-healing", $"phase=automate-healing preset={preset} lane=st result={ret}");
+            TraceAutorot("automate-healing", $"phase=automate-healing preset={preset} lane=st result={ret}");
             return ret;
         }
     }
@@ -1244,7 +1255,7 @@ internal unsafe class AutoRotationController
                 outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                 var canQueue = CanQueue(outAct);
                 var canAoEHeal = HealerTargeting.CanAoEHeal(outAct);
-                TraceWhmHeal(
+                TraceAutorot(
                     "execute-aoe",
                     $"phase=execute-aoe preset={preset} gameAct={DescribeWhmAction(gameAct)} outAct={DescribeWhmAction(outAct)} " +
                     $"canQueue={canQueue} canAoEHeal={canAoEHeal} target={DescribeWhmTarget(Player.Object)}");
@@ -1304,6 +1315,7 @@ internal unsafe class AutoRotationController
                     outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                     if (asRedirected)
                     {
+                        TraceAutorot("asex-redirect", $"phase=execute-aoe preset={preset} redirect->{DescribeWhmAction(outAct)}");
                         if (asResolvedTarget != (OverrideTarget?.GameObjectId ?? player.GameObjectId))
                         {
                             var newTarget = asResolvedTarget.GetObject();
@@ -1313,6 +1325,7 @@ internal unsafe class AutoRotationController
                     }
                     if (!CanUseAutorotDpsAction(outAct))
                     {
+                        TraceAutorot("dps-lane-block", $"phase=execute-aoe preset={preset} block=blocked-in-dps-lane action={DescribeWhmAction(outAct)} redirected={asRedirected}");
                         return false;
                     }
                     if (outAct is All.SavageBlade) return true;
@@ -1389,7 +1402,7 @@ internal unsafe class AutoRotationController
 
             if (target is null && cfg.PauseWhenNoTarget)
             {
-                TraceWhmHeal("execute-st-block", $"phase=execute-st preset={preset} block=pause-no-target");
+                TraceAutorot("execute-st-block", $"phase=execute-st preset={preset} block=pause-no-target");
                 return true;
             }
 
@@ -1407,6 +1420,7 @@ internal unsafe class AutoRotationController
                 outAct = AutorotActionPolicy.ResolveAction(outAct, asRedirected, asResolvedAction);
                 if (asRedirected)
                 {
+                    TraceAutorot("asex-redirect", $"phase=execute-st preset={preset} redirect->{DescribeWhmAction(outAct)}");
                     if (asResolvedTarget != (target?.GameObjectId ?? player.GameObjectId))
                     {
                         var newTarget = asResolvedTarget.GetObject();
@@ -1419,9 +1433,10 @@ internal unsafe class AutoRotationController
                 }
                 if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))
                 {
+                    TraceAutorot("dps-lane-block", $"phase=execute-st preset={preset} block=blocked-in-dps-lane action={DescribeWhmAction(outAct)} redirected={asRedirected}");
                     return false;
                 }
-                TraceWhmHeal(
+                TraceAutorot(
                     "execute-st",
                     $"phase=execute-st preset={preset} target={DescribeWhmTarget(target)} gameAct={DescribeWhmAction(gameAct)} outAct={DescribeWhmAction(outAct)} ready={ActionReady(outAct)}");
                 if (!ActionReady(outAct))

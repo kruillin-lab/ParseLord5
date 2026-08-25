@@ -68,6 +68,7 @@ public partial class WrathCombo
             "Open a window to edit custom combo settings.\n" +
             $"{Command} auto → Toggle Auto-rotation on/off.\n" +
             $"{Command} debug → Dumps a debug log onto your desktop for developers.\n" +
+            $"{ParseLord5Command} trace → Toggle Auto-Rotation decision tracing in the Dalamud log.\n" +
             $"{OldCommand} → Old alias from XIVSlothCombo, still works!\n" +
             $"{ParseLord5Command} → ParseLord5 alias, same command handler.");
         EzCmd.Add(OldCommand, OnCommand);
@@ -120,6 +121,9 @@ public partial class WrathCombo
 
             case "debug":
                 HandleDebugCommands(argumentParts); break;
+
+            case "trace":
+                HandleTraceCommand(); break;
 
             case "settings":
             case "config": // unlisted
@@ -484,6 +488,20 @@ public partial class WrathCombo
     ///     The way to change the auto-rotation setting.<br />
     ///     If no argument is provided, the setting is toggled.
     /// </param>
+    /// <summary>
+    ///     Toggles Auto-Rotation decision-level tracing
+    ///     (<see cref="AutoRotation.AutoRotationController.AutorotTraceEnabled"/>).
+    ///     Resets on plugin reload by design.
+    /// </summary>
+    private void HandleTraceCommand()
+    {
+        AutoRotation.AutoRotationController.AutorotTraceEnabled =
+            !AutoRotation.AutoRotationController.AutorotTraceEnabled;
+
+        DuoLog.Information(
+            $"Auto-Rotation decision tracing {(AutoRotation.AutoRotationController.AutorotTraceEnabled ? "ENABLED — watch the Dalamud log for [PL5-AUTOROT]" : "disabled")}");
+    }
+
     private void HandleAutoCommands(string[] argument)
     {
         // ADD: Handle targeting mode changes

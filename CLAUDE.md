@@ -41,7 +41,7 @@ Commands: `/pl5`, `/wrath`. Config: `ParseLord5.json` in Dalamud's pluginConfigs
 
 **Check for cross-plugin interference before blaming the heal lane.** `[ActionStacksEXIPC]` log lines mean ActionStacksEX is applying buffs that shift heal thresholds.
 
-`/pl5 trace` toggles decision-level logging (target/needsHeal/canHeal per tick). Resets on plugin reload.
+`/pl5 trace` toggles decision-level logging for **any job** — `[PL5-AUTOROT]` lines cover execute paths, ASEX redirects, DPS-lane blocklist rejections, and heal readiness. Off by default; resets on plugin reload. The decision core lives in `Services/AutorotActionPolicy.cs` (pure, unit-tested in `AutorotActionPolicyTests`).
 
 ## More
 
