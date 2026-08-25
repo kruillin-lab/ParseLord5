@@ -1314,7 +1314,7 @@ internal unsafe class AutoRotationController
                             OverrideTarget = newTarget;
                     }
                 }
-                if (!asRedirected && !CanUseAutorotDpsAction(outAct))
+                if (!CanUseAutorotDpsAction(outAct))
                 {
                     OverrideTarget = null;
                     return false;
@@ -1412,7 +1412,7 @@ internal unsafe class AutoRotationController
                     }
                 }
             }
-            if (!attributes.AutoAction!.IsHeal && !asRedirected && !CanUseAutorotDpsAction(outAct))
+            if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))
             {
                 OverrideTarget = null;
                 return false;
