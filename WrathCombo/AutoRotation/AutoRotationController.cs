@@ -1297,76 +1297,84 @@ internal unsafe class AutoRotationController
                 }
 
                 OverrideTarget = target ?? OverrideTarget;
-                uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, OverrideTarget));
-                bool asRedirected = ActionStacksEXIPC.TryPeekAction(
-                    Service.Configuration.ActionChanging ? gameAct : outAct,
-                    OverrideTarget?.GameObjectId ?? player.GameObjectId,
-                    out var asResolvedAction,
-                    out var asResolvedTarget,
-                    out _);
-                if (asRedirected)
+                var issued = false;
+                try
                 {
-                    outAct = asResolvedAction;
-                    if (asResolvedTarget != (OverrideTarget?.GameObjectId ?? player.GameObjectId))
+                    uint outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, OverrideTarget));
+                    bool asRedirected = ActionStacksEXIPC.TryPeekAction(
+                        Service.Configuration.ActionChanging ? gameAct : outAct,
+                        OverrideTarget?.GameObjectId ?? player.GameObjectId,
+                        out var asResolvedAction,
+                        out var asResolvedTarget,
+                        out _);
+                    if (asRedirected)
                     {
-                        var newTarget = asResolvedTarget.GetObject();
-                        if (newTarget is not null)
-                            OverrideTarget = newTarget;
+                        outAct = asResolvedAction;
+                        if (asResolvedTarget != (OverrideTarget?.GameObjectId ?? player.GameObjectId))
+                        {
+                            var newTarget = asResolvedTarget.GetObject();
+                            if (newTarget is not null)
+                                OverrideTarget = newTarget;
+                        }
+                    }
+                    if (!CanUseAutorotDpsAction(outAct))
+                    {
+                        return false;
+                    }
+                    if (outAct is All.SavageBlade) return true;
+                    if (!CanQueue(outAct))
+                    {
+                        return false;
+                    }
+
+                    var sheet = ActionSheet[outAct];
+                    var targetsHostile = sheet.CanTargetHostile;
+
+                    bool switched = SwitchOnDChole(attributes, outAct, ref target);
+                    var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
+                    bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
+
+                    if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
+                        return false;
+
+                    if (cfg.DPSSettings.DPSAlwaysHardTarget && OverrideTarget is not null)
+                        Svc.Targets.Target = OverrideTarget;
+
+                    var canUseSelf = sheet.CanTargetSelf;
+                    var areaTargeted = ActionSheet[outAct].TargetArea;
+                    var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), OverrideTarget is null ? player.GameObject() : OverrideTarget.Struct());
+                    var inRange = acRangeCheck is 0 or 565 || canUseSelf || areaTargeted;
+
+                    if (targetsHostile && OverrideTarget is not null)
+                    {
+                        Svc.GameConfig.TryGet(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, out uint original);
+                        Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, 1);
+                        Vector3 pos = new(Player.Object.Position.X, Player.Object.Position.Y, Player.Object.Position.Z);
+                        ActionManager.Instance()->AutoFaceTargetPosition(&pos, OverrideTarget.GameObjectId);
+                        Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, original);
+                    }
+
+                    if (inRange && AutoRotCanPressAction(outAct))
+                    {
+                        //Chance target of target.GameObjectID can be null
+                        var targetId = (targetsHostile && OverrideTarget != null) || switched ? OverrideTarget.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
+                        var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
+                        WouldLikeToGroundTarget = areaTargeted;
+                        var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
+                        WouldLikeToGroundTarget = false;
+                        if (NIN.MudraSigns.Contains(outAct))
+                            _lockedAoE = true;
+                        else
+                            _lockedAoE = false;
+
+                        issued = true;
+                        return true;
                     }
                 }
-                if (!CanUseAutorotDpsAction(outAct))
+                finally
                 {
-                    OverrideTarget = null;
-                    return false;
-                }
-                if (outAct is All.SavageBlade) return true;
-                if (!CanQueue(outAct))
-                {
-                    OverrideTarget = null;
-                    return false;
-                }
-
-                var sheet = ActionSheet[outAct];
-                var targetsHostile = sheet.CanTargetHostile;
-
-                bool switched = SwitchOnDChole(attributes, outAct, ref target);
-                var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
-                bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
-
-                if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
-                    return false;
-
-                if (cfg.DPSSettings.DPSAlwaysHardTarget && OverrideTarget is not null)
-                    Svc.Targets.Target = OverrideTarget;
-
-                var canUseSelf = sheet.CanTargetSelf;
-                var areaTargeted = ActionSheet[outAct].TargetArea;
-                var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), OverrideTarget is null ? player.GameObject() : OverrideTarget.Struct());
-                var inRange = acRangeCheck is 0 or 565 || canUseSelf || areaTargeted;
-
-                if (targetsHostile && OverrideTarget is not null)
-                {
-                    Svc.GameConfig.TryGet(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, out uint original);
-                    Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, 1);
-                    Vector3 pos = new(Player.Object.Position.X, Player.Object.Position.Y, Player.Object.Position.Z);
-                    ActionManager.Instance()->AutoFaceTargetPosition(&pos, OverrideTarget.GameObjectId);
-                    Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.AutoFaceTargetOnAction, original);
-                }
-
-                if (inRange && AutoRotCanPressAction(outAct))
-                {
-                    //Chance target of target.GameObjectID can be null
-                    var targetId = (targetsHostile && OverrideTarget != null) || switched ? OverrideTarget.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
-                    var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
-                    WouldLikeToGroundTarget = areaTargeted;
-                    var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
-                    WouldLikeToGroundTarget = false;
-                    if (NIN.MudraSigns.Contains(outAct))
-                        _lockedAoE = true;
-                    else
-                        _lockedAoE = false;
-
-                    return true;
+                    if (!issued)
+                        OverrideTarget = null;
                 }
 
             }
@@ -1392,90 +1400,98 @@ internal unsafe class AutoRotationController
             }
 
             OverrideTarget = target ?? OverrideTarget;
-            var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
-            bool asRedirected = ActionStacksEXIPC.TryPeekAction(
-                Service.Configuration.ActionChanging ? gameAct : outAct,
-                target?.GameObjectId ?? player.GameObjectId,
-                out var asResolvedAction,
-                out var asResolvedTarget,
-                out _);
-            if (asRedirected)
+            var issued = false;
+            try
             {
-                outAct = asResolvedAction;
-                if (asResolvedTarget != (target?.GameObjectId ?? player.GameObjectId))
+                var outAct = OriginalHook(InvokeCombo(preset, attributes, ref gameAct, target));
+                bool asRedirected = ActionStacksEXIPC.TryPeekAction(
+                    Service.Configuration.ActionChanging ? gameAct : outAct,
+                    target?.GameObjectId ?? player.GameObjectId,
+                    out var asResolvedAction,
+                    out var asResolvedTarget,
+                    out _);
+                if (asRedirected)
                 {
-                    var newTarget = asResolvedTarget.GetObject();
-                    if (newTarget is not null)
+                    outAct = asResolvedAction;
+                    if (asResolvedTarget != (target?.GameObjectId ?? player.GameObjectId))
                     {
-                        target = newTarget;
-                        OverrideTarget = newTarget;
+                        var newTarget = asResolvedTarget.GetObject();
+                        if (newTarget is not null)
+                        {
+                            target = newTarget;
+                            OverrideTarget = newTarget;
+                        }
                     }
                 }
+                if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))
+                {
+                    return false;
+                }
+                TraceWhmHeal(
+                    "execute-st",
+                    $"phase=execute-st preset={preset} target={DescribeWhmTarget(target)} gameAct={DescribeWhmAction(gameAct)} outAct={DescribeWhmAction(outAct)} ready={ActionReady(outAct)}");
+                if (!ActionReady(outAct))
+                {
+                    return false;
+                }
+
+                bool switched = SwitchOnDChole(attributes, outAct, ref target);
+                if (outAct is DNC.ClosedPosition && DNC.DancePartnerResolver() is IBattleChara dp)
+                    target = dp;
+
+                var canUseSelf = NIN.MudraSigns.Contains(outAct)
+                    ? (target is not null && target.IsHostile()) || NIN.InMudra
+                    : ActionManager.CanUseActionOnTarget(outAct, Player.GameObject);
+
+                var blockedSelfBuffs = GetCooldown(outAct).CooldownTotal >= 5;
+
+                if (cfg.InCombatOnly && NotInCombat && !CombatBypass && !(canUseSelf && cfg.BypassBuffs && !blockedSelfBuffs))
+                    return false;
+
+                if (target is null && !canUseSelf)
+                    return false;
+
+                var areaTargeted = ActionSheet[outAct].TargetArea;
+                var canUseTarget = target is not null && ActionManager.CanUseActionOnTarget(outAct, target.Struct());
+
+                var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), target is null ? player.GameObject() : target.Struct());
+                var inRange = acRangeCheck is 0 or 565 || canUseSelf;
+
+                var canUse = (canUseSelf || canUseTarget || areaTargeted) && AutoRotCanPressAction(outAct);
+                var isHeal = attributes.AutoAction!.IsHeal;
+
+                if (target is not null)
+                {
+                    if ((!isHeal && cfg.DPSSettings.DPSAlwaysHardTarget && mode is not DPSRotationMode.Manual) || (isHeal && cfg.HealerSettings.HealerAlwaysHardTarget && mode is not HealerRotationMode.Manual))
+                        Svc.Targets.Target = target;
+                }
+
+                var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
+                bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
+                if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
+                    return false;
+
+                if (canUse && (inRange || areaTargeted))
+                {
+                    var targetId = canUseTarget || areaTargeted ? target.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
+                    var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
+                    WouldLikeToGroundTarget = ActionSheet[outAct].TargetArea;
+                    var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
+                    WouldLikeToGroundTarget = false;
+
+                    if (NIN.MudraSigns.Contains(outAct))
+                        _lockedST = true;
+                    else
+                        _lockedST = false;
+
+                    issued = true;
+                    return true;
+                }
             }
-            if (!attributes.AutoAction!.IsHeal && !CanUseAutorotDpsAction(outAct))
+            finally
             {
-                OverrideTarget = null;
-                return false;
-            }
-            TraceWhmHeal(
-                "execute-st",
-                $"phase=execute-st preset={preset} target={DescribeWhmTarget(target)} gameAct={DescribeWhmAction(gameAct)} outAct={DescribeWhmAction(outAct)} ready={ActionReady(outAct)}");
-            if (!ActionReady(outAct))
-            {
-                OverrideTarget = null;
-                return false;
-            }
-
-            bool switched = SwitchOnDChole(attributes, outAct, ref target);
-            if (outAct is DNC.ClosedPosition && DNC.DancePartnerResolver() is IBattleChara dp)
-                target = dp;
-
-            var canUseSelf = NIN.MudraSigns.Contains(outAct)
-                ? (target is not null && target.IsHostile()) || NIN.InMudra
-                : ActionManager.CanUseActionOnTarget(outAct, Player.GameObject);
-
-            var blockedSelfBuffs = GetCooldown(outAct).CooldownTotal >= 5;
-
-            if (cfg.InCombatOnly && NotInCombat && !CombatBypass && !(canUseSelf && cfg.BypassBuffs && !blockedSelfBuffs))
-                return false;
-
-            if (target is null && !canUseSelf)
-                return false;
-
-            var areaTargeted = ActionSheet[outAct].TargetArea;
-            var canUseTarget = target is not null && ActionManager.CanUseActionOnTarget(outAct, target.Struct());
-
-            var acRangeCheck = ActionManager.GetActionInRangeOrLoS(outAct, player.GameObject(), target is null ? player.GameObject() : target.Struct());
-            var inRange = acRangeCheck is 0 or 565 || canUseSelf;
-
-            var canUse = (canUseSelf || canUseTarget || areaTargeted) && AutoRotCanPressAction(outAct);
-            var isHeal = attributes.AutoAction!.IsHeal;
-
-            if (target is not null)
-            {
-                if ((!isHeal && cfg.DPSSettings.DPSAlwaysHardTarget && mode is not DPSRotationMode.Manual) || (isHeal && cfg.HealerSettings.HealerAlwaysHardTarget && mode is not HealerRotationMode.Manual))
-                    Svc.Targets.Target = target;
-            }
-
-            var castTime = ActionManager.GetAdjustedCastTime(ActionType.Action, outAct);
-            bool orbwalking = cfg.OrbwalkerIntegration && OrbwalkerIPC.CanOrbwalk;
-            if (TimeMoving.TotalMilliseconds > 0 && castTime > 0 && !orbwalking)
-                return false;
-
-            if (canUse && (inRange || areaTargeted))
-            {
-                var targetId = canUseTarget || areaTargeted ? target.GameObjectId : canUseSelf ? player.GameObjectId : 0xE000_0000;
-                var changed = CheckForChangedTarget(gameAct, ref targetId, out var replacedWith);
-                WouldLikeToGroundTarget = ActionSheet[outAct].TargetArea;
-                var ret = UseAutorotAction(ActionType.Action, Service.Configuration.ActionChanging ? gameAct : outAct, targetId);
-                WouldLikeToGroundTarget = false;
-
-                if (NIN.MudraSigns.Contains(outAct))
-                    _lockedST = true;
-                else
-                    _lockedST = false;
-
-                return true;
+                if (!issued)
+                    OverrideTarget = null;
             }
 
             return false;
