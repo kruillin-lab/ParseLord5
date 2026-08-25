@@ -47,11 +47,6 @@ public partial class Configuration : IPluginConfiguration
     [Setting(Setting.Type.Toggle)]
     public bool AprilFools2026 = true;
 
-    /// Whether ParseLord5-only experimental work is allowed to run. Default: false.
-    [SettingCategory(Main_UI_Options)]
-    [Setting(Setting.Type.Toggle)]
-    public bool ParseLord5ExperimentalMode = false;
-
     /// Whether to hide the children of a feature if it is disabled. Default: false.
     /// <seealso cref="Presets.DrawPreset"/>
     [SettingCategory(Main_UI_Options)]

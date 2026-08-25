@@ -458,7 +458,6 @@ public partial class Configuration
             ImportCustomValueMaps(json);
 
             // --- Fields intentionally NOT imported ---
-            // ParseLord5ExperimentalMode: stays false (user must opt in).
             // Version: uses ParseLord5's own version.
             // AprilFools2026, UI-only settings: plugin-specific, not gameplay.
 

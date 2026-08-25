@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -179,8 +179,7 @@ internal class Settings : ConfigWindow
                 ImGuiComponents.HelpMarker(
                     "Reads compatible settings from your existing " +
                     "WrathCombo config.\n" +
-                    "Your WrathCombo config will NOT be modified.\n" +
-                    "ParseLord5ExperimentalMode stays OFF.");
+                    "Your WrathCombo config will NOT be modified.");
 
                 if (_showImportConfirm)
                 {
