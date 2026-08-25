@@ -64,6 +64,27 @@
         <OutputPath>$(DalamudDevPlugins)</OutputPath>
     </PropertyGroup>
 
+    <!-- Refuse to silently overwrite a devPlugins build made by another checkout -->
+    <PropertyGroup>
+        <ForceDevPluginOverwrite Condition="'$(ForceDevPluginOverwrite)' == ''">false</ForceDevPluginOverwrite>
+        <DevPluginSourceStamp>$(DalamudDevPlugins)devplugin-source.txt</DevPluginSourceStamp>
+        <DevPluginSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</DevPluginSourceRoot>
+    </PropertyGroup>
+
+    <Target Name="GuardDevPluginSource" BeforeTargets="Build">
+        <PropertyGroup>
+            <_StampText Condition="Exists('$(DevPluginSourceStamp)')">$([System.IO.File]::ReadAllText('$(DevPluginSourceStamp)').Trim())</_StampText>
+            <_ExpectedRoot>$([System.IO.Path]::GetFullPath('$(DevPluginSourceRoot)'))</_ExpectedRoot>
+        </PropertyGroup>
+        <Error
+            Condition="'$(ForceDevPluginOverwrite)' != 'true' And Exists('$(DevPluginSourceStamp)') And '$(_StampText)' != '' And '$(_StampText)' != '$(_ExpectedRoot)'"
+            Text="devPlugins ParseLord5 was built from '$(_StampText)', not '$(_ExpectedRoot)'. Build the stamped checkout, or pass /p:ForceDevPluginOverwrite=true." />
+    </Target>
+
+    <Target Name="WriteDevPluginSourceStamp" AfterTargets="Build">
+        <WriteLinesToFile File="$(DevPluginSourceStamp)" Lines="$(DevPluginSourceRoot)" Overwrite="true" Encoding="UTF-8" />
+    </Target>
+
     <!-- Logo -->
     <ItemGroup>
         <Content Include="..\res\plugin\wrathcombo.png" Link="images\wrathcombo.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />

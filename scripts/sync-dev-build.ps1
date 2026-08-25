@@ -51,6 +51,7 @@ param(
     [switch] $SkipPull,
     [switch] $SkipEvals,
     [switch] $SubmoduleUpdate,
+    [switch] $ForceDevPluginOverwrite,
     [switch] $Notify
 )
 
@@ -60,6 +61,17 @@ $ProjectFile = Join-Path $RepoRoot 'WrathCombo\WrathCombo.csproj'
 $EvalScript = Join-Path $RepoRoot 'scripts\rotation-evals.ps1'
 $DevPluginsDir = Join-Path $env:APPDATA 'XIVLauncher\devPlugins\ParseLord5'
 $DllPath = Join-Path $DevPluginsDir 'ParseLord5.dll'
+
+# Refuse to overwrite a devPlugins build made by a different checkout.
+$StampPath = Join-Path $DevPluginsDir 'devplugin-source.txt'
+if (Test-Path -LiteralPath $StampPath) {
+    $stampedRoot = (Get-Content -LiteralPath $StampPath -Raw).Trim()
+    if ($stampedRoot -and
+        (-not $stampedRoot.Equals($RepoRoot.Path, [System.StringComparison]::OrdinalIgnoreCase)) -and
+        -not $ForceDevPluginOverwrite) {
+        throw "devPlugins ParseLord5 was built from '$stampedRoot', not '$($RepoRoot.Path)'. Build the stamped checkout, or pass -ForceDevPluginOverwrite."
+    }
+}
 
 function Send-SyncNotification {
     param([string] $Title, [string] $Message, [bool] $Success)
@@ -118,6 +130,7 @@ try {
     if (-not (Test-Path -LiteralPath $DllPath)) {
         throw "Build succeeded but DLL missing: $DllPath"
     }
+    Set-Content -LiteralPath $StampPath -Value $RepoRoot.Path -Encoding UTF8
     $dllTime = (Get-Item -LiteralPath $DllPath).LastWriteTime
     Write-Host "Built: $DllPath ($dllTime)"
 
