@@ -24,6 +24,7 @@ using WrathCombo.Extensions;
 using WrathCombo.Native;
 using WrathCombo.Services;
 using WrathCombo.Services.IPC_Subscriber;
+using WrathCombo.Services.MechanicPrediction;
 using WrathCombo.Window.Functions;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 using static WrathCombo.CustomComboNS.Functions.Jobs;
@@ -768,6 +769,14 @@ internal unsafe class AutoRotationController
         return false;
     }
 
+    /// <summary>
+    ///     Lead time for the predictive raidwide-heal count boost. Inside
+    ///     <see cref="MechanicCastClassifier.MaxLeadSeconds" /> (6f) so shields
+    ///     start landing shortly before impact rather than early enough to be
+    ///     wasted on a mechanic that gets reset or moved.
+    /// </summary>
+    private const float PredictiveHealerLeadSeconds = 3f;
+
     private static void HandleRaidwide(bool multihit)
     {
         foreach (var (spell, multihitter) in RaidwideActions)
@@ -781,6 +790,17 @@ internal unsafe class AutoRotationController
                 <= 60 => 2,
                 _ => 1
             };
+
+            // Additive only: a predicted big raidwide can raise the count, never
+            // lower what current party HP already demands. Kind-scoped to
+            // Raidwide -- Tankbuster/Cleave are single-target and must not
+            // inflate a party-wide heal count.
+            if (Service.Configuration.PredictiveMechanics &&
+                MechanicCastTracker.HasImminentImpact(MechanicCastKind.Raidwide, PredictiveHealerLeadSeconds))
+                numberOfCasts = Math.Max(numberOfCasts, 2);
+
+            if (Service.Configuration.PredictiveMechanics && numberOfCasts > 1)
+                Svc.Log.Information($"[PL5-PREDICT-RW] numberOfCasts={numberOfCasts} for {spell} (AutorotRaidwides={AutorotRaidwides}, HP%={GetPartyAvgHPPercent()})");
 
             if (AutorotRaidwides >= numberOfCasts)
                 return;

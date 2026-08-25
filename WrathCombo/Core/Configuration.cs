@@ -47,6 +47,15 @@ public partial class Configuration : IPluginConfiguration
     [Setting(Setting.Type.Toggle)]
     public bool AprilFools2026 = true;
 
+    /// <summary>
+    ///     Predictive cast-bar mechanic detection feeding smart mitigation spike
+    ///     fraction and the healer raidwide-heal count. Default: false.
+    /// </summary>
+    /// <seealso cref="Services.MechanicPrediction.MechanicCastTracker"/>
+    [SettingCategory(Main_UI_Options)]
+    [Setting(Setting.Type.Toggle)]
+    public bool PredictiveMechanics = false;
+
     /// Whether to hide the children of a feature if it is disabled. Default: false.
     /// <seealso cref="Presets.DrawPreset"/>
     [SettingCategory(Main_UI_Options)]

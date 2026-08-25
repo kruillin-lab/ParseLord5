@@ -40,6 +40,7 @@ using WrathCombo.Services.IPC;
 using WrathCombo.Services.IPC_Subscriber;
 using WrathCombo.Services.TankCooldownHelperIPC;
 using WrathCombo.Services.SmartMitigation;
+using WrathCombo.Services.MechanicPrediction;
 using WrathCombo.Window;
 using WrathCombo.Window.Functions;
 using WrathCombo.Window.Tabs;
@@ -376,6 +377,7 @@ public sealed partial class WrathCombo : IDalamudPlugin
             AutoRotationController.Run();
 
             CombatTelemetryService.Update();
+            MechanicCastTracker.Update();
 
             if (Player.IsDead)
             {

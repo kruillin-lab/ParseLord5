@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using WrathCombo.API.Enum;
 using WrathCombo.API.Extension;
 using WrathCombo.Combos;
+using WrathCombo.Services.MechanicPrediction;
 using EZ = ECommons.Throttlers.EzThrottler;
 using TS = System.TimeSpan;
 
@@ -567,6 +568,76 @@ public partial class Provider : IDisposable
             },
         };
     }
+
+    #endregion
+
+    #region Encounter Awareness (ParseLord5)
+
+    /// <summary>
+    ///     Whether a hostile mechanic cast is predicted to land within
+    ///     <paramref name="withinSeconds" />.
+    /// </summary>
+    /// <param name="withinSeconds">Lead-time window, in seconds.</param>
+    /// <returns>
+    ///     Whether an impact is imminent. Always <see langword="false" /> when
+    ///     ParseLord5's predictive mechanics feature is off.
+    /// </returns>
+    /// <remarks>
+    ///     ParseLord5-only extension; not present in upstream Wrath Combo.
+    ///     Read-only: no lease required, and it cannot change plugin behavior.
+    /// </remarks>
+    [EzIPC]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public bool GetNextMechanicImminent(float withinSeconds) =>
+        MechanicCastTracker.HasImminentImpact(withinSeconds);
+
+    /// <summary>
+    ///     The kind of the soonest predicted hostile mechanic cast.
+    /// </summary>
+    /// <returns>
+    ///     One of <c>None</c>, <c>Raidwide</c>, <c>Tankbuster</c>, <c>Cleave</c>.
+    ///     <c>None</c> when nothing is predicted, or when the feature is off.
+    /// </returns>
+    /// <seealso cref="GetNextMechanicTimeToImpact" />
+    /// <remarks>
+    ///     ParseLord5-only extension; not present in upstream Wrath Combo.
+    /// </remarks>
+    [EzIPC]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public string GetNextMechanicKind() =>
+        MechanicCastTracker.Last.Kind.ToString();
+
+    /// <summary>
+    ///     Seconds until the soonest predicted hostile mechanic cast resolves.
+    /// </summary>
+    /// <returns>
+    ///     Remaining cast time, clamped at <c>0</c>. <c>0</c> when nothing is
+    ///     predicted, or when the feature is off -- pair with
+    ///     <see cref="GetNextMechanicKind" /> to tell those apart.
+    /// </returns>
+    /// <remarks>
+    ///     ParseLord5-only extension; not present in upstream Wrath Combo.
+    /// </remarks>
+    [EzIPC]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public float GetNextMechanicTimeToImpact() =>
+        MechanicCastTracker.Last.TimeToImpactSeconds;
+
+    /// <summary>
+    ///     Predicted damage of the soonest hostile mechanic cast, as a fraction
+    ///     of the player's maximum HP.
+    /// </summary>
+    /// <returns>
+    ///     The predicted spike fraction, or <c>0</c> when nothing is predicted
+    ///     or the feature is off.
+    /// </returns>
+    /// <remarks>
+    ///     ParseLord5-only extension; not present in upstream Wrath Combo.
+    /// </remarks>
+    [EzIPC]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public float GetPredictedMechanicSpikeFraction() =>
+        MechanicCastTracker.PredictedSpikeFraction();
 
     #endregion
 

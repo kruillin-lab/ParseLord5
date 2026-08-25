@@ -1,6 +1,8 @@
 using System;
 using Dalamud.Game.ClientState.Objects.Types;
+using WrathCombo.Combos.PvE;
 using WrathCombo.CustomComboNS.Functions;
+using WrathCombo.Services.MechanicPrediction;
 using WrathCombo.Services.TankCooldownHelperIPC;
 using static WrathCombo.CustomComboNS.Functions.CustomComboFunctions;
 
@@ -47,6 +49,9 @@ internal static class TankSmartMitigationThreat
 
         if (LocalPlayer is { MaxHp: > 0 } hpPlayer && pressure.MaxSingleHit > 0f)
             mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, pressure.MaxSingleHit / hpPlayer.MaxHp);
+
+        if (Service.Configuration.PredictiveMechanics)
+            mechanicSpikeFraction = Math.Max(mechanicSpikeFraction, MechanicCastTracker.PredictedSpikeFraction());
 
         var deathTimerThreshold = isBoss ? 10f : 12f;
         var sustainedPressure = pressure.TankCooldownCritical ||

@@ -667,6 +667,29 @@ internal partial class AST : Healer
                 cleansableTarget)
                 return Role.Esuna.RetargetIfEnabled(actionID);
 
+
+            // Full-stack pre-pass: if a charge-heal's "use at full stacks" toggle
+            // is on and it has every charge available, spend it before the normal
+            // priority list so the charge regenerates instead of overcapping. No
+            // per-spell HP threshold is applied here: the existence of a heal
+            // target is the only gate, so a capped charge is spent instead of
+            // sat on.
+            if (healTarget is not null && AST_ST_SimpleHeals_FullStackDignity &&
+                GetRemainingCharges(EssentialDignity) >= GetMaxCharges(EssentialDignity))
+            {
+                _ = GetMatchingConfigST(1, healTarget, out uint dignitySpell, out bool dignityEnabled);
+                if (dignityEnabled && ActionReady(dignitySpell))
+                    return dignitySpell.RetargetIfEnabled(actionID);
+            }
+
+            if (healTarget is not null && AST_ST_SimpleHeals_FullStackIntersection &&
+                GetRemainingCharges(CelestialIntersection) >= GetMaxCharges(CelestialIntersection))
+            {
+                _ = GetMatchingConfigST(0, healTarget, out uint intersectionSpell, out bool intersectionEnabled);
+                if (intersectionEnabled && ActionReady(intersectionSpell))
+                    return intersectionSpell.RetargetIfEnabled(actionID);
+            }
+
             //Priority List
             for (int i = 0; i < AST_ST_SimpleHeals_Priority.Count; i++)
             {
@@ -683,6 +706,7 @@ internal partial class AST : Healer
             return !LevelChecked(Benefic2) ?
                 Benefic.RetargetIfEnabled(actionID) :
                 Benefic2.RetargetIfEnabled(actionID);
+
         }
     }
 

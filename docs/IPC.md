@@ -54,6 +54,7 @@ These are the settings that are accessible via the IPC:
 - PvE Combos state and their Auto-Mode state
 - PvE Options state
 - Variant Dungeon skills
+- Predictive mechanic timing (read-only; **ParseLord5-only extension**, not in upstream Wrath Combo)
 
 These are the settings that are not accessible via the IPC:
 - **All** Auto-Rotation configuration options
@@ -270,6 +271,35 @@ comments on each method.
   - The `object` must be of the type specified in the enum for the option
   - Sets the state of an Auto-Rotation configuration option
   - Locks the state away from the user
+
+### Encounter Awareness Methods (ParseLord5-only)
+
+> [!IMPORTANT]
+> These methods exist **only** under the `"ParseLord5"` IPC prefix. They are not part of the
+> upstream Wrath Combo IPC surface, so do not call them against a `"WrathCombo"` connection.
+
+These are **read-only**: they require no lease, take no `Guid`, and cannot change any ParseLord5
+setting or behavior. They surface ParseLord5's cast-bar mechanic prediction, which feeds tank smart
+mitigation and the healer raidwide-heal count internally.
+
+All four return inert values (`false` / `"None"` / `0`) unless the user has both
+`ParseLord5ExperimentalMode` and the predictive mechanics feature enabled, so a consumer must treat
+"no prediction" and "feature off" the same way.
+
+- `bool GetNextMechanicImminent(float withinSeconds)`
+  - Whether a hostile mechanic cast is predicted to land within the given lead-time window
+  - `false` when nothing is predicted, or when the feature is off
+- `string GetNextMechanicKind()`
+  - The kind of the soonest predicted hostile mechanic cast
+  - One of `None`, `Raidwide`, `Tankbuster`, `Cleave`
+  - `None` when nothing is predicted, or when the feature is off
+- `float GetNextMechanicTimeToImpact()`
+  - Seconds until the soonest predicted mechanic cast resolves, clamped at `0`
+  - `0` when nothing is predicted, or when the feature is off; pair with `GetNextMechanicKind()`
+    to tell those two cases apart
+- `float GetPredictedMechanicSpikeFraction()`
+  - Predicted damage of the soonest mechanic cast, as a fraction of the player's maximum HP
+  - `0` when nothing is predicted, or when the feature is off
 
 ## Setting up the Wrath Combo IPC in your plugin
 

@@ -82,6 +82,8 @@ internal partial class AST
             AST_ST_SimpleHeals_WeaveEwer = new("AST_ST_SimpleHeals_WeaveEwer"),
             AST_ST_SimpleHeals_WeaveSpire = new("AST_ST_SimpleHeals_WeaveSpire"),
             AST_ST_SimpleHeals_WeaveEmergencyED = new("AST_ST_SimpleHeals_WeaveEmergencyED"),
+            AST_ST_SimpleHeals_FullStackDignity = new("AST_ST_SimpleHeals_FullStackDignity"),
+            AST_ST_SimpleHeals_FullStackIntersection = new("AST_ST_SimpleHeals_FullStackIntersection"),
             AST_AoE_SimpleHeals_WeaveLady = new("AST_AoE_SimpleHeals_WeaveLady"),
             AST_AoE_SimpleHeals_WeaveOpposition = new("AST_AoE_SimpleHeals_WeaveOpposition"),
             AST_AoE_SimpleHeals_WeaveCollectiveUnconscious = new("AST_AoE_SimpleHeals_WeaveCollectiveUnconscious"),
@@ -248,12 +250,14 @@ internal partial class AST
                     DrawSliderInt(0, 100, AST_ST_SimpleHeals_CelestialIntersection, Generics.StopFriendlyHpPercent100);
                     DrawSliderInt(0, 1, AST_ST_SimpleHeals_CelestialIntersectionCharges, Generics.ChargePool);
                     DrawAdditionalBoolChoice(AST_ST_SimpleHeals_WeaveIntersection, Generics.OnlyWeave, "");
+                    DrawAdditionalBoolChoice(AST_ST_SimpleHeals_FullStackIntersection, "Use at full stacks", "Moves this spell to the top of the ST heal priority when all charges are available, so it is spent instead of overcapping.");
                     DrawPriorityInput(AST_ST_SimpleHeals_Priority, 13, 1, Text.FormatAndCache(Generics.Action_Priority, CelestialIntersection.ActionName()));
                     break;
 
                 case Preset.AST_ST_Heals_EssentialDignity:
-                    DrawSliderInt(0, 100, AST_ST_SimpleHeals_EssentialDignity, Generics.StopFriendlyHpPercent100);
                     DrawAdditionalBoolChoice(AST_ST_SimpleHeals_WeaveDignity, Generics.OnlyWeave, "");
+                    DrawAdditionalBoolChoice(AST_ST_SimpleHeals_FullStackDignity, "Use at full stacks", "Moves this spell to the top of the ST heal priority when all charges are available, so it is spent instead of overcapping.");
+
                     DrawPriorityInput(AST_ST_SimpleHeals_Priority, 13, 0, Text.FormatAndCache(AST_Config.Standard0Priority, EssentialDignity.ActionName()));
                     break;
 

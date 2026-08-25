@@ -26,6 +26,7 @@
     <Compile Include="..\WrathCombo\Services\SmartMitigation\CombatEventBuffer.cs" Link="Sources\CombatEventBuffer.cs" />
     <Compile Include="..\WrathCombo\Services\HealDelayCurve.cs" Link="Sources\HealDelayCurve.cs" />
     <Compile Include="..\WrathCombo\Services\AutorotActionPolicy.cs" Link="Sources\AutorotActionPolicy.cs" />
+    <Compile Include="..\WrathCombo\Services\MechanicPrediction\MechanicCastClassifier.cs" Link="Sources\MechanicCastClassifier.cs" />
   </ItemGroup>
 
 </Project>

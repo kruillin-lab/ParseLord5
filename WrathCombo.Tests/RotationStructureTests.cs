@@ -201,4 +201,107 @@ public class RotationStructureTests
         Assert.Contains("ActionStacksEXIPC.TryPeekAction(", source);
         Assert.Contains("return attr.AutoAction?.IsHeal == true && ActionReady(actionToCheck);", source);
     }
+
+    [Fact]
+    public void PredictiveMechanics_SpikeFeedIsDefaultOffAndMasterGated()
+    {
+        var threatFile = Path.Combine(RepoRoot(), "WrathCombo", "Services", "SmartMitigation", "TankSmartMitigationThreat.cs");
+        var threatSource = File.ReadAllText(threatFile);
+
+        Assert.Matches(
+            @"if \(Service\.Configuration\.PredictiveMechanics\)\s*mechanicSpikeFraction = Math\.Max\(mechanicSpikeFraction, MechanicCastTracker\.PredictedSpikeFraction\(\)\);",
+            threatSource);
+
+        var flagsFile = Path.Combine(RepoRoot(), "WrathCombo", "Core", "Configuration.cs");
+        var flagsSource = File.ReadAllText(flagsFile);
+
+        // A real reflected Setting toggle; the retired ExperimentalFlags file must stay gone.
+        Assert.Contains("public bool PredictiveMechanics = false;", flagsSource);
+        Assert.False(File.Exists(Path.Combine(RepoRoot(), "WrathCombo", "Core", "Configuration.ExperimentalFlags.cs")),
+            "Configuration.ExperimentalFlags.cs was retired and must not return");
+    }
+
+    [Fact]
+    public void PredictiveMechanics_IsARealReflectedSettingToggle()
+    {
+        var configFile = Path.Combine(RepoRoot(), "WrathCombo", "Core", "Configuration.cs");
+        var source = File.ReadAllText(configFile);
+
+        // Regression guard for the config-loses-the-flag failure mode: it must be a
+        // top-level [Setting(Setting.Type.Toggle)] field, which Settings.cs only
+        // reflects for direct Configuration fields (not nested ExperimentalFlags
+        // members) -- that's what makes it a real, persistent in-game checkbox
+        // instead of a value that only exists if a hand-edited JSON key survives
+        // the next config save.
+        Assert.Matches(
+            @"\[SettingCategory\(Main_UI_Options\)\]\s*\[Setting\(Setting\.Type\.Toggle\)\]\s*public bool PredictiveMechanics = false;",
+            source);
+    }
+
+    [Fact]
+    public void PredictiveMechanics_LandedHitPathRemainsAsFallback()
+    {
+        var threatFile = Path.Combine(RepoRoot(), "WrathCombo", "Services", "SmartMitigation", "TankSmartMitigationThreat.cs");
+        var source = File.ReadAllText(threatFile);
+
+        Assert.Contains("pressure.MaxSingleHit / hpPlayer.MaxHp", source);
+    }
+
+    [Fact]
+    public void PredictiveMechanics_HealerRaidwideCountFeedIsAdditiveAndKindScoped()
+    {
+        var controllerFile = Path.Combine(RepoRoot(), "WrathCombo", "AutoRotation", "AutoRotationController.cs");
+        var source = File.ReadAllText(controllerFile);
+
+        // The HP-reactive base decision must survive -- the prediction only ever raises it.
+        Assert.Contains("<= 30 => 3,", source);
+        Assert.Contains("<= 60 => 2,", source);
+
+        // Boost is flag-guarded, Math.Max-based (never lowers), and scoped to Raidwide only:
+        // Tankbuster/Cleave are single-target and must not inflate a party-wide heal count.
+        Assert.Matches(
+            @"if \(Service\.Configuration\.PredictiveMechanics &&\s*MechanicCastTracker\.HasImminentImpact\(MechanicCastKind\.Raidwide, PredictiveHealerLeadSeconds\)\)\s*numberOfCasts = Math\.Max\(numberOfCasts, 2\);",
+            source);
+
+        // Lead time must stay inside the classifier's own MaxLeadSeconds bound (6f).
+        var leadMatch = Regex.Match(source, @"private const float PredictiveHealerLeadSeconds = (\d+(?:\.\d+)?)f;");
+        Assert.True(leadMatch.Success, "PredictiveHealerLeadSeconds constant missing");
+        Assert.True(
+            float.Parse(leadMatch.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) <= 6f,
+            "PredictiveHealerLeadSeconds must not exceed MechanicCastClassifier.MaxLeadSeconds (6f)");
+    }
+
+    [Fact]
+    public void PredictiveMechanics_HealerRaidwideGateUnchanged()
+    {
+        var controllerFile = Path.Combine(RepoRoot(), "WrathCombo", "AutoRotation", "AutoRotationController.cs");
+        var source = File.ReadAllText(controllerFile);
+
+        // The encounter-awareness work must never widen or bypass the context gate.
+        Assert.Contains("ShouldHandleHealerRaidwides(isHealer) && GroupDamageIncoming", source);
+        Assert.Contains("if (InBossEncounter())", source);
+        Assert.Contains("return InDuty() && IsInParty(2);", source);
+    }
+
+    [Fact]
+    public void IPC_NextMechanicGettersAreReadOnly()
+    {
+        var providerFile = Path.Combine(RepoRoot(), "WrathCombo", "Services", "IPC", "Provider.cs");
+        var source = File.ReadAllText(providerFile);
+
+        string[] signatures =
+        [
+            "public bool GetNextMechanicImminent(float withinSeconds)",
+            "public string GetNextMechanicKind()",
+            "public float GetNextMechanicTimeToImpact()",
+            "public float GetPredictedMechanicSpikeFraction()",
+        ];
+
+        foreach (var signature in signatures)
+        {
+            Assert.Contains(signature, source);
+            // Read-only contract: a lease parameter would make these controllable.
+            Assert.DoesNotContain("Guid", signature);
+        }
+    }
 }
