@@ -67,15 +67,17 @@ ParseLord5 is a **Dalamud in-process plugin**; there is no standalone `dotnet ru
 
 ### Prerequisites (one-time on a fresh VM)
 
-- **.NET 10 SDK** on `PATH` (install to `~/.dotnet` if missing; `export PATH="$HOME/.dotnet:$PATH"`).
-- **Git submodules**: `ECommons`, `PunishLib`, `WrathCombo.API` (run `git submodule update --init --recursive`).
+- **Idempotent bootstrap:** `bash scripts/cloud-agent-install.sh` (installs .NET 10 to `~/.dotnet`, PowerShell to `~/.local/pwsh`, Dalamud hooks, and git submodules).
+- **.NET 10 SDK** on `PATH` (install to `~/.dotnet` if missing; `export PATH="$HOME/.dotnet:$HOME/.local/bin:$PATH"`).
+- **Git submodules**: `ECommons`, `PunishLib`, `WrathCombo.API`. Recorded pins on `main` may be missing from remotes; the bootstrap script falls back to the last public SHAs from this repo's history. Do not use `git submodule update --init --recursive` alone — leftover `FFXIVClientStructs` gitmodule entries are not gitlinks, and unpublished pins fail the checkout.
 - **Dalamud dev hook DLLs** at `~/.xlcore/dalamud/Hooks/dev/` on Linux (Windows: `%AppData%\XIVLauncher\addon\Hooks\dev\`). Download `https://goatcorp.github.io/dalamud-distrib/latest.zip` when `Dalamud.dll` is absent.
 
 ### Build and verify (Linux)
 
 ```bash
-export PATH="$HOME/.dotnet:$PATH"
+export PATH="$HOME/.dotnet:$HOME/.local/bin:$PATH"
 dotnet build WrathCombo/WrathCombo.csproj -c Release
+dotnet test WrathCombo.Tests/WrathCombo.Tests.csproj -c Release
 pwsh -File scripts/rotation-evals.ps1
 ```
 
@@ -97,6 +99,7 @@ On a Windows machine with XIVLauncher: build Debug (outputs to devPlugins), add 
 - Build fails with thousands of `AtkUnitBase` / `FFXIVClientStructs` errors → Dalamud hook path is missing or stale; refresh `latest.zip` into the `Hooks/dev` folder above.
 - `quality-gate.json` `markdown-audit` command is Windows-local and not runnable in Cloud.
 - Submodule pins must match; do not bump `ECommons` without a deliberate compatibility pass.
+- There is no Cloud Agent `start` process or `dotnet run` server. Proof of a working environment is Release build output at `~/.xlcore/devPlugins/ParseLord5/ParseLord5.dll` plus tests/evals.
 
 ### Automating cloud agent → local dev DLL (Windows)
 
